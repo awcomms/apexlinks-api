@@ -1,7 +1,6 @@
 import random, re, boto3, base64, os, jwt
 from time import time
 from app import db
-from app.models import PageMixin
 from datetime import datetime, timedelta
 
 blog_posts = db.Table('blog_posts',
@@ -17,7 +16,7 @@ class Comment(db.Model):
         self.body = body
         self.post = post
 
-class Blog(PageMixin, db.Model):
+class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode)
     posts = db.relationship('Blogpost', secondary=blog_posts, backref='blog', lazy=True)
@@ -29,7 +28,7 @@ class Blog(PageMixin, db.Model):
         }
         return data
 
-class Blogpost(PageMixin, db.Model):
+class Blogpost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode)
     comments = db.relationship(Comment, backref='post', lazy=True)

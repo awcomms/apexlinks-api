@@ -5,15 +5,12 @@ from time import time
 from app import db
 from flask import jsonify
 from geopy import distance
-from flask_login import UserMixin
 from datetime import datetime, timedelta
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy_searchable import SearchQueryMixin
 from sqlalchemy_utils.types import TSVectorType
-from sqlalchemy_searchable import make_searchable
 from flask import jsonify, current_app, request, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
-
 from app.search import add_to_index, remove_from_index, query_index
 
 class Query(BaseQuery, SearchQueryMixin):
@@ -28,7 +25,7 @@ class SearchMixin(object):
         when = []
         for i in range(len(ids)):
             when.append((ids[i], i))
-        return cls.to_cdict(cls.query.filter(cls.id.in_(ids)).order_by(
+        return cdict(cls.query.filter(cls.id.in_(ids)).order_by(
             db.case(when, value=cls.id)))
 
     @classmethod
@@ -65,32 +62,7 @@ def cdict(query, page=1, per_page=37, endpoint='', **kwargs):
         page = float(page)
         resources = query.paginate(page, per_page, False)
         data = {
-            'data': [item.dict() for item in resources.items]
-        }
-        data['meta'] = {
-            'page': page,
-            'total_pages': resources.pages,
-            'total_items': resources.total
-        }
-        if query.count() < 1:
-            data['data'] = []
-        if endpoint != '':
-            data['_links'] = {
-                'self': url_for(endpoint, page=page, per_page=per_page, **kwargs),
-                'next': url_for(endpoint, page=page + 1, per_page=per_page, 
-                                **kwargs) if resources.has_next else None,
-                'prev': url_for(endpoint, page=page - 1, per_page=per_page,
-                                **kwargs) if resources.has_prev else None
-            }
-        return data
-
-class PageMixin(object):
-    @staticmethod
-    def cdict(query, page=1, per_page=37, endpoint='', **kwargs):
-        page = float(page)
-        resources = query.paginate(page, per_page, False)
-        data = {
-            'data': [item.dict() for item in resources.items]
+            'items': [item.dict() for item in resources.items]
         }
         data['meta'] = {
             'page': page,
@@ -138,42 +110,11 @@ class Field(db.Model):
             _q = '%{0}%'.format(q)
         return Field.query.filter(Field.text.ilike(_q))
 
-class Place(db.Model):
-    query_class = Query
-    search_vector = db.Column(TSVectorType('name'))
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Unicode)
-    location = db.Column(db.JSON)
-
-    @staticmethod
-    def search(q):
-        if '*' in q or '_' in q:
-            _q = q.replace('_', '__')\
-                .replace('_', '__')\
-                .replace('*', '%')\
-                .replace('?', '_')
-        else:
-            _q = '%{0}%'.format(q)
-        return Place.query.filter(Place.name.ilike(_q))
-
-    def dict(self):
-        data = {
-            'id': self.id,
-            'text': self.name
-        }
-        return data
-
-    def __init__(self, name, location):
-        self.name = name
-        self.location = location
-        db.session.add(self)
-        db.session.commit()
-
 class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-class Product(PageMixin, db.Model):
+class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     json = db.Column(db.JSON) 
@@ -204,7 +145,7 @@ class Product(PageMixin, db.Model):
 
     @staticmethod
     def delete(id):
-        db.session.delete(Service.query.get(id))
+        db.session.delete(Item.query.get(id))
 
 class Card(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -217,7 +158,7 @@ class Card(db.Model):
     bank = db.Column(db.Unicode())
     signature = db.Column(db.Unicode())
     reusable = db.Column(db.Boolean())
-    country_code = db.Column(db.Unicode())
+    nation_code = db.Column(db.Unicode())
 
     def dict(self):
         data = {
@@ -232,12 +173,12 @@ class Card(db.Model):
             'bank': self.bank,
             'signature': self.signature,
             'reusable': self.reusable,
-            'country_code': self.country_code,
+            'nation_code': self.nation_code,
         }
         return data
 
     def from_dict(self, data):
-        for field in ['authorization_code', 'card_type', 'last4', 'exp_month', 'exp_year', 'bin', 'bank', 'signature', 'reusable', 'country_code']:
+        for field in ['authorization_code', 'card_type', 'last4', 'exp_month', 'exp_year', 'bin', 'bank', 'signature', 'reusable', 'nation_code']:
             setattr(self, field, data[field])
 
 cards = db.Table('cards',
@@ -248,9 +189,9 @@ saved_users = db.Table('saved_users',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
 
-saved_services = db.Table('saved_services',
+saved_items = db.Table('saved_items',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('service', db.Integer, db.ForeignKey('service.id')))
+    db.Column('item', db.Integer, db.ForeignKey('item.id')))
 
 saved_products = db.Table('saved_products',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
@@ -264,12 +205,13 @@ saved_forumposts = db.Table('saved_forumposts',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('forumpost_id', db.Integer, db.ForeignKey('forumpost.id')))
 
-class User(PageMixin, UserMixin, db.Model):
+class User(db.Model):
     query_class = Query
     search_vector = db.Column(
         TSVectorType(
-            'username', 'name', weights={'username': 'A', 'name': 'B'}))
+            'username', 'name', 'about', weights={'username': 'A', 'name': 'B', 'about': 'B'}))
     username = db.Column(db.Unicode)
+    place_id = db.Column(db.Integer, db.ForeignKey('place.id'))
 
     individual = db.Column(db.Boolean)
 
@@ -282,13 +224,12 @@ class User(PageMixin, UserMixin, db.Model):
     closeby = db.Column(db.DateTime)
 
     s_categories = db.relationship('SCategory', backref='user', lazy='dynamic')
-    s_classes = db.relationship('SClass', backref='user', lazy='dynamic')
     
-    services = db.relationship('Service', backref='user', lazy='dynamic')
+    items = db.relationship('Item', backref='user', lazy='dynamic')
     products = db.relationship('Product', backref='user', lazy='dynamic')
     
     saved_users = db.relationship('User', secondary=saved_users, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
-    saved_services = db.relationship('Service', secondary=saved_services, backref='savers', lazy='dynamic')
+    saved_items = db.relationship('Item', secondary=saved_items, backref='savers', lazy='dynamic')
     saved_products = db.relationship('Product', secondary=saved_products, backref='savers', lazy='dynamic')
     
     saved_forumposts = db.relationship('Forumpost', secondary=saved_forumposts, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
@@ -363,9 +304,9 @@ class User(PageMixin, UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     @staticmethod
-    def add_service(id, name):
+    def add_item(id, name):
         user = User.query.get(id)
-        Service(user, name)
+        Item(user, name)
 
     def dict(self):
         data = {
@@ -388,8 +329,8 @@ class User(PageMixin, UserMixin, db.Model):
             'website': self.website,
             'token': self.token,
             'saved_users': cdict(self.saved_users),
-            'saved_services': cdict(self.saved_services),
-            'services': cdict(self.services),
+            'saved_items': cdict(self.saved_items),
+            'items': cdict(self.items),
             'products': cdict(self.products)
         }
         if self.location != None:
@@ -403,6 +344,8 @@ class User(PageMixin, UserMixin, db.Model):
         self.phone = data['phone']
         self.website = data['website']
         self.location = data['location']
+        if 'place_id' in data:
+            self.place = Place.query.get(data['place_id'])
         if 'password' in data:
             self.set_password(data['password'])
         db.session.add(self)

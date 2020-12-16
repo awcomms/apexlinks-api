@@ -1,6 +1,6 @@
 from app.api import bp
 from app.models import Field
-from app.service_models import Service
+from app.item_models import Item
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
 

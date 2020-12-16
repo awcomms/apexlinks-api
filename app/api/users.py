@@ -2,32 +2,19 @@ from flask_jwt_extended import jwt_required, create_access_token
 from flask import g, abort, jsonify, request, url_for
 from app import db
 from app.api import bp
+from app.geo_models import Place
 from app.models import User, cdict
-from app.service_models import SClass
 from app.email import send_user_email
-from app.api.auth import token_auth
+#from app.api.auth import token_auth
 from app.api.errors import res, bad_request
 
-@bp.route('/user/s_classes', methods=['GET'])
-@jwt_required
-def user_s_classes():
+@bp.route('/users/from_place', methods=['GET'])
+def get_users_from_place():
     a = request.args.get
-    print(request.args)
-    token = request.headers['Authorization']
-    user = User.query.filter_by(token=token).first()
-    q = a('q')
+    id = a('id')
     page = a('page')
-    if q == '':
-        return cdict(user.s_classes, page)
-    s_classes = SClass.query.search('"' + q + '"').filter_by(user=user)
-    return cdict(s_classes, page)
-
-@bp.route('/user/s_categories/<int:id>', methods=['GET'])
-def user_s_categories(id):
-    q = request.args.get
-    page = q('page')
-    user = User.query.get(id)
-    return jsonify(cdict(user.s_classes, page))
+    query = User.query.filter_by(place_id=id)
+    return cdict(query, page)
 
 @bp.route('/user/saved', methods=['GET'])
 @jwt_required
@@ -35,7 +22,7 @@ def user_saved_items():
     token = request.headers['Authorization']
     user = User.query.filter_by(token=token).first()
     page = request.args.get('page')
-    return cdict(user.saved_services, page)
+    return cdict(user.saved_items, page)
 
 @bp.route('/users/search', methods=['PUT'])
 def search_users():
@@ -62,6 +49,7 @@ def get_users():
 def create_user():
     q = request.get_json()
     errors = []
+    place_id = q['place_id']
     username = q['username']
     password = q['password']
     if username is None:
@@ -74,6 +62,7 @@ def create_user():
         errors.append({'id': 1, 'kind': 'error', 'title': 'username taken'})
         return jsonify({'errors': errors})
     user = User(username, password)
+    user.place = Place.query.get(data['place_id'])
     user.token = create_access_token(identity=username)
     res = jsonify({'user': user.dict()})
     res.status_code = 201
@@ -94,7 +83,7 @@ def edit_user(id):
         errors.append('username taken')
         return {'errors': errors}
     user.from_dict(data)
-    for service in user.services:
-        service.location = user.location
+    for item in user.items:
+        item.location = user.location
     db.session.commit()
     return {'user': user.dict()}
