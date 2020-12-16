@@ -1,8 +1,23 @@
 from app.api import bp
+from app.models import cdict
 from app.geo_models import Place, Town, State, Nation
 from flask import request, jsonify
 
 #places
+@bp.route('/places/add_tags', methods=['PUT'])
+def add_tags():
+    j = request.json.get
+    for tag in j('tags'):
+        Place.query.get(j('id')).add_tag(tag)
+
+@bp.route('/search_places_in_state', methods=['GET'])
+def search_places_in_state():
+    a = request.args.get
+    q = a('q')
+    page = a('page')
+    state_id = a('state_id')
+    return jsonify(cdict(Place.query.search('"' + q + '"').filter(Place.town.state_id==state_id), page))
+
 @bp.route('/search_items_for_places', methods=['GET'])
 def search_items_for_places():
     a = request.args.get
@@ -34,7 +49,7 @@ def search_places_by_page():
 def search_places():
     a = request.args.get
     q = a('q')
-    return jsonify([{'id': place.id, 'text': place.name} for place in Place.query.search('"' + q + '"')])
+    return jsonify([{'id': place.id, 'text': place.name} for place in Place.query.search('"' + q + '"', sorted=True)])
 #places
 
 @bp.route('/search_towns_in_state', methods=['GET'])

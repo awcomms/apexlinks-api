@@ -5,16 +5,23 @@ from sqlalchemy_utils.types import TSVectorType
 class Place(db.Model):
     query_class = Query
     name = db.Column(db.Unicode)
+    tags = db.Column(db.Unicode)
     coordinates = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
-    search_vector = db.Column(TSVectorType('name'))
+    search_vector = db.Column(TSVectorType('tags', 'name', weights={'tags': 'A', 'name': 'B'}))
     users = db.relationship('User', backref='place', lazy='dynamic')
     town_id = db.Column(db.Integer, db.ForeignKey('town.id'), nullable=False)
 
+    def add_tag(self, tag):
+        self.tags += ', ' + tag
+        db.session.commit()
+
     def dict(self):
+        tags = self.tags.split(', ')
         data = {
             'id': self.id,
-            'text': self.name,
+            'tags': self.tags,
+            'name': self.name,
             'coordinates': self.coordinates
         }
         return data

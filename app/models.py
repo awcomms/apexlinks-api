@@ -58,27 +58,13 @@ db.configure_mappers()
 db.event.listen(db.session, 'before_commit', SearchMixin.before_commit)
 db.event.listen(db.session, 'after_commit', SearchMixin.after_commit)
 
-def cdict(query, page=1, per_page=37, endpoint='', **kwargs):
+def cdict(query, page=1, per_page=11):
         page = float(page)
         resources = query.paginate(page, per_page, False)
         data = {
-            'items': [item.dict() for item in resources.items]
-        }
-        data['meta'] = {
-            'page': page,
-            'total_pages': resources.pages,
-            'total_items': resources.total
-        }
-        if query.count() < 1:
-            data['data'] = []
-        if endpoint != '':
-            data['_links'] = {
-                'self': url_for(endpoint, page=page, per_page=per_page, **kwargs),
-                'next': url_for(endpoint, page=page + 1, per_page=per_page, 
-                                **kwargs) if resources.has_next else None,
-                'prev': url_for(endpoint, page=page - 1, per_page=per_page,
-                                **kwargs) if resources.has_prev else None
-            }
+            'items': [item.dict() for item in resources.items],
+            'pages': resources.pages,
+            'total': resources.total}
         return data
 
 class Field(db.Model):
@@ -223,8 +209,6 @@ class User(db.Model):
     openby = db.Column(db.DateTime)
     closeby = db.Column(db.DateTime)
 
-    s_categories = db.relationship('SCategory', backref='user', lazy='dynamic')
-    
     items = db.relationship('Item', backref='user', lazy='dynamic')
     products = db.relationship('Product', backref='user', lazy='dynamic')
     

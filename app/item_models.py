@@ -24,17 +24,6 @@ class Item(db.Model):
     about = db.Column(db.Unicode)
     paid_in = db.Column(db.Unicode)
 
-    def custom_dict(self, *args):
-        data = {}
-        for field in args:
-            if field == 's_classes':
-                data['s_classes'] = cdict(self.s_classes)
-            if field == 'user':
-                data['user'] = self.user.dict()
-            else:
-                data[field] = self.name
-        return data
-
     @staticmethod
     def archive(id, token):
         user = User.query.filter_by(token=token).first()
@@ -121,11 +110,8 @@ class Item(db.Model):
             'name': self.name,
             'about': self.about,
             'user': self.user.dict(),
-            's_classes': cdict(self.s_classes),
             'paid_in': self.paid_in
         }
-        if self.s_class:
-            data['s_class'] = self.s_class.dict()
         return data
 
     @staticmethod
