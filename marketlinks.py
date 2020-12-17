@@ -10,5 +10,5 @@ app = create_app()
 
 @app.shell_context_processor
 def make_shell_context():
-    return {'Field': Field, 'db': db, 'User': User, 'Place': Place, 'jsonify': jsonify, 'Forumpost': Forumpost, 'Product': Product, \
+    return {'Town': Town, 'Field': Field, 'Nation': Nation, 'State': State, 'db': db, 'User': User, 'Place': Place, 'jsonify': jsonify, 'Forumpost': Forumpost, 'Product': Product, \
         'Blog': Blog, 'Blogpost': Blogpost, 'Item': Item}

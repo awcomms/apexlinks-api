@@ -10,14 +10,16 @@ class Place(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     search_vector = db.Column(TSVectorType('tags', 'name', weights={'tags': 'A', 'name': 'B'}))
     users = db.relationship('User', backref='place', lazy='dynamic')
-    town_id = db.Column(db.Integer, db.ForeignKey('town.id'), nullable=False)
+    state_id = db.Column(db.Integer, db.ForeignKey('state.id'), nullable=False)
+    town_id = db.Column(db.Integer, db.ForeignKey('town.id'))
 
     def add_tag(self, tag):
         self.tags += ', ' + tag
         db.session.commit()
 
     def dict(self):
-        tags = self.tags.split(', ')
+        if self.tags:
+            tags = self.tags.split(', ')
         data = {
             'id': self.id,
             'tags': self.tags,
@@ -26,9 +28,9 @@ class Place(db.Model):
         }
         return data
 
-    def __init__(self, name, coordinates):
+    def __init__(self, name, state):
+        self.state = state
         self.name = name
-        self.coordinates = coordinates
         db.session.add(self)
         db.session.commit()
 
@@ -50,7 +52,7 @@ class Town(db.Model):
     def __init__(self, name, state):
         self.name = name
         self.state = state
-        db.sesion.add(self)
+        db.session.add(self)
         db.session.commit()
 
 class State(db.Model):
@@ -58,6 +60,7 @@ class State(db.Model):
     search_vector = db.Column(TSVectorType('name'))
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode)
+    places = db.relationship('Place', backref='state', lazy='dynamic')
     towns = db.relationship('Town', backref='state', lazy='dynamic')
     nation_id = db.Column(db.Integer, db.ForeignKey('nation.id'), nullable=False)
 
@@ -71,7 +74,7 @@ class State(db.Model):
     def __init__(self, name, nation):
         self.name = name
         self.nation = nation
-        db.sesion.add(self)
+        db.session.add(self)
         db.session.commit()
 
 class Nation(db.Model):
@@ -89,5 +92,5 @@ class Nation(db.Model):
 
     def __init__(self, name):
         self.name = name
-        db.sesion.add(self)
+        db.session.add(self)
         db.session.commit()

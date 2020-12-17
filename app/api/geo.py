@@ -14,14 +14,18 @@ def add_tags():
 def search_places_in_state():
     a = request.args.get
     q = a('q')
+    q = q.replace('%20', ' ')
     page = a('page')
     state_id = a('state_id')
-    return jsonify(cdict(Place.query.search('"' + q + '"').filter(Place.town.state_id==state_id), page))
+    if q == '':
+        return jsonify(cdict(Place.query.filter_by(state_id=state_id), page))
+    return jsonify(cdict(Place.query.search('"' + q + '"').filter(Place.state_id==state_id), page))
 
 @bp.route('/search_items_for_places', methods=['GET'])
 def search_items_for_places():
     a = request.args.get
     q = a('q')
+    q = q.replace('%20', ' ')
     page = a('page')
     resources = Item.query.search('"' + q + '"', sort=True).paginate(page, 11, False)
     data = {
@@ -42,6 +46,7 @@ def search_places_in_town():
 def search_places_by_page():
     a = request.args.get
     q = a('q')
+    q = q.replace('%20', ' ')
     page = a('page')
     return jsonify(cdict(Place.query.search('"' + q + '"'), page))
 
@@ -49,6 +54,7 @@ def search_places_by_page():
 def search_places():
     a = request.args.get
     q = a('q')
+    q = q.replace('%20', ' ')
     return jsonify([{'id': place.id, 'text': place.name} for place in Place.query.search('"' + q + '"', sorted=True)])
 #places
 
@@ -69,21 +75,24 @@ def search_towns():
 def search_states_in_nation():
     a = request.args.get
     q = a('q')
+    nation_id = a('nation_id')
+    q = q.replace('%20', ' ')
     if q == '':
         return jsonify([{'id': state.id, 'text': state.name} for state in State.query.filter_by(nation_id=nation_id)])
-    nation_id = a('nation_id')
     return jsonify([{'id': state.id, 'text': state.name} for state in State.query.search('"' + q + '"').filter_by(nation_id=nation_id)])
 
 @bp.route('/search_states', methods=['GET'])
 def search_states():
     a = request.args.get
     q = a('q')
+    q = q.replace('%20', ' ')
     return jsonify([{'id': state.id, 'text': state.name} for state in State.query.search('"' + q + '"')])
 
 @bp.route('/search_nations', methods=['GET'])
 def search_nations():
     a = request.args.get
     q = a('q')
+    q = q.replace('%20', ' ')
     if q == '':
         return jsonify([{'id': nation.id, 'text': nation.name} for nation in Nation.query])
     return jsonify([{'id': nation.id, 'text': nation.name} for nation in Nation.query.search('"' + q + '"')])
