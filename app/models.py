@@ -84,8 +84,6 @@ class Nd(db.Model):
         }
         return data
 
-    
-
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -136,9 +134,9 @@ class Card(db.Model):
     signature = db.Column(db.Unicode)
     reusable = db.Column(db.Boolean)
 
-    def __init__(dict):
-        for field in dict:
-            if dict[field]:
+    def __init__(data):
+        for field in data:
+            if data[field]:
                 setattr(self, field, data[field])
         db.session.commit()
 
@@ -315,7 +313,8 @@ class User(db.Model):
             'id': self.id,
             'name': self.name,
             'username': self.username,
-            'token': self.token
+            'token': self.token,
+            'card_count': self.cards.count()
         }
         if self.location != None:
             data['location'] = self.location

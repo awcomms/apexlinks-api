@@ -18,9 +18,11 @@ mail = Mail()
 
 make_searchable(db.metadata)
 
+origins = ['https://localhost:443', '52.31.139.75', '52.49.173.169', '52.214.14.220']
+
 def create_app():
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, origins=origins)
     app.config.from_object(Config)
 
     db.init_app(app)
