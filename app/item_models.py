@@ -2,6 +2,7 @@ from app import db
 from flask import jsonify
 from geopy import distance
 from fuzzywuzzy import fuzz
+from app.api.functions import fuzlist
 from sqlalchemy_utils.types import TSVectorType
 from app.models import Query, User, cdict
 
@@ -79,8 +80,12 @@ class Item(db.Model):
         return {}, 202
 
     @staticmethod
-    def fuz(q, position, state_id):
+    def fuz(q, tags, position, state_id):
         query = Item.query.filter(Item.user.visible==True).filter(Item.user.state_id==state_id)
+        for item in query:
+            for tag in item.tags:
+                if not fuzlist(tag, tags):
+                    query.filter(Item.id != item.id)
         for item in query:
             ratio = fuzz.ratio(q, item.name)
             if ratio <= 79:
