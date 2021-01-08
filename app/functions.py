@@ -6,8 +6,4 @@ def fuzlist(q, list):
         return True
     else:
         return False
-
-def fuz(q, string):
-    ratio = fuzz.ratio(q, string)
-    return rati
     

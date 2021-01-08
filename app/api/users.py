@@ -49,21 +49,21 @@ def get_users():
 def create_user():
     q = request.get_json()
     errors = []
-    place_id = q['place_id']
-    username = q['username']
+    #place_id = q['place_id']
+    email = q['email']
     password = q['password']
-    if username is None:
-        errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide an username'})
+    if email is None:
+        errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide an email'})
         return jsonify({'errors': errors})
     if password is None:
         errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide a password'})
         return jsonify({'errors': errors})
-    if User.query.filter_by(username=username).first():
-        errors.append({'id': 1, 'kind': 'error', 'title': 'username taken'})
+    if User.query.filter_by(email=email).first():
+        errors.append({'id': 1, 'kind': 'error', 'title': 'email taken'})
         return jsonify({'errors': errors})
-    user = User(username, password)
-    user.place = Place.query.get(data['place_id'])
-    user.token = create_access_token(identity=username)
+    user = User(email, password)
+    #user.place = Place.query.get(data['place_id'])
+    user.token = create_access_token(identity=email)
     res = jsonify({'user': user.dict()})
     res.status_code = 201
     return res
@@ -78,9 +78,9 @@ def edit_user(id):
     data = request.get_json()
     if user != User.query.filter_by(token = token).first():
         return {}, 401
-    if 'username' in data and data['username'] != user.username and \
-            User.query.filter_by(username=data['username']).first():
-        errors.append('username taken')
+    if 'email' in data and data['email'] != user.email and \
+            User.query.filter_by(email=data['email']).first():
+        errors.append('email taken')
         return {'errors': errors}
     user.from_dict(data)
     for item in user.items:

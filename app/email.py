@@ -19,9 +19,9 @@ def send_user_email(user):
     token = user.get_utoken()
     send_email(
         '[Marketlnx] Verify your account',
-        sender=current_app.config['MAIL_USERNAME'],
-        recipients=[user.username],
-        text_body=render_template('username/confirm_account.txt', user=user, token=token),
-        html_body=render_template('username/confirm_account.htm', user=user, token=token)
+        sender=current_app.config['MAIL_email'],
+        recipients=[user.email],
+        text_body=render_template('email/confirm_account.txt', user=user, token=token),
+        html_body=render_template('email/confirm_account.htm', user=user, token=token)
     )
 

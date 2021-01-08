@@ -1,8 +1,7 @@
 from app import db
 from flask import jsonify
 from geopy import distance
-from fuzzywuzzy import fuzz
-from app.api.functions import fuzlist
+from fuzzywuzzy import process, fuzz
 from sqlalchemy_utils.types import TSVectorType
 from app.models import Query, User, cdict
 
@@ -84,7 +83,7 @@ class Item(db.Model):
         query = Item.query.filter(Item.user.visible==True).filter(Item.user.state_id==state_id)
         for item in query:
             for tag in item.tags:
-                if not fuzlist(tag, tags):
+                if process.extractOne(tag, tags)[1] > 90:
                     query.filter(Item.id != item.id)
         for item in query:
             ratio = fuzz.ratio(q, item.name)
@@ -92,6 +91,7 @@ class Item(db.Model):
                 query.filter(Item.id != item.id)
             else:
                 item.score = ratio
+        query.order_by(Item.score.desc())
         if position:
             query = location_sort(query, position)
         return query
@@ -150,20 +150,22 @@ class Item(db.Model):
     def exists(user, name):
         return Item.query.filter_by(user_id = user.id).count()>0
 
-    def __init__(self, static_data=[]):
-        for field in static_data:
-            setattr(self, field, static_data['field'])
+    def __init__(self, data=[]):
+        for field in data:
+            if data[field]:
+                setattr(self, field, data[field])
         db.session.add(self)
         db.session.commit()
 
     @staticmethod
-    def edit(id, token, name, json):
+    def edit(id, token, name, data):
         user = User.query.filter_by(token=token).first()
         item = Item.query.get(id)
         if item.user != user:
             return {}, 401
-        item.name = name
-        item.json = json
+        for field in data:
+            if data['field']:
+                setattr(self, field, data['field'])
         db.session.add(item)
         db.session.commit()
         return item
@@ -177,3 +179,5 @@ class Item(db.Model):
                 db.session.delete(item)
         db.session.commit()
         return {}, 202
+
+from app.functions import fuzlist

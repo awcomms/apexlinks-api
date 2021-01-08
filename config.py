@@ -21,7 +21,7 @@ class Config(object):
     MAIL_PORT = 465
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True
-    MAIL_USERNAME = 'edge3769@gmail.com'
+    MAIL_email = 'edge3769@gmail.com'
     MAIL_PASSWORD = 'loveGM1!'
     ADMINS = ['edge2347@gmail.com']
     JWT_HEADER_TYPE = ''

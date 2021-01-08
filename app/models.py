@@ -58,30 +58,13 @@ db.configure_mappers()
 db.event.listen(db.session, 'before_commit', SearchMixin.before_commit)
 db.event.listen(db.session, 'after_commit', SearchMixin.after_commit)
 
-def cdict(query, page=1, per_page=11):
+def cdict(query, page=1, per_page=10):
         page = float(page)
         resources = query.paginate(page, per_page, False)
         data = {
             'items': [item.dict() for item in resources.items],
             'pages': resources.pages,
             'total': resources.total}
-        return data
-
-class Token(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-class Nd(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Unicode)
-    tags = db.Column(db.JSON)
-
-    def dict(self):
-        data = {
-            'id': self.id,
-            'name': self.name,
-            'tags': self.tags
-        }
         return data
 
 class Product(db.Model):
@@ -193,15 +176,14 @@ class User(db.Model):
     query_class = Query
     search_vector = db.Column(
         TSVectorType(
-            'username', 'name', 'about', weights={'username': 'A', 'name': 'B', 'about': 'B'}))
-    username = db.Column(db.Unicode)
+            'email', 'name', 'about', weights={'email': 'A', 'name': 'B', 'about': 'B'}))
+    email = db.Column(db.Unicode)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id'))
 
     individual = db.Column(db.Boolean)
 
     id = db.Column(db.Integer, primary_key=True)
     custom = db.Column(db.JSON)
-    tokens = db.relationship(Token, backref='user', lazy='dynamic')
     location = db.Column(db.JSON)
     distance = db.Column(db.Float)
     openby = db.Column(db.DateTime)
@@ -225,7 +207,7 @@ class User(db.Model):
     distance = db.Column(db.Unicode)
     logo_url = db.Column(db.Unicode)
     customer_code = db.Column(db.Unicode)
-    username = db.Column(db.Unicode(123), unique=True)
+    email = db.Column(db.Unicode(123), unique=True)
 
     visible = db.Column(db.Boolean, default=False)
     
@@ -275,8 +257,8 @@ class User(db.Model):
     def distance(p1, p2):
         return distance.distance(p1, p2)
 
-    def __init__(self, username, password):
-        self.username=username
+    def __init__(self, email, password):
+        self.email=email
         self.set_password(password)
         db.session.add(self)
         db.session.commit()
@@ -295,7 +277,7 @@ class User(db.Model):
         return User.query.get(id)
 
     def __repr__(self):
-        return 'username: {}'.format(self.username)
+        return 'email: {}'.format(self.email)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -312,7 +294,7 @@ class User(db.Model):
         data = {
             'id': self.id,
             'name': self.name,
-            'username': self.username,
+            'email': self.email,
             'token': self.token,
             'card_count': self.cards.count()
         }
@@ -325,7 +307,7 @@ class User(db.Model):
             'id': self.id,
             'name': self.name,
             'phone': self.phone,
-            'username': self.username,
+            'email': self.email,
             'about': self.about,
             'website': self.website,
             'token': self.token,
@@ -339,7 +321,7 @@ class User(db.Model):
         return data
 
     def from_dict(self, data):
-        self.username = data['username']
+        self.email = data['email']
         self.name = data['name']
         self.about = data['about']
         self.phone = data['phone']

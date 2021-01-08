@@ -1,6 +1,7 @@
 from app.api import bp
 from app.geo_models import Place
-from app.item_models import User, Item
+from app.models import User
+from app.item_models import Item
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
 
@@ -22,19 +23,16 @@ def add_item():
     user = User.query.filter_by(token=token).first()
     if not user:
         return {}, 401
-    place = Place.query.get(j('place_id'))
-    static_data = {
+    data = {
         'user': user,
-        'place': place,
         'name': j('name'),
         'json': j('json'),
         'about': j('about'),
         'price': j('price'),
         'paid_in': j('paid_in')
     }
-    s = Item(user, static_data)
-    fields = fields + json
-    return jsonify(s.dict())
+    i = Item(user, data)
+    return jsonify(i.dict())
 
 @bp.route('/item/viewed/<int:id>', methods=['PUT'])
 def viewed(id):

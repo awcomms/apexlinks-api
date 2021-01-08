@@ -18,11 +18,11 @@ mail = Mail()
 
 make_searchable(db.metadata)
 
-origins = ['https://localhost:443', '52.31.139.75', '52.49.173.169', '52.214.14.220']
+origins = ['https://127.0.0.1:443', '52.31.139.75', '52.49.173.169', '52.214.14.220']
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, origins=origins)
+    CORS(app)
     app.config.from_object(Config)
 
     db.init_app(app)
@@ -38,8 +38,8 @@ def create_app():
     if not app.debug and not app.testing:
         if app.config['MAIL_SERVER']:
             auth = None
-            if app.config['MAIL_USERNAME'] or app.config['MAIL_PASSWORD']:
-                auth = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+            if app.config['MAIL_email'] or app.config['MAIL_PASSWORD']:
+                auth = (app.config['MAIL_email'], app.config['MAIL_PASSWORD'])
             secure = None
             if app.config['MAIL_USE_TLS']:
                 secure = ()
