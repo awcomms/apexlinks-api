@@ -67,38 +67,24 @@ def cdict(query, page=1, per_page=11):
             'total': resources.total}
         return data
 
-class Field(db.Model):
-    query_class = Query
-    search_vector = db.Column(TSVectorType('text'))
+class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.Unicode)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, text):
-        self.text = text
-        db.session.add(self)
-        db.session.commit()
+class Nd(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Unicode)
+    tags = db.Column(db.JSON)
 
     def dict(self):
         data = {
             'id': self.id,
-            'text': self.text
+            'name': self.name,
+            'tags': self.tags
         }
         return data
 
-    @staticmethod
-    def search(q):
-        if '*' in q or '_' in q:
-            _q = q.replace('_', '__')\
-                .replace('_', '__')\
-                .replace('*', '%')\
-                .replace('?', '_')
-        else:
-            _q = '%{0}%'.format(q)
-        return Field.query.filter(Field.text.ilike(_q))
-
-class Token(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -123,6 +109,8 @@ class Product(db.Model):
 
     def __init__(self, json, id, name):
         user = User.query.get(id)
+        if exists(user, name):
+            return None
         self.user = user
         self.name = name
         self.json = json
@@ -135,16 +123,24 @@ class Product(db.Model):
 
 class Card(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    authorization_code = db.Column(db.Unicode())
-    card_type = db.Column(db.Unicode())
-    last4 = db.Column(db.Unicode())
-    exp_month = db.Column(db.Unicode())
-    exp_year = db.Column(db.Unicode())
-    bin = db.Column(db.Unicode())
-    bank = db.Column(db.Unicode())
-    signature = db.Column(db.Unicode())
-    reusable = db.Column(db.Boolean())
-    nation_code = db.Column(db.Unicode())
+    authorization_code = db.Column(db.Unicode)
+    bin = db.Column(db.Unicode)
+    last4 = db.Column(db.Unicode)
+    exp_month = db.Column(db.Unicode)
+    exp_year = db.Column(db.Unicode)
+    card_type = db.Column(db.Unicode)
+    bank = db.Column(db.Unicode)
+    country_code = db.Column(db.Unicode)
+    brand = db.Column(db.Unicode)
+    account_name = db.Column(db.Unicode)
+    signature = db.Column(db.Unicode)
+    reusable = db.Column(db.Boolean)
+
+    def __init__(dict):
+        for field in dict:
+            if dict[field]:
+                setattr(self, field, data[field])
+        db.session.commit()
 
     def dict(self):
         data = {
@@ -170,6 +166,10 @@ class Card(db.Model):
 cards = db.Table('cards',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('card_id', db.Integer, db.ForeignKey('card.id')))
+
+saved_places = db.Table('saved_places',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('place_id', db.Integer, db.ForeignKey('place.id')))
 
 saved_users = db.Table('saved_users',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
@@ -209,9 +209,14 @@ class User(db.Model):
     openby = db.Column(db.DateTime)
     closeby = db.Column(db.DateTime)
 
+    online = db.Column(db.Boolean, default=False)
+    sgn = db.Column(db.Integer)
+    sgn_distance = db.Column(db.Float)
+
     items = db.relationship('Item', backref='user', lazy='dynamic')
     products = db.relationship('Product', backref='user', lazy='dynamic')
     
+    saved_places = db.relationship('Place', secondary=saved_places, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     saved_users = db.relationship('User', secondary=saved_users, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     saved_items = db.relationship('Item', secondary=saved_items, backref='savers', lazy='dynamic')
     saved_products = db.relationship('Product', secondary=saved_products, backref='savers', lazy='dynamic')
@@ -236,6 +241,19 @@ class User(db.Model):
     show_email = db.Column(db.Boolean, default=True)
     token = db.Column(db.String(373), index=True, unique=True)
     marketlnx = db.Column(db.Boolean, default=False)
+
+    def place_saved(self, id):
+        return self.saved_places.filter_by(place_id=id).count()>0
+
+    def save_place(self, place):
+        if not self.place_saved(place.id):
+            self.saved_places.append(place)
+        db.session.commit()
+
+    def unsave_place(self, place):
+        if self.place_saved(place.id):
+            self.saved_places.remove(place)
+        db.session.commit()
 
     @staticmethod
     def search(q, page, position):

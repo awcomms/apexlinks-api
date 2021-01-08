@@ -1,7 +1,7 @@
 from app import db
 from flask import jsonify
 from geopy import distance
-from app.models import Field
+from fuzzywuzzy import fuzz
 from sqlalchemy_utils.types import TSVectorType
 from app.models import Query, User, cdict
 
@@ -23,6 +23,8 @@ class Item(db.Model):
     name = db.Column(db.Unicode)
     about = db.Column(db.Unicode)
     paid_in = db.Column(db.Unicode)
+
+    score = db.Column(db.Float)
 
     @staticmethod
     def archive(id, token):
@@ -77,6 +79,19 @@ class Item(db.Model):
         return {}, 202
 
     @staticmethod
+    def fuz(q, position, state_id):
+        query = Item.query.filter(Item.user.visible==True).filter(Item.user.state_id==state_id)
+        for item in query:
+            ratio = fuzz.ratio(q, item.name)
+            if ratio <= 79:
+                query.filter(Item.id != item.id)
+            else:
+                item.score = ratio
+        if position:
+            query = location_sort(query, position)
+        return query
+
+    @staticmethod
     def search(q, page, place_id=None, filters=None, position=None):
         items = Item.query.search('"' + q + '"', sort=True)
         if not is_instance(place_id, int):
@@ -85,6 +100,9 @@ class Item(db.Model):
         items = items.filter_by(place_id=place_id)
         if position:
             items = location_sort(items, position)
+        items = items.filter_by(online=True)
+        if user:
+            items = sgn_sort(items, user.sgn)
         #if filters:
             #for f in filters:
                 #items = items.filter(Item.fields[0][f['name']] == f['value'])
@@ -99,9 +117,18 @@ class Item(db.Model):
         db.session.commit()
         return query.order_by(Item.distance.desc())
 
+    def sgn_sort(query, sgn):
+        for item in query:
+            item.sgn_distance = item.sgn - sgn
+        db.session.commit
+        return query.order_by(Item.sgn_distance.desc())
+
     @staticmethod
     def distance(p1, p2):
         return distance.distance(p1, p2)
+
+    def get_name(self):
+        return self.name
 
     def dict(self):
         data = {
@@ -118,7 +145,7 @@ class Item(db.Model):
     def exists(user, name):
         return Item.query.filter_by(user_id = user.id).count()>0
 
-    def __init__(self, static_data):
+    def __init__(self, static_data=[]):
         for field in static_data:
             setattr(self, field, static_data['field'])
         db.session.add(self)

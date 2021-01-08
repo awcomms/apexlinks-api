@@ -4,6 +4,49 @@ from app.geo_models import Place, Town, State, Nation
 from flask import request, jsonify
 
 #places
+@bp.route('/place_saved', methods=['GET'])
+def place_saved():
+    a = request.args.get
+    user_id = a('user_id')
+    place_id = a('place_id')
+    user = User.query.get(user_id)
+    if not user:
+        return {}, 301
+    place = Place.query.get(place_id)
+    if not place:
+        return {}, 301
+    val = user.place_saved(place_id)
+    return jsonify({'res': val})
+
+@bp.route('/save_place', methods=['PUT'])
+def save_place():
+    token = request.headers['Authorization']
+    j = request.json.get
+    place_id = j('place_id')
+    user = User.query.filter_by(token=token).first()
+    place = Place.query.get(place_id)
+    if place.user != user:
+        return {}, 401
+    user.save_place(place)
+    return jsonify({'yes': True})
+
+#places
+@bp.route('/unsave_place', methods=['PUT'])
+def unsave_place():
+    token = request.headers['Authorization']
+    j = request.json.get
+    place_id = j('place_id')
+    user = User.query.filter_by(token=token).first()
+    place = Place.query.get(place_id)
+    if place.user != user:
+        return {}, 401
+    user.unsave_place(place)
+    return jsonify({'yes': True})
+
+@bp.route('/places/<int:id>', methods=['GET'])
+def get_place(id):
+    return jsonify(Place.query.get(id).dict())
+
 @bp.route('/places/add_tags', methods=['PUT'])
 def add_tags():
     j = request.json.get
@@ -16,10 +59,15 @@ def search_places_in_state():
     q = a('q')
     q = q.replace('%20', ' ')
     page = a('page')
+    user_id = a('user_id')
     state_id = a('state_id')
     if q == '':
+        query = Place.query.filter_by(state_id=state_id)
+        dict = cdict(query, page)
+        for place in dict['items']:
+            place['saved'] = Place.is_saved(place['id'], user_id)
         return jsonify(cdict(Place.query.filter_by(state_id=state_id), page))
-    return jsonify(cdict(Place.query.search('"' + q + '"').filter(Place.state_id==state_id), page))
+    return jsonify(dict)
 
 @bp.route('/search_items_for_places', methods=['GET'])
 def search_items_for_places():
@@ -71,6 +119,15 @@ def search_towns():
     q = a('q')
     return jsonify([{'id': town.id, 'text': town.name} for town in Town.query.search('"' + q + '"')])
 
+@bp.route('/get_states')
+def get_states():
+    return jsonify([{'id': state.id, 'text': state.name} for state in Nation.query])
+
+@bp.route('/states', methods=['GET'])
+def states():
+    id = request.args.get('id')
+    return jsonify([{'id': state.id, 'text': state.name} for state in State.query.filter_by(nation_id=id)])
+
 @bp.route('/search_states_in_nation', methods=['GET'])
 def search_states_in_nation():
     a = request.args.get
@@ -87,6 +144,10 @@ def search_states():
     q = a('q')
     q = q.replace('%20', ' ')
     return jsonify([{'id': state.id, 'text': state.name} for state in State.query.search('"' + q + '"')])
+
+@bp.route('/get_nations')
+def get_nations():
+    return jsonify([{'id': nation.id, 'text': nation.name} for nation in Nation.query])
 
 @bp.route('/search_nations', methods=['GET'])
 def search_nations():

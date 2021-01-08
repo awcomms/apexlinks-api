@@ -1,7 +1,6 @@
 from app.api import bp
 from app.geo_models import Place
 from app.item_models import User, Item
-from app.api.fields import add_field
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
 
@@ -11,10 +10,9 @@ def search_items():
     j = request.json.get
     q = j('q') or ''
     page = j('page')
-    place_id = a('place_id')
-    filters = j('filters')
     position = j('position')
-    return Item.search(q, place_id, page, filters, position)
+    statte_id = j('state_id')
+    return cdict(Item.fuz(q, position, state_id), page)
 
 @bp.route('/items', methods=['POST'])
 @jwt_required
@@ -36,8 +34,6 @@ def add_item():
     }
     s = Item(user, static_data)
     fields = fields + json
-    for f in fields:
-        add_field(f['name'])
     return jsonify(s.dict())
 
 @bp.route('/item/viewed/<int:id>', methods=['PUT'])

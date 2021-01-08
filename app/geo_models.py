@@ -13,6 +13,13 @@ class Place(db.Model):
     state_id = db.Column(db.Integer, db.ForeignKey('state.id'), nullable=False)
     town_id = db.Column(db.Integer, db.ForeignKey('town.id'))
 
+    @staticmethod
+    def is_saved(id, user_id):
+        user = User.query.get(user_id)
+        if not user:
+            return False
+        return user.saved_places.filter_by(id=id).count()>0
+
     def add_tag(self, tag):
         self.tags += ', ' + tag
         db.session.commit()
