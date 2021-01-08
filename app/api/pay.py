@@ -5,6 +5,7 @@ from flask import current_app
 
 @bp.route('/payed', methods=['POST'])
 def payed():
+    current_app.logger.info('got_payed')
     key = current_app.config['PAYSTACK_KEY']
     sign = hmac.new(key, request.data, hashlib.sha512).hexdigest()
     req_sign = request.headers['X-Paystack-Signature']
