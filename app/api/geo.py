@@ -145,7 +145,7 @@ def search_states():
     q = q.replace('%20', ' ')
     return jsonify([{'id': state.id, 'text': state.name} for state in State.query.search('"' + q + '"')])
 
-@bp.route('/get_nations')
+@bp.route('/nations')
 def get_nations():
     return jsonify([{'id': nation.id, 'text': nation.name} for nation in Nation.query])
 

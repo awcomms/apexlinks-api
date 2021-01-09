@@ -5,14 +5,15 @@ from app.item_models import Item
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
 
-@bp.route('/items/search', methods=['PUT'])
+@bp.route('/items/search', methods=['GET'])
 def search_items():
     a = request.args.get
-    j = request.json.get
-    q = j('q') or ''
-    page = j('page')
-    position = j('position')
-    statte_id = j('state_id')
+    q = a('q') or ''
+    page = a('page')
+    lat = a('lat')
+    lon = a('lon')
+    position = (lat, lon)
+    state_id = j('state_id')
     return cdict(Item.fuz(q, position, state_id), page)
 
 @bp.route('/items', methods=['POST'])
