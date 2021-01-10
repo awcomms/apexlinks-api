@@ -26,6 +26,7 @@ def get_token():
      #   errors.append('User is not subscribed')
       #  return jsonify({'errors': errors})
     user.token = create_access_token(identity=email)
+    print(user.token)
     g.current_user = user
     db.session.add(user)
     db.session.commit()

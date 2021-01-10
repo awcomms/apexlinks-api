@@ -37,6 +37,14 @@ def user(id):
     user = User.query.get_or_404(id)
     return jsonify(user.qdict())
 
+@bp.route('/users/items', methods=['GET'])
+def items():
+    q = request.args.get
+    id = q('id')
+    page = q('page')
+    s = Item.query.filter_by(user_id = id)
+    return jsonify(Item.cdict(s, page))
+
 @bp.route('/users', methods=['GET'])
 @jwt_required
 def get_users():
@@ -49,7 +57,6 @@ def get_users():
 def create_user():
     q = request.get_json()
     errors = []
-    #place_id = q['place_id']
     email = q['email']
     password = q['password']
     if email is None:
@@ -62,8 +69,8 @@ def create_user():
         errors.append({'id': 1, 'kind': 'error', 'title': 'email taken'})
         return jsonify({'errors': errors})
     user = User(email, password)
-    #user.place = Place.query.get(data['place_id'])
     user.token = create_access_token(identity=email)
+    pring(user.token)
     res = jsonify({'user': user.dict()})
     res.status_code = 201
     return res

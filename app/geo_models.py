@@ -1,14 +1,10 @@
 from app import db
-from app.models import Query
-from sqlalchemy_utils.types import TSVectorType
 
 class Place(db.Model):
-    query_class = Query
     name = db.Column(db.Unicode)
     tags = db.Column(db.Unicode)
     coordinates = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
-    search_vector = db.Column(TSVectorType('tags', 'name', weights={'tags': 'A', 'name': 'B'}))
     users = db.relationship('User', backref='place', lazy='dynamic')
     state_id = db.Column(db.Integer, db.ForeignKey('state.id'), nullable=False)
     town_id = db.Column(db.Integer, db.ForeignKey('town.id'))
@@ -42,8 +38,6 @@ class Place(db.Model):
         db.session.commit()
 
 class Town(db.Model):
-    query_class = Query
-    search_vector = db.Column(TSVectorType('name'))
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode)
     places = db.relationship('Place', backref='town', lazy='dynamic')
@@ -63,8 +57,6 @@ class Town(db.Model):
         db.session.commit()
 
 class State(db.Model):
-    query_class = Query
-    search_vector = db.Column(TSVectorType('name'))
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode)
     places = db.relationship('Place', backref='state', lazy='dynamic')
@@ -85,8 +77,6 @@ class State(db.Model):
         db.session.commit()
 
 class Nation(db.Model):
-    query_class = Query
-    search_vector = db.Column(TSVectorType('name'))
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode)
     states = db.relationship('State', backref='nation', lazy='dynamic')

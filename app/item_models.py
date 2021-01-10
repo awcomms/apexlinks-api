@@ -2,14 +2,9 @@ from app import db
 from flask import jsonify
 from geopy import distance
 from fuzzywuzzy import process, fuzz
-from sqlalchemy_utils.types import TSVectorType
-from app.models import Query, User, cdict
+from app.models import User, cdict
 
 class Item(db.Model):
-    query_class = Query
-    search_vector = db.Column(
-        TSVectorType(
-            'name', 'about', weights={'name': 'A', 'about': 'B'}))
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     archived = db.Column(db.Boolean, default=False)
@@ -23,8 +18,33 @@ class Item(db.Model):
     name = db.Column(db.Unicode)
     about = db.Column(db.Unicode)
     paid_in = db.Column(db.Unicode)
-
     score = db.Column(db.Float)
+
+    @staticmethod
+    def fuz(tags, q, position, nation_id, state_id):
+        query = Item.query\
+        .join(User, (User.subscribed==True))\
+        .join(User, (User.visible==True))
+        if nation_id:
+            query.join(User, (User.nation_id==nation_id))
+        if state_id:
+            query.join(User, (User.state_id==state_id))
+        
+        for item in query:
+            for tag in item.tags:
+                if process.extractOne(tag, tags)[1] < 90:
+                    query.filter(Item.id != item.id)
+        if q != '':
+            for item in query:
+                ratio = fuzz.ratio(q, item.name)
+                if ratio < 79: 
+                    query.filter(Item.id != item.id)
+                else:
+                    item.score = ratio
+            query.order_by(Item.score.desc())
+        if position:
+            query = location_sort(query, position)
+        return query
 
     @staticmethod
     def archive(id, token):
@@ -79,45 +99,10 @@ class Item(db.Model):
         return {}, 202
 
     @staticmethod
-    def fuz(q, tags, position, state_id):
-        query = Item.query.filter(Item.user.visible==True).filter(Item.user.state_id==state_id)
-        for item in query:
-            for tag in item.tags:
-                if process.extractOne(tag, tags)[1] > 90:
-                    query.filter(Item.id != item.id)
-        for item in query:
-            ratio = fuzz.ratio(q, item.name)
-            if ratio <= 79:
-                query.filter(Item.id != item.id)
-            else:
-                item.score = ratio
-        query.order_by(Item.score.desc())
-        if position:
-            query = location_sort(query, position)
-        return query
-
-    @staticmethod
-    def search(q, page, place_id=None, filters=None, position=None):
-        items = Item.query.search('"' + q + '"', sort=True)
-        if not is_instance(place_id, int):
-            print('not')
-            return cdict(items, page)
-        items = items.filter_by(place_id=place_id)
-        if position:
-            items = location_sort(items, position)
-        items = items.filter_by(online=True)
-        if user:
-            items = sgn_sort(items, user.sgn)
-        #if filters:
-            #for f in filters:
-                #items = items.filter(Item.fields[0][f['name']] == f['value'])
-        return cdict(items, page)
-
-    @staticmethod
     def location_sort(query, target):
         for item in query:
-            subject = (item.location['latitude'], item.location['longitude'])
-            target = (target['latitude'], target['longitude'])
+            subject = (item.location['lat'], item.location['lng'])
+            target = (target['lat'], target['lng'])
             item.distance = distance(subject, target)
         db.session.commit()
         return query.order_by(Item.distance.desc())
@@ -164,7 +149,7 @@ class Item(db.Model):
         if item.user != user:
             return {}, 401
         for field in data:
-            if data['field']:
+            if hasattr(self, field) and data[field]:
                 setattr(self, field, data['field'])
         db.session.add(item)
         db.session.commit()
@@ -179,5 +164,3 @@ class Item(db.Model):
                 db.session.delete(item)
         db.session.commit()
         return {}, 202
-
-from app.functions import fuzlist

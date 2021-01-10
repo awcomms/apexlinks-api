@@ -1,20 +1,22 @@
+import json
 from app.api import bp
 from app.geo_models import Place
-from app.models import User
+from app.models import cdict, User
 from app.item_models import Item
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
 
-@bp.route('/items/search', methods=['GET'])
+@bp.route('/items', methods=['GET'])
 def search_items():
     a = request.args.get
     q = a('q') or ''
     page = a('page')
-    lat = a('lat')
-    lon = a('lon')
-    position = (lat, lon)
-    state_id = j('state_id')
-    return cdict(Item.fuz(q, position, state_id), page)
+    tags = json.loads(a('tags'))
+    coords = json.loads(a('position'))
+    position = ( coords['lat'], coords['lng'] )
+    nation_id = a('nation_id')
+    state_id = a('state_id')
+    return cdict(Item.fuz(tags, q, position, nation_id, state_id), page)
 
 @bp.route('/items', methods=['POST'])
 @jwt_required
@@ -22,6 +24,7 @@ def add_item():
     j = request.json.get
     token = request.headers['Authorization']
     user = User.query.filter_by(token=token).first()
+    print(user)
     if not user:
         return {}, 401
     data = {
@@ -32,7 +35,7 @@ def add_item():
         'price': j('price'),
         'paid_in': j('paid_in')
     }
-    i = Item(user, data)
+    i = Item(data)
     return jsonify(i.dict())
 
 @bp.route('/item/viewed/<int:id>', methods=['PUT'])
@@ -79,14 +82,6 @@ def edit_item():
     name = q('name')
     json = q('json')
     return Item.edit(id, token, name, json)
-
-@bp.route('/items', methods=['GET'])
-def items():
-    q = request.args.get
-    id = q('id')
-    page = q('page')
-    s = Item.query.filter_by(user_id = id)
-    return jsonify(Item.cdict(s, page))
 
 @bp.route('/items/<int:id>', methods=['GET'])
 def item(id):

@@ -5,6 +5,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
 class Config(object):
+    ORIGINS = os.environ.get('ORIGINS')
+    PAYSTACK = os.environ.get('PAYSTACK')
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
     SECRET_KEY='dev'
     USERS_PER_PAGE = 10

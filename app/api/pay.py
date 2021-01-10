@@ -3,10 +3,10 @@ import hashlib
 from app.api import bp
 from flask import current_app
 
-@bp.route('/payed', methods=['POST'])
-def payed():
+@bp.route('/ref', methods=['POST'])
+def ref():
     current_app.logger.info('got_payed')
-    key = current_app.config['PAYSTACK_KEY']
+    key = current_app.config['PAYSTACK']
     sign = hmac.new(key, request.data, hashlib.sha512).hexdigest()
     req_sign = request.headers['X-Paystack-Signature']
     if sign == req_sign:
@@ -18,4 +18,4 @@ def payed():
             card = Card(_dict['data']['authorization'])
             card.user = user
             db.session.commit()
-        user.visible = True
+        user.subscribed = True

@@ -6,57 +6,8 @@ from app import db
 from flask import jsonify
 from geopy import distance
 from datetime import datetime, timedelta
-from flask_sqlalchemy import BaseQuery
-from sqlalchemy_searchable import SearchQueryMixin
-from sqlalchemy_utils.types import TSVectorType
 from flask import jsonify, current_app, request, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
-from app.search import add_to_index, remove_from_index, query_index
-
-class Query(BaseQuery, SearchQueryMixin):
-    pass
-
-class SearchMixin(object):
-    @classmethod
-    def search(cls, expression, page):
-        ids, total = query_index(cls.__tablename__, expression, page, 37)
-        if total == 0:
-            return cls.query.filter_by(id=0), 0
-        when = []
-        for i in range(len(ids)):
-            when.append((ids[i], i))
-        return cdict(cls.query.filter(cls.id.in_(ids)).order_by(
-            db.case(when, value=cls.id)))
-
-    @classmethod
-    def before_commit(cls, session):
-        session._changes = {
-            'add': list(session.new),
-            'update': list(session.dirty),
-            'delete': list(session.deleted)
-        }
-
-    @classmethod
-    def after_commit(cls, session):
-        for obj in session._changes['add']:
-            if isinstance(obj, SearchMixin):
-                add_to_index(obj.__tablename__, obj)
-        for obj in session._changes['update']:
-            if isinstance(obj, SearchMixin):
-                add_to_index(obj.__tablename__, obj)
-        for obj in session._changes['delete']:
-            if isinstance(obj, SearchMixin):
-                remove_from_index(obj.__tablename__, obj)
-        session._changes = None
-
-    @classmethod
-    def reindex(cls):
-        for obj in cls.query:
-            add_to_index(cls.__tablename__, obj)
-
-db.configure_mappers()
-db.event.listen(db.session, 'before_commit', SearchMixin.before_commit)
-db.event.listen(db.session, 'after_commit', SearchMixin.after_commit)
 
 def cdict(query, page=1, per_page=10):
         page = float(page)
@@ -66,41 +17,6 @@ def cdict(query, page=1, per_page=10):
             'pages': resources.pages,
             'total': resources.total}
         return data
-
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    json = db.Column(db.JSON) 
-    name = db.Column(db.Unicode)
-    about = db.Column(db.Unicode)
-
-    def dict(self):
-        data = {
-            'id': self.id,
-            'json': self.json,
-            'name': self.name,
-            'about': self.about,
-            'user': self.user.dict()
-        }
-        return data
-
-    @staticmethod
-    def exists(user, name):
-        return Product.query.filter_by(user_id = user.id).count()>0
-
-    def __init__(self, json, id, name):
-        user = User.query.get(id)
-        if exists(user, name):
-            return None
-        self.user = user
-        self.name = name
-        self.json = json
-        db.session.add(self)
-        db.session.commit()
-
-    @staticmethod
-    def delete(id):
-        db.session.delete(Item.query.get(id))
 
 class Card(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -160,57 +76,33 @@ saved_items = db.Table('saved_items',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('item', db.Integer, db.ForeignKey('item.id')))
 
-saved_products = db.Table('saved_products',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('product', db.Integer, db.ForeignKey('product.id')))
-
-saved_blogposts = db.Table('saved_blogposts',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('blogpost_id', db.Integer, db.ForeignKey('blogpost.id')))
-
-saved_forumposts = db.Table('saved_forumposts',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('forumpost_id', db.Integer, db.ForeignKey('forumpost.id')))
-
 class User(db.Model):
-    query_class = Query
-    search_vector = db.Column(
-        TSVectorType(
-            'email', 'name', 'about', weights={'email': 'A', 'name': 'B', 'about': 'B'}))
     email = db.Column(db.Unicode)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id'))
 
-    individual = db.Column(db.Boolean)
-
     id = db.Column(db.Integer, primary_key=True)
-    custom = db.Column(db.JSON)
     location = db.Column(db.JSON)
     distance = db.Column(db.Float)
     openby = db.Column(db.DateTime)
-    closeby = db.Column(db.DateTime)
+    closedby = db.Column(db.DateTime)
 
     online = db.Column(db.Boolean, default=False)
-    sgn = db.Column(db.Integer)
-    sgn_distance = db.Column(db.Float)
 
     items = db.relationship('Item', backref='user', lazy='dynamic')
-    products = db.relationship('Product', backref='user', lazy='dynamic')
     
     saved_places = db.relationship('Place', secondary=saved_places, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     saved_users = db.relationship('User', secondary=saved_users, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     saved_items = db.relationship('Item', secondary=saved_items, backref='savers', lazy='dynamic')
-    saved_products = db.relationship('Product', secondary=saved_products, backref='savers', lazy='dynamic')
     
-    saved_forumposts = db.relationship('Forumpost', secondary=saved_forumposts, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
-    saved_blogposts = db.relationship('Blogpost', secondary=saved_blogposts, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     cards = db.relationship(Card, secondary=cards, backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
     distance = db.Column(db.Unicode)
     logo_url = db.Column(db.Unicode)
     customer_code = db.Column(db.Unicode)
-    email = db.Column(db.Unicode(123), unique=True)
 
+    subscribed = db.Column(db.Boolean, default=False)
     visible = db.Column(db.Boolean, default=False)
     
+    email = db.Column(db.Unicode(123), unique=True)
     name = db.Column(db.Unicode(123))
     password_hash = db.Column(db.String(123))
     description = db.Column(db.Unicode(123))
@@ -218,9 +110,7 @@ class User(db.Model):
     website = db.Column(db.String())
     phone = db.Column(db.String())
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    show_email = db.Column(db.Boolean, default=True)
     token = db.Column(db.String(373), index=True, unique=True)
-    marketlnx = db.Column(db.Boolean, default=False)
 
     def place_saved(self, id):
         return self.saved_places.filter_by(place_id=id).count()>0
@@ -247,8 +137,8 @@ class User(db.Model):
     @staticmethod
     def location_sort(query, target):
         for user in query:
-            subject = (user.location['latitude'], user.location['longitude'])
-            target = (target['latitude'], target['longitude'])
+            subject = (user.location['lat'], user.location['lng'])
+            target = (target['lat'], target['lng'])
             user.distance = distance(subject, target)
         db.session.commit()
         return query.order_by(User.distance.desc())
@@ -296,6 +186,9 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'token': self.token,
+            'location': self.location,
+            'visible': self.visible,
+            'subscribed': self.subscribed,
             'card_count': self.cards.count()
         }
         if self.location != None:
@@ -321,14 +214,9 @@ class User(db.Model):
         return data
 
     def from_dict(self, data):
-        self.email = data['email']
-        self.name = data['name']
-        self.about = data['about']
-        self.phone = data['phone']
-        self.website = data['website']
-        self.location = data['location']
-        if 'place_id' in data:
-            self.place = Place.query.get(data['place_id'])
+        for field in data:
+            if hasattr(self, field) and data[field]:
+                setattr(self, field, data['field'])
         if 'password' in data:
             self.set_password(data['password'])
         db.session.add(self)

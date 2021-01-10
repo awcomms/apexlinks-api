@@ -104,7 +104,6 @@ def search_places():
     q = a('q')
     q = q.replace('%20', ' ')
     return jsonify([{'id': place.id, 'text': place.name} for place in Place.query.search('"' + q + '"', sorted=True)])
-#places
 
 @bp.route('/search_towns_in_state', methods=['GET'])
 def search_towns_in_state():
@@ -119,38 +118,15 @@ def search_towns():
     q = a('q')
     return jsonify([{'id': town.id, 'text': town.name} for town in Town.query.search('"' + q + '"')])
 
-@bp.route('/get_states')
-def get_states():
-    return jsonify([{'id': state.id, 'text': state.name} for state in Nation.query])
-
 @bp.route('/states', methods=['GET'])
 def states():
     id = request.args.get('id')
     return jsonify([{'id': state.id, 'text': state.name} for state in State.query.filter_by(nation_id=id)])
 
-@bp.route('/search_states_in_nation', methods=['GET'])
-def search_states_in_nation():
-    a = request.args.get
-    q = a('q')
-    nation_id = a('nation_id')
-    q = q.replace('%20', ' ')
-    if q == '':
-        return jsonify([{'id': state.id, 'text': state.name} for state in State.query.filter_by(nation_id=nation_id)])
-    return jsonify([{'id': state.id, 'text': state.name} for state in State.query.search('"' + q + '"').filter_by(nation_id=nation_id)])
-
-@bp.route('/search_states', methods=['GET'])
-def search_states():
-    a = request.args.get
-    q = a('q')
-    q = q.replace('%20', ' ')
-    return jsonify([{'id': state.id, 'text': state.name} for state in State.query.search('"' + q + '"')])
-
 @bp.route('/nations')
 def get_nations():
     return jsonify([{'id': nation.id, 'text': nation.name} for nation in Nation.query])
 
-@bp.route('/search_nations', methods=['GET'])
-def search_nations():
     a = request.args.get
     q = a('q')
     q = q.replace('%20', ' ')
