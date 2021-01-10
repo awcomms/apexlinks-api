@@ -21,10 +21,13 @@ class Item(db.Model):
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(tags, q, position, nation_id, state_id):
+    def fuz(id, itype, tags, q, position, nation_id, state_id):
         query = Item.query\
         .join(User, (User.subscribed==True))\
-        .join(User, (User.visible==True))
+        .join(User, (User.visible==True))\
+        .filter_by(itype=itype)
+        if id:
+            query.join(User, (User.id==id))
         if nation_id:
             query.join(User, (User.nation_id==nation_id))
         if state_id:

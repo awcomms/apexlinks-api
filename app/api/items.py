@@ -10,13 +10,15 @@ from flask_jwt_extended import jwt_required
 def search_items():
     a = request.args.get
     q = a('q') or ''
+    id = (a('id'))
     page = a('page')
+    itype = a('itype')
     tags = json.loads(a('tags'))
     coords = json.loads(a('position'))
     position = ( coords['lat'], coords['lng'] )
     nation_id = a('nation_id')
     state_id = a('state_id')
-    return cdict(Item.fuz(tags, q, position, nation_id, state_id), page)
+    return cdict(Item.fuz(id, itype, tags, q, position, nation_id, state_id), page)
 
 @bp.route('/items', methods=['POST'])
 @jwt_required
