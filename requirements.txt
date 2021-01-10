@@ -16,6 +16,7 @@ Flask-SQLAlchemy==2.4.4
 fuzzywuzzy==0.18.0
 geographiclib==1.50
 geopy==2.0.0
+gunicorn
 isort==5.6.4
 itsdangerous==1.1.0
 Jinja2==2.11.2
