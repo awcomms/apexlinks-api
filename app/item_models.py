@@ -23,9 +23,9 @@ class Item(db.Model):
     @staticmethod
     def fuz(id, itype, tags, q, position, nation_id, state_id):
         query = Item.query\
-        .join(User, (User.subscribed==True))\
-        .join(User, (User.visible==True))\
-        .filter_by(itype=itype)
+        .join(User).filter(User.subscribed==True)\
+        .filter(User.visible==True)\
+        .filter(Item.itype==itype)
         if id:
             query.join(User, (User.id==id))
         if nation_id:

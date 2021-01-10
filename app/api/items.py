@@ -14,8 +14,11 @@ def search_items():
     page = a('page')
     itype = a('itype')
     tags = json.loads(a('tags'))
-    coords = json.loads(a('position'))
-    position = ( coords['lat'], coords['lng'] )
+    coords = None
+    position = None
+    if a(position):      
+        coords = json.loads(a('position'))
+        position = ( coords['lat'], coords['lng'] )
     nation_id = a('nation_id')
     state_id = a('state_id')
     return cdict(Item.fuz(id, itype, tags, q, position, nation_id, state_id), page)
