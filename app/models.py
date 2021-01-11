@@ -77,6 +77,7 @@ saved_items = db.Table('saved_items',
     db.Column('item', db.Integer, db.ForeignKey('item.id')))
 
 class User(db.Model):
+    tags = db.Column(db.JSON)
     email = db.Column(db.Unicode)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id'))
 
@@ -186,10 +187,11 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'token': self.token,
+            'tags': self.tags,
             'location': self.location,
             'visible': self.visible,
+            'cards': [card.dict() for card in self.cards]
             'subscribed': self.subscribed,
-            'card_count': self.cards.count()
         }
         if self.location != None:
             data['location'] = self.location
