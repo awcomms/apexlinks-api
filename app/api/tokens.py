@@ -22,17 +22,13 @@ def get_token():
     if not user.check_password(password):
         errors.append({'id': 1, 'kind': 'error', 'title': 'Wrong password'})
         return jsonify({'errors': errors})
-    #if not user.confirmed:
-     #   errors.append('User is not subscribed')
-      #  return jsonify({'errors': errors})
     user.token = create_access_token(identity=email)
     print(user.token)
     g.current_user = user
     db.session.add(user)
     db.session.commit()
-    res_body = {'user': user.dict()}
-    res = make_response(res_body, headers)
-    return res
+    body = {'user': user.dict()}
+    return make_response(body, headers)
 
 @bp.route('/tokens', methods=['DELETE'])
 def revoke_token():

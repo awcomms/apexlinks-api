@@ -190,7 +190,7 @@ class User(db.Model):
             'tags': self.tags,
             'location': self.location,
             'visible': self.visible,
-            'cards': [card.dict() for card in self.cards]
+            'cards': [card.dict() for card in self.cards],
             'subscribed': self.subscribed,
         }
         if self.location != None:
@@ -245,7 +245,3 @@ class User(db.Model):
         s=Subscription(year, module)
         self.subscriptions.remove(s)
         db.session.commit()
-
-    def subscribed(self, year, module):
-        return self.subscriptions.filter(
-            subscriptions.c.subscription_id == s.id).count()>0
