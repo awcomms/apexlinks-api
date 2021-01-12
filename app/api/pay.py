@@ -1,11 +1,12 @@
 import hmac
 import hashlib
 from app.api import bp
-from pypaystack import Transaction
+from pypaystack import Customer, Transaction
 from app.models import Card, User
 from flask import current_app
 
 key = current_app.config['PAYSTACK']
+customer = Customer(authorization_key=key)
 transaction = Transaction(authorization_key=key)
 
 @bp.route('/charge', methods=['PUT'])
@@ -29,8 +30,11 @@ def ref():
     req_sign = request.headers['X-Paystack-Signature']
     if sign == req_sign:
         _dict = request.json()
-        id = _dict['data']['reference']
+        id = _dict['data']['metadata']['id']
         user = User.query.get(id)
+        _customer = customer.getone(user.customer_code)
+        if not _customer:
+            customer.create(user.email)
         authorization_code = _dict['data']['authorization']['authorization_code']
         if not user.cards.filter(User.card.authorization_code == authorizatiion_code):
             card = Card(_dict['data']['authorization'])
