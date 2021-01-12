@@ -123,11 +123,11 @@ class User(db.Model):
     def fuz(tags, q, position, nation_id, state_id):
         query = User.query\
         .filter(User.subscribed==True)\
-        .filter(User.visible==True)\
+        .filter(User.visible==True)
         if nation_id:
             query.filter(User.nation_id==nation_id)
         if state_id:
-            query.filter(User.state_id==state_id))
+            query.filter(User.state_id==state_id)
         
         for user in query:
             for tag in user.tags:
