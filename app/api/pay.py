@@ -12,7 +12,7 @@ def ref():
     req_sign = request.headers['X-Paystack-Signature']
     if sign == req_sign:
         _dict = request.json()
-        id = _dict['data']['metadata']['id']
+        id = _dict['data']['reference']
         user = User.query.get(id)
         authorization_code = _dict['data']['authorization']['authorization_code']
         if not user.cards.filter(User.card.authorization_code == authorizatiion_code):

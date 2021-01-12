@@ -17,7 +17,7 @@ def del_card():
         return {}, 401
     card = Card.query.get(j('id'))
     if not card:
-        return jsonify('error': 'card does not exist')
+        return jsonify({'error': 'card does not exist'})
     db.session.delete(card)
     db.session.commit()
     return {}, 202
@@ -50,14 +50,6 @@ def search_users():
 def user(id):
     user = User.query.get_or_404(id)
     return jsonify(user.qdict())
-
-@bp.route('/users/items', methods=['GET'])
-def items():
-    q = request.args.get
-    id = q('id')
-    page = q('page')
-    s = Item.query.filter_by(user_id = id)
-    return jsonify(Item.cdict(s, page))
 
 @bp.route('/users', methods=['GET'])
 @jwt_required
