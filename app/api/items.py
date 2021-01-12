@@ -7,7 +7,7 @@ from flask import request, jsonify
 from flask_jwt_extended import jwt_required
 
 @bp.route('/items', methods=['GET'])
-def search_items():
+def items():
     a = request.args.get
     q = a('q') or ''
     id = (a('id'))

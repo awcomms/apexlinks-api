@@ -3,10 +3,24 @@ from flask import g, abort, jsonify, request, url_for
 from app import db
 from app.api import bp
 from app.geo_models import Place
-from app.models import User, cdict
+from app.models import Card, User, cdict
 from app.email import send_user_email
 #from app.api.auth import token_auth
 from app.api.errors import res, bad_request
+
+@bp.route('/del_card', methods=['PUT'])
+def del_card():
+    j = request.json.get
+    token = request.headers['Authorization']
+    user = User.query.filter_by(token=token).first()
+    if not user:
+        return {}, 401
+    card = Card.query.get(j('id'))
+    if not card:
+        return jsonify('error': 'card does not exist')
+    db.session.delete(card)
+    db.session.commit()
+    return {}, 202
 
 @bp.route('/users/from_place', methods=['GET'])
 def get_users_from_place():

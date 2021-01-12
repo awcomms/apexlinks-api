@@ -1,3 +1,4 @@
+python-Levenshtein
 aiohttp==3.7.3
 alembic==1.4.3
 astroid==2.4.2
