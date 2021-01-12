@@ -1,3 +1,4 @@
+requests==2.25.1
 aiohttp==3.7.3
 alembic==1.4.3
 astroid==2.4.2
@@ -46,7 +47,6 @@ mccabe==0.6.1
 multidict==5.1.0
 packaging==20.8
 pip-review==1.1.0
-requests==2.25.1
 pkginfo==1.6.1
 psycopg2==2.8.6
 pycodestyle==2.6.0

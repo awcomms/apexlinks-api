@@ -46,6 +46,19 @@ def search_users():
     position = j('position')
     return User.search(q, page, position)
 
+@bp.route('/user')
+def get_user():
+    errors = []
+    email = request.args.get('email')
+    user = User.query.filter_by(email=email).first()
+    if not user.subscribed:
+        errors.append('not_subscribed')
+        return jsonify({'errors': errors})
+    if not user.visible:
+        errors.append('not_visible')
+        return jsonify({'errors': errors})
+    return jsonify(user.dict())
+
 @bp.route('/user/<int:id>', methods=['GET'])
 def user(id):
     user = User.query.get_or_404(id)
