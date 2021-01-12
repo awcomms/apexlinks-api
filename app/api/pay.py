@@ -1,13 +1,30 @@
 import hmac
 import hashlib
 from app.api import bp
-from app.models import User
+from pypaystack import Transaction
+from app.models import Card, User
 from flask import current_app
+
+key = current_app.config['PAYSTACK']
+transaction = Transaction(authorization_key=key)
+
+@bp.route('/charge', methods=['PUT'])
+def charge():
+    a = request.args.get
+    u_id = a('u_id')
+    c_id = a('c_id')
+    user = User.query.get('u_id')
+    card = Card.query.get('c_id')
+    if user != card.user:
+        return {}, 401
+    transaction.charge(user.email, card.authorization_code, 210)
+    user.subscribed = True
+    return jsonify({'yes': True})
+
 
 @bp.route('/ref', methods=['POST'])
 def ref():
     current_app.logger.info('got_payed')
-    key = current_app.config['PAYSTACK']
     sign = hmac.new(key, request.data, hashlib.sha512).hexdigest()
     req_sign = request.headers['X-Paystack-Signature']
     if sign == req_sign:
