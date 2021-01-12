@@ -77,6 +77,8 @@ saved_items = db.Table('saved_items',
     db.Column('item', db.Integer, db.ForeignKey('item.id')))
 
 class User(db.Model):
+    score = db.Column(db.Integer)
+
     tags = db.Column(db.JSON)
     username = db.Column(db.Unicode)
     email = db.Column(db.Unicode)
@@ -116,6 +118,33 @@ class User(db.Model):
     phone = db.Column(db.String())
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     token = db.Column(db.String(373), index=True, unique=True)
+
+    @staticmethod
+    def fuz(tags, q, position, nation_id, state_id):
+        query = User.query\
+        .filter(User.subscribed==True)\
+        .filter(User.visible==True)\
+        if nation_id:
+            query.filter(User.nation_id==nation_id)
+        if state_id:
+            query.filter(User.state_id==state_id))
+        
+        for user in query:
+            for tag in user.tags:
+                if process.extractOne(tag, tags)[1] < 90:
+                    query.filter(User.id != user.id)
+        if q != '':
+            for user in query:
+                ratio = fuzz.ratio(q, user.name)
+                about_ratio = fuzz.token_set_ratio(q, user.about)
+                if ratio < 79 or about_ratio < 90: 
+                    query.filter(User.id != user.id)
+                else:
+                    user.score = ratio
+            query.order_by(User.score.desc())
+        if position:
+            query = location_sort(query, position)
+        return query
 
     def place_saved(self, id):
         return self.saved_places.filter_by(place_id=id).count()>0

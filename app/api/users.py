@@ -38,13 +38,21 @@ def user_saved_items():
     page = request.args.get('page')
     return cdict(user.saved_items, page)
 
-@bp.route('/users/search', methods=['PUT'])
-def search_users():
-    j = request.json.get
-    q = j('q') or ''
-    page = j('page')
-    position = j('position')
-    return User.search(q, page, position)
+@bp.route('/users')
+def users():
+    a = request.args.get
+    q = a('q') or ''
+    id = (a('id'))
+    page = a('page')
+    tags = json.loads(a('tags'))
+    coords = None
+    position = None
+    if a(position):      
+        coords = json.loads(a('position'))
+        position = ( coords['lat'], coords['lng'] )
+    nation_id = a('nation_id')
+    state_id = a('state_id')
+    return cdict(Item.fuz(tags, q, position, nation_id, state_id), page)
 
 @bp.route('/user')
 def get_user():
@@ -63,14 +71,6 @@ def get_user():
 def user(id):
     user = User.query.get_or_404(id)
     return jsonify(user.qdict())
-
-@bp.route('/users', methods=['GET'])
-@jwt_required
-def get_users():
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
-    user = User.to_cdict(User.query, page, per_page, 'api.get_users')
-    return jsonify(data)
 
 @bp.route('/users', methods=['POST'])
 def create_user():
