@@ -8,7 +8,7 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     archived = db.Column(db.Boolean, default=False)
-    image_urls = db.Column(db.JSON)
+    img_urls = db.Column(db.JSON)
     itype = db.Column(db.Unicode)
     location = db.Column(db.JSON)
     distance = db.Column(db.Float)
@@ -130,10 +130,10 @@ class Item(db.Model):
             'link': self.link,
             'name': self.name,
             'about': self.about,
-            'images': self.image_urls,
+            'img_urls': self.img_urls,
             'user': {
                 'id': self.user.id,
-            }
+            },
             'paid_in': self.paid_in
         }
         if not self.user.show_email:
