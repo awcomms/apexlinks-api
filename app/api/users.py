@@ -57,8 +57,12 @@ def users():
 @bp.route('/user')
 def get_user():
     errors = []
+    id = request.args.get('id')
     email = request.args.get('email')
-    user = User.query.filter_by(email=email).first()
+    if id:
+        user = User.query.get(id)
+    if email:
+        user = User.query.filter_by(email=email).first()
     if not user.subscribed:
         errors.append('not_subscribed')
         return jsonify({'errors': errors})

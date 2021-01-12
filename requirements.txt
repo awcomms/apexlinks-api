@@ -54,7 +54,6 @@ Pygments==2.7.3
 PyJWT==1.7.1
 pylint==2.6.0
 pyparsing==2.4.7
-pypaystack==1.24
 PyPDF2==1.26.0
 pyquery==1.4.3
 python-dateutil==2.8.1
