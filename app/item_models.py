@@ -12,10 +12,9 @@ class Item(db.Model):
     itype = db.Column(db.Unicode)
     location = db.Column(db.JSON)
     distance = db.Column(db.Float)
-    viewed = db.Column(db.JSON)
     price = db.Column(db.Unicode)
-    fields = db.Column(db.JSON)
     json = db.Column(db.JSON)
+    links = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
     about = db.Column(db.Unicode)
     paid_in = db.Column(db.Unicode)
@@ -26,7 +25,8 @@ class Item(db.Model):
         query = Item.query\
         .join(User).filter(User.subscribed==True)\
         .filter(User.visible==True)\
-        .filter(Item.itype==itype)
+        .filter(Item.itype==itype)\
+        .filter(Item.archived==False)
         if id:
             query.join(User, (User.id==id))
         if nation_id:
@@ -127,13 +127,19 @@ class Item(db.Model):
     def dict(self):
         data = {
             'id': self.id,
-            'json': self.json,
+            'link': self.link,
             'name': self.name,
             'about': self.about,
             'images': self.image_urls,
-            'user': self.user.dict(),
+            'user': {
+                'id': self.user.id,
+            }
             'paid_in': self.paid_in
         }
+        if not self.user.show_email:
+            data['user']['email'] = self.user.email
+        if not self.user.hide_location:
+            data['user']['location'] = self.user.location
         return data
 
     @staticmethod

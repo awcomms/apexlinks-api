@@ -79,6 +79,9 @@ saved_items = db.Table('saved_items',
 class User(db.Model):
     tags = db.Column(db.JSON)
     email = db.Column(db.Unicode)
+    show_email = db.Column(db.Boolean, default=True)
+    hide_location = db.Column(db.Boolean, default=False)
+
     place_id = db.Column(db.Integer, db.ForeignKey('place.id'))
 
     id = db.Column(db.Integer, primary_key=True)
