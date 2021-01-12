@@ -41,7 +41,8 @@ class Item(db.Model):
         if q != '':
             for item in query:
                 ratio = fuzz.ratio(q, item.name)
-                if ratio < 79: 
+                about_ratio = fuzz.token_set_ratio(q, item.about)
+                if ratio < 79 or about_ratio < 90: 
                     query.filter(Item.id != item.id)
                 else:
                     item.score = ratio
