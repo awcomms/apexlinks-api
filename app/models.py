@@ -148,11 +148,15 @@ class User(db.Model):
         if not self.place_saved(place.id):
             self.saved_places.append(place)
             db.session.commit()
+            place.save_count = place.savers.count()
+            db.session.commit()
 
     def unsave_place(self, place):
         if self.place_saved(place.id):
             self.saved_places.remove(place)
-        db.session.commit()
+            db.session.commit()
+            place.save_count = place.savers.count()
+            db.session.commit()
 
     @staticmethod
     def location_sort(query, target):
