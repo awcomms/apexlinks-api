@@ -5,6 +5,7 @@ from fuzzywuzzy import process, fuzz
 from app.models import User, cdict
 
 class Item(db.Model):
+    save_count = db.Column(db.Integer)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     archived = db.Column(db.Boolean, default=False)
@@ -21,7 +22,7 @@ class Item(db.Model):
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(id, itype, tags, q, position, nation_id, state_id):
+    def fuz(sort, id, itype, tags, q, position, nation_id, state_id):
         query = Item.query\
         .join(User).filter(User.subscribed==True)\
         .filter(User.visible==True)\
@@ -46,8 +47,11 @@ class Item(db.Model):
                     query.filter(Item.id != item.id)
                 else:
                     item.score = ratio
-            query.order_by(Item.score.desc())
-        if position:
+            if sort == 'relevance':
+                query.order_by(Item.score.desc())
+        if sort == 'save_count':
+            query.order_by(Item.savers.count().desc())
+        if sort == 'position':
             query = location_sort(query, position)
         return query
 
@@ -76,34 +80,6 @@ class Item(db.Model):
         return {}, 201
 
     @staticmethod
-    def saved(user, item):
-        return user.saved_items.filter(saved_items.c.item_id == item.id).count()>0
-
-    @staticmethod
-    def save(ids, token):
-        user = User.query.filter_by(token=token).first()
-        for id in ids:
-            item = Item.query.get(id)
-            if item.user != user:
-                continue
-            if not saved(user, item):
-                user.saved_items.append(item)
-        db.session.commit()
-        return {}, 202
-
-    @staticmethod
-    def unsave(ids, token):
-        user = User.query.filter_by(token=token).first()
-        for id in ids:
-            item = Item.query.get(id)
-            if item.user != user:
-                continue
-            if saved(user, item):
-                user.saved_items.remove(item)
-        db.session.commit()
-        return {}, 202
-
-    @staticmethod
     def location_sort(query, target):
         for item in query:
             subject = (item.location['lat'], item.location['lng'])
@@ -121,9 +97,6 @@ class Item(db.Model):
     @staticmethod
     def distance(p1, p2):
         return distance.distance(p1, p2)
-
-    def get_name(self):
-        return self.name
 
     def dict(self):
         data = {

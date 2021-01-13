@@ -1,12 +1,9 @@
 from flask_jwt_extended import jwt_required, create_access_token
-from flask import g, abort, jsonify, request, url_for
+from flask import jsonify, request
 from app import db
 from app.api import bp
 from app.geo_models import Place
 from app.models import User, cdict
-from app.email import send_user_email
-#from app.api.auth import token_auth
-from app.api.errors import res, bad_request
 
 @bp.route('/users/saved_items')
 @jwt_required
@@ -43,7 +40,7 @@ def save_item():
 
 @bp.route('/users/unsave_item', methods=['PUT'])
 @jwt_required
-def save_item():
+def unsave_item():
     token = request.headers['Authorization']
     id = request.args.get('id')
     user = User.query.filter_by(token=token).first()
@@ -87,7 +84,7 @@ def save_user():
 
 @bp.route('/users/unsave', methods=['PUT'])
 @jwt_required
-def save_user():
+def unsave_user():
     token = request.headers['Authorization']
     id = request.args.get('id')
     user = User.query.filter_by(token=token).first()
@@ -111,14 +108,6 @@ def del_card():
     db.session.commit()
     return {}, 202
 
-@bp.route('/users/from_place', methods=['GET'])
-def get_users_from_place():
-    a = request.args.get
-    id = a('id')
-    page = a('page')
-    query = User.query.filter_by(place_id=id)
-    return cdict(query, page)
-
 @bp.route('/user/saved', methods=['GET'])
 @jwt_required
 def user_saved_items():
@@ -131,7 +120,7 @@ def user_saved_items():
 def users():
     a = request.args.get
     q = a('q') or ''
-    id = (a('id'))
+    sort = a('sort')
     page = a('page')
     tags = json.loads(a('tags'))
     coords = None
@@ -141,7 +130,7 @@ def users():
         position = ( coords['lat'], coords['lng'] )
     nation_id = a('nation_id')
     state_id = a('state_id')
-    return cdict(User.fuz(tags, q, position, nation_id, state_id), page)
+    return cdict(User.fuz(sort, tags, q, position, nation_id, state_id), page)
 
 @bp.route('/user')
 def get_user():
@@ -184,9 +173,7 @@ def create_user():
         return jsonify({'errors': errors})
     user = User(username, email, password)
     user.token = create_access_token(identity=username)
-    res = jsonify({'user': user.dict()})
-    res.status_code = 201
-    return res
+    return jsonify({'user': user.dict()})
 
 @bp.route('/user/', methods=['PUT'])
 @jwt_required
@@ -205,6 +192,6 @@ def edit_user():
             User.query.filter_by(email=data['email']).first():
         errors.append({'id': 2, 'kind': 'error', 'title': 'Email taken'})
         return jsonify({'errors': errors})
-    user.from_dict(data)
+    user.edit(data)
     db.session.commit()
     return jsonify({'user': user.dict()})

@@ -3,7 +3,8 @@ from app import db
 class Place(db.Model):
     name = db.Column(db.Unicode)
     tags = db.Column(db.Unicode)
-    coordinates = db.Column(db.JSON)
+    location = db.Column(db.JSON)
+    save_count = db.Column(db.Integer)
     id = db.Column(db.Integer, primary_key=True)
     users = db.relationship('User', backref='place', lazy='dynamic')
     state_id = db.Column(db.Integer, db.ForeignKey('state.id'), nullable=False)

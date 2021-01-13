@@ -31,6 +31,7 @@ saved_items = db.Table('saved_items',
     db.Column('item', db.Integer, db.ForeignKey('item.id')))
 
 class User(db.Model):
+    save_count = db.Column(db.Integer)
     card = db.Column(db.JSON)
     score = db.Column(db.Integer)
     tags = db.Column(db.JSON)
@@ -73,7 +74,7 @@ class User(db.Model):
     token = db.Column(db.String(373), index=True, unique=True)
 
     @staticmethod
-    def fuz(tags, q, position, nation_id, state_id):
+    def fuz(sort, tags, q, position, nation_id, state_id):
         query = User.query\
         .filter(User.subscribed==True)\
         .filter(User.visible==True)
@@ -94,39 +95,50 @@ class User(db.Model):
                     query.filter(User.id != user.id)
                 else:
                     user.score = ratio
-            query.order_by(User.score.desc())
-        if position:
+            if sort == 'relevance':
+                query.order_by(User.score.desc())
+        if sort == 'save_count':
+            query.order_by(User.save_count.desc())
+        if sort == 'position':
             query = location_sort(query, position)
         return query
 
     def item_saved(self, id):
-        return self.saved_items.filter(User.id==id).count()>0
+        return self.saved_items.filter_by(id=id).count()>0
 
     def save_item(self, id):
         if not self.item_saved(id):
-            item = User.query.get(id)
+            item = Item.query.get(id)
             self.saved_items.append(item)
+            db.session.commit()
+            item.save_count = item.savers.count()
             db.session.commit()
 
     def unsave_item(self, id):
         if self.item_saved(id):
-            item = User.query.get(id)
+            item = Item.query.get(id)
             self.saved_items.remove(item)
+            db.session.commit()
+            item.save_count = item.savers.count()
             db.session.commit()
 
     def user_saved(self, id):
-        return self.saved_users.filter(User.id==id).count()>0
+        return self.saved_users.filter_by(id==id).count()>0
 
     def save_user(self, id):
         if not self.user_saved(id):
             user = User.query.get(id)
             self.saved_users.append(user)
             db.session.commit()
+            user.save_count = user.savers.count()
+            db.session.commit()
 
     def unsave_user(self, id):
         if self.user_saved(id):
             user = User.query.get(id)
             self.saved_users.remove(user)
+            db.session.commit()
+            user.save_count = user.savers.count()
             db.session.commit()
 
     def place_saved(self, id):
@@ -135,21 +147,12 @@ class User(db.Model):
     def save_place(self, place):
         if not self.place_saved(place.id):
             self.saved_places.append(place)
-        db.session.commit()
+            db.session.commit()
 
     def unsave_place(self, place):
         if self.place_saved(place.id):
             self.saved_places.remove(place)
         db.session.commit()
-
-    @staticmethod
-    def search(q, page, position):
-        users = User.query.search('"' + q + '"', sort=True)
-        print(users)
-        if position:
-            print('position')
-            users = location_sort(users, position)
-        return cdict(users, page)
 
     @staticmethod
     def location_sort(query, target):
@@ -169,20 +172,7 @@ class User(db.Model):
         self.set_password(password)
         db.session.add(self)
         db.session.commit()
-
-    def get_utoken(self, expires_in=600):
-        return jwt.encode(
-            {'confirm_account': self.id, 'exp': time() + expires_in},
-            current_app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
-
-    @staticmethod
-    def check_utoken(token):
-        try:
-            id = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])['confirm_account']
-        except:
-            return
-        return User.query.get(id)
-
+        
     def __repr__(self):
         return 'email: {}'.format(self.email)
 
@@ -209,7 +199,7 @@ class User(db.Model):
             data['location'] = self.location
         return data
 
-    def from_dict(self, data):
+    def edit(self, data):
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data['field'])
