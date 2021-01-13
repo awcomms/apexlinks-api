@@ -52,7 +52,7 @@ def users():
         position = ( coords['lat'], coords['lng'] )
     nation_id = a('nation_id')
     state_id = a('state_id')
-    return cdict(Item.fuz(tags, q, position, nation_id, state_id), page)
+    return cdict(User.fuz(tags, q, position, nation_id, state_id), page)
 
 @bp.route('/user')
 def get_user():
@@ -71,49 +71,51 @@ def get_user():
         return jsonify({'errors': errors})
     return jsonify(user.dict())
 
-@bp.route('/user/<int:id>', methods=['GET'])
-def user(id):
-    user = User.query.get_or_404(id)
-    return jsonify(user.qdict())
-
 @bp.route('/users', methods=['POST'])
 def create_user():
     q = request.get_json()
     errors = []
+    username = q['username']
     email = q['email']
     password = q['password']
+    if username is None:
+        errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide an username'})
+        return jsonify({'errors': errors})
     if email is None:
         errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide an email'})
         return jsonify({'errors': errors})
     if password is None:
         errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide a password'})
         return jsonify({'errors': errors})
-    if User.query.filter_by(email=email).first():
-        errors.append({'id': 1, 'kind': 'error', 'title': 'email taken'})
+    if User.query.filter_by(username=username).first():
+        errors.append({'id': 2, 'kind': 'error', 'title': 'Username taken'})
         return jsonify({'errors': errors})
-    user = User(email, password)
-    user.token = create_access_token(identity=email)
-    pring(user.token)
+    if User.query.filter_by(email=email).first():
+        errors.append({'id': 1, 'kind': 'error', 'title': 'Email taken'})
+        return jsonify({'errors': errors})
+    user = User(username, email, password)
+    user.token = create_access_token(identity=username)
     res = jsonify({'user': user.dict()})
     res.status_code = 201
     return res
 
-@bp.route('/user/<int:id>', methods=['PUT'])
+@bp.route('/user/', methods=['PUT'])
 @jwt_required
-def edit_user(id):
+def edit_user():
     errors = []
-    print(request.get_json())
     token = request.headers['Authorization']
-    user = User.query.get_or_404(id)
+    user = User.query.filter_by(token = token).first()
     data = request.get_json()
-    if user != User.query.filter_by(token = token).first():
+    if not user:
         return {}, 401
+    if 'username' in data and data['username'] != user.username and \
+            User.query.filter_by(username=data['username']).first():
+        errors.append({'id': 1, 'kind': 'error', 'title': 'Username taken'})
+        return jsonify({'errors': errors})
     if 'email' in data and data['email'] != user.email and \
             User.query.filter_by(email=data['email']).first():
-        errors.append('email taken')
-        return {'errors': errors}
+        errors.append({'id': 2, 'kind': 'error', 'title': 'Email taken'})
+        return jsonify({'errors': errors})
     user.from_dict(data)
-    for item in user.items:
-        item.location = user.location
     db.session.commit()
-    return {'user': user.dict()}
+    return jsonify({'user': user.dict()})

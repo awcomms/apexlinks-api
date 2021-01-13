@@ -16,7 +16,7 @@ class Item(db.Model):
     json = db.Column(db.JSON)
     links = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
-    about = db.Column(db.Unicode)
+    description = db.Column(db.Unicode)
     paid_in = db.Column(db.Unicode)
     score = db.Column(db.Float)
 
@@ -41,8 +41,8 @@ class Item(db.Model):
         if q != '':
             for item in query:
                 ratio = fuzz.ratio(q, item.name)
-                about_ratio = fuzz.token_set_ratio(q, item.about)
-                if ratio < 79 or about_ratio < 90: 
+                description_ratio = fuzz.token_set_ratio(q, item.description)
+                if ratio < 79 or description_ratio < 90: 
                     query.filter(Item.id != item.id)
                 else:
                     item.score = ratio
@@ -130,7 +130,7 @@ class Item(db.Model):
             'id': self.id,
             'link': self.link,
             'name': self.name,
-            'about': self.about,
+            'description': self.description,
             'img_urls': self.img_urls,
             'user': {
                 'id': self.user.id,

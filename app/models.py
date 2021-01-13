@@ -181,7 +181,7 @@ class User(db.Model):
     def distance(p1, p2):
         return distance.distance(p1, p2)
 
-    def __init__(self, email, password):
+    def __init__(self, username, email, password):
         self.email=email
         self.set_password(password)
         db.session.add(self)
@@ -209,11 +209,6 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    @staticmethod
-    def add_item(id, name):
-        user = User.query.get(id)
-        Item(user, name)
-
     def dict(self):
         data = {
             'id': self.id,
@@ -231,24 +226,6 @@ class User(db.Model):
             data['location'] = self.location
         return data
 
-    def qdict(self):
-        data = {
-            'id': self.id,
-            'name': self.name,
-            'phone': self.phone,
-            'email': self.email,
-            'about': self.about,
-            'website': self.website,
-            'token': self.token,
-            'saved_users': cdict(self.saved_users),
-            'saved_items': cdict(self.saved_items),
-            'items': cdict(self.items),
-            'products': cdict(self.products)
-        }
-        if self.location != None:
-            data['location'] = self.location
-        return data
-
     def from_dict(self, data):
         for field in data:
             if hasattr(self, field) and data[field]:
@@ -256,26 +233,4 @@ class User(db.Model):
         if 'password' in data:
             self.set_password(data['password'])
         db.session.add(self)
-        db.session.commit()
-
-    def add_card(self, card):
-        if not self.has_card(card):
-            self.cards.append(card)
-
-    def remove_card(self, card):
-        if self.has_card(card):
-            self.remove(card)
-
-    def has_card(self, card):
-        return self.cards.filter(
-            cards.c.card_id == card.id).count() > 0
-
-    def subscribe(self, year, module):
-        s=Subscription(year, module)
-        self.subscriptions.append(s)
-        db.session.commit()
-
-    def unsubscribe(self, year, module):
-        s=Subscription(year, module)
-        self.subscriptions.remove(s)
         db.session.commit()

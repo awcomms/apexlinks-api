@@ -36,7 +36,7 @@ def add_item():
         'user': user,
         'name': j('name'),
         'json': j('json'),
-        'about': j('about'),
+        'description': j('description'),
         'price': j('price'),
         'paid_in': j('paid_in')
     }

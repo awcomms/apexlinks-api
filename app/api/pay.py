@@ -36,7 +36,7 @@ def ref():
         if not _customer:
             customer.create(user.email)
         authorization_code = _dict['data']['authorization']['authorization_code']
-        if not user.cards.filter(User.card.authorization_code == authorizatiion_code):
+        if not user.cards.filter(User.card.authorization_code == authorization_code):
             card = Card(_dict['data']['authorization'])
             card.user = user
             db.session.commit()
