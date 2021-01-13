@@ -103,6 +103,32 @@ class User(db.Model):
             query = location_sort(query, a['position'])
         return query
 
+    def toggle_item_save(self, id):
+        item = Item.query.get(id)
+        if not self.item_saved(id):
+            self.saved_items.append(item)
+            db.session.commit()
+            item.save_count = item.savers.count()
+            db.session.commit()
+        elif self.item.saved(id):
+            self.saved_items.remove(item)
+            db.session.commit()
+            item.save_count = item.savers.count()
+            db.session.commit()
+
+    def toggle_user_save(self, id):
+        user = Item.query.get(id)
+        if not self.user_saved(id):
+            self.saved_users.append(user)
+            db.session.commit()
+            user.save_count = user.savers.count()
+            db.session.commit()
+        elif self.user.saved(id):
+            self.saved_users.remove(user)
+            db.session.commit()
+            user.save_count = user.savers.count()
+            db.session.commit()
+
     def item_saved(self, id):
         return self.saved_items.filter_by(id=id).count()>0
 

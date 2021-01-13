@@ -5,6 +5,17 @@ from app.api import bp
 from app.geo_models import Place
 from app.models import User, cdict
 
+@bp.route('/users/toggle_item_save', methods=['PUT'])
+@jwt_required
+def toggle_item_save():
+    token = request.headers['Authorization']
+    id = request.args.get('id')
+    user = User.query.filter_by(token=token).first()
+    if not user:
+        return {}, 401
+    user.toggle_item_save(id)
+    return jsonify({'yes': True})
+
 @bp.route('/users/saved_items')
 @jwt_required
 def saved_items():
@@ -48,6 +59,18 @@ def unsave_item():
         return {}, 401
     user.unsave_item(id)
     return jsonify({'yes': True})
+
+@bp.route('/users/toggle_usersave', methods=['PUT'])
+@jwt_required
+def toggle_user_save():
+    token = request.headers['Authorization']
+    id = request.args.get('id')
+    user = User.query.filter_by(token=token).first()
+    if not user:
+        return {}, 401
+    user.toggle_user_save(id)
+    return jsonify({'yes': True})
+
 
 @bp.route('/users/saved_users')
 @jwt_required
