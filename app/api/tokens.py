@@ -37,4 +37,4 @@ def revoke_token():
     if user:
         user.token = None
         db.session.commit()
-    return '', 204
+    return '', 202

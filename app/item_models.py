@@ -154,16 +154,10 @@ class Item(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    @staticmethod
-    def edit(id, token, name, data):
-        user = User.query.filter_by(token=token).first()
-        item = Item.query.get(id)
-        if item.user != user:
-            return {}, 401
+    def edit(self, data):
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data['field'])
-        db.session.add(item)
         db.session.commit()
         return item
 

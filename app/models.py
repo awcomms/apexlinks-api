@@ -18,52 +18,6 @@ def cdict(query, page=1, per_page=10):
             'total': resources.total}
         return data
 
-class Card(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    authorization_code = db.Column(db.Unicode)
-    bin = db.Column(db.Unicode)
-    last4 = db.Column(db.Unicode)
-    exp_month = db.Column(db.Unicode)
-    exp_year = db.Column(db.Unicode)
-    card_type = db.Column(db.Unicode)
-    bank = db.Column(db.Unicode)
-    country_code = db.Column(db.Unicode)
-    brand = db.Column(db.Unicode)
-    account_name = db.Column(db.Unicode)
-    signature = db.Column(db.Unicode)
-    reusable = db.Column(db.Boolean)
-
-    def __init__(data):
-        for field in data:
-            if data[field]:
-                setattr(self, field, data[field])
-        db.session.commit()
-
-    def dict(self):
-        data = {
-            'user_id': self.user_id,
-            'authorizatiion_code': self.authorization_code,
-            'card_type': self.card_type,
-            'signature': self.signature,
-            'last4': self.last4,
-            'exp_month': self.exp_month,
-            'exp_year': self.exp_year,
-            'bin': self.bin,
-            'bank': self.bank,
-            'signature': self.signature,
-            'reusable': self.reusable,
-            'nation_code': self.nation_code,
-        }
-        return data
-
-    def from_dict(self, data):
-        for field in ['authorization_code', 'card_type', 'last4', 'exp_month', 'exp_year', 'bin', 'bank', 'signature', 'reusable', 'nation_code']:
-            setattr(self, field, data[field])
-
-cards = db.Table('cards',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('card_id', db.Integer, db.ForeignKey('card.id')))
-
 saved_places = db.Table('saved_places',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('place_id', db.Integer, db.ForeignKey('place.id')))
@@ -77,8 +31,8 @@ saved_items = db.Table('saved_items',
     db.Column('item', db.Integer, db.ForeignKey('item.id')))
 
 class User(db.Model):
+    card = db.Column(db.JSON)
     score = db.Column(db.Integer)
-
     tags = db.Column(db.JSON)
     username = db.Column(db.Unicode)
     email = db.Column(db.Unicode)
@@ -101,7 +55,6 @@ class User(db.Model):
     saved_users = db.relationship('User', secondary=saved_users, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     saved_items = db.relationship('Item', secondary=saved_items, backref='savers', lazy='dynamic')
     
-    cards = db.relationship(Card, secondary=cards, backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
     distance = db.Column(db.Unicode)
     logo_url = db.Column(db.Unicode)
     customer_code = db.Column(db.Unicode)

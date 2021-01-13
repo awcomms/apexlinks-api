@@ -9,14 +9,10 @@ from flask import current_app
 def charge():
     a = request.args.get
     u_id = a('u_id')
-    c_id = a('c_id')
     user = User.query.get('u_id')
-    card = Card.query.get('c_id')
-    if user != card.user:
-        return {}, 401
     key = current_app.config['PAYSTACK']
     transaction = Transaction(authorization_key=key)
-    transaction.charge(user.email, card.authorization_code, 210)
+    transaction.charge(user.email, user.card[authorization_code], 210)
     user.subscribed = True
     return jsonify({'yes': True})
 
@@ -36,8 +32,7 @@ def ref():
         if not _customer:
             customer.create(user.email)
         authorization_code = _dict['data']['authorization']['authorization_code']
-        if not user.cards.filter(User.card.authorization_code == authorization_code):
-            card = Card(_dict['data']['authorization'])
-            card.user = user
-            db.session.commit()
+        if user.card[authorization_code] != authorization_code:
+            user.card = _dict['data']['authorization']
         user.subscribed = True
+        db.session.commit()

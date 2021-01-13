@@ -81,12 +81,17 @@ def unarchive_item(id):
 @bp.route('/items', methods=['PUT'])
 @jwt_required
 def edit_item():
-    q = request.json.get
+    a = request.args.get
     token = request.headers['Authorization']
-    id = q('id')
-    name = q('name')
-    json = q('json')
-    return Item.edit(id, token, name, json)
+    id = a('id')
+    item = Item.query.get(id)
+    user = User.query.filter(User.token=token).first()
+    if item.user != user:
+        return {}, 401
+    if not item:
+        return jsonify({'error': 'item does not exist'})
+    item.edit(data)
+    return jsonify({'yes': True})
 
 @bp.route('/items/<int:id>', methods=['GET'])
 def item(id):
