@@ -2,7 +2,7 @@ import hmac
 import hashlib
 from app.api import bp
 from pypaystack import Customer, Transaction
-from app.models import Card, User
+from app.models import User
 from flask import current_app
 
 @bp.route('/charge', methods=['PUT'])

@@ -29,7 +29,6 @@ def add_item():
     j = request.json.get
     token = request.headers['Authorization']
     user = User.query.filter_by(token=token).first()
-    print(user)
     if not user:
         return {}, 401
     data = {
@@ -52,20 +51,6 @@ def viewed(id):
     item = Item.query.get(id)
     item.json
 
-@bp.route('/items/save', methods=['PUT'])
-@jwt_required
-def save_item(id):
-    token = request.headers['Authorization']
-    ids = request.json.get('ids')
-    return Item.save(ids, token)
-
-@bp.route('/item/unsave', methods=['PUT'])
-@jwt_required
-def unsave_item(id):
-    token = request.headers['Authorization']
-    ids = request.json.get('ids')
-    return Item.unsave(ids, token)
-
 @bp.route('/items/archive/<int:id>', methods=['PUT'])
 @jwt_required
 def archive_item(id):
@@ -85,7 +70,7 @@ def edit_item():
     token = request.headers['Authorization']
     id = a('id')
     item = Item.query.get(id)
-    user = User.query.filter(User.token=token).first()
+    user = User.query.filter(User.token==token).first()
     if item.user != user:
         return {}, 401
     if not item:

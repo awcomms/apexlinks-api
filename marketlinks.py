@@ -2,7 +2,7 @@ from flask import jsonify
 from app import create_app, db
 from app.item_models import Item
 from app.geo_models import Nation, State, Town
-from app.models import User, Card
+from app.models import User
 
 app = create_app()
 

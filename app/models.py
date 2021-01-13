@@ -53,7 +53,7 @@ class User(db.Model):
     
     saved_places = db.relationship('Place', secondary=saved_places, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     saved_users = db.relationship('User', secondary=saved_users, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
-    saved_items = db.relationship('Item', secondary=saved_items, backref='savers', lazy='dynamic')
+    saved_items = db.relationship('Item', secondary=saved_items, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     
     distance = db.Column(db.Unicode)
     logo_url = db.Column(db.Unicode)
@@ -98,6 +98,36 @@ class User(db.Model):
         if position:
             query = location_sort(query, position)
         return query
+
+    def item_saved(self, id):
+        return self.saved_items.filter(User.id==id).count()>0
+
+    def save_item(self, id):
+        if not self.item_saved(id):
+            item = User.query.get(id)
+            self.saved_items.append(item)
+            db.session.commit()
+
+    def unsave_item(self, id):
+        if self.item_saved(id):
+            item = User.query.get(id)
+            self.saved_items.remove(item)
+            db.session.commit()
+
+    def user_saved(self, id):
+        return self.saved_users.filter(User.id==id).count()>0
+
+    def save_user(self, id):
+        if not self.user_saved(id):
+            user = User.query.get(id)
+            self.saved_users.append(user)
+            db.session.commit()
+
+    def unsave_user(self, id):
+        if self.user_saved(id):
+            user = User.query.get(id)
+            self.saved_users.remove(user)
+            db.session.commit()
 
     def place_saved(self, id):
         return self.saved_places.filter_by(place_id=id).count()>0
@@ -165,6 +195,7 @@ class User(db.Model):
     def dict(self):
         data = {
             'id': self.id,
+            'card': self.card,
             'username': self.username,
             'name': self.name,
             'email': self.email,
@@ -172,7 +203,6 @@ class User(db.Model):
             'tags': self.tags,
             'location': self.location,
             'visible': self.visible,
-            'cards': [card.dict() for card in self.cards],
             'subscribed': self.subscribed,
         }
         if self.location != None:
