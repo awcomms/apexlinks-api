@@ -133,7 +133,7 @@ def users():
     return cdict(User.fuz(sort, tags, q, position, nation_id, state_id), page)
 
 @bp.route('/user')
-def get_user():
+def user():
     errors = []
     id = request.args.get('id')
     email = request.args.get('email')

@@ -74,33 +74,33 @@ class User(db.Model):
     token = db.Column(db.String(373), index=True, unique=True)
 
     @staticmethod
-    def fuz(sort, tags, q, position, nation_id, state_id):
+    def fuz(*a):
         query = User.query\
         .filter(User.subscribed==True)\
         .filter(User.visible==True)
-        if nation_id:
+        if a['nation_id']:
             query.filter(User.nation_id==nation_id)
-        if state_id:
+        if a['state_id']:
             query.filter(User.state_id==state_id)
         
         for user in query:
             for tag in user.tags:
-                if process.extractOne(tag, tags)[1] < 90:
+                if process.extractOne(tag, a['tags'])[1] < 90:
                     query.filter(User.id != user.id)
-        if q != '':
+        if a['q'] != '':
             for user in query:
-                ratio = fuzz.ratio(q, user.name)
-                about_ratio = fuzz.token_set_ratio(q, user.about)
+                ratio = fuzz.ratio(a['q'], user.name)
+                about_ratio = fuzz.token_set_ratio(a['q'], user.about)
                 if ratio < 79 or about_ratio < 90: 
                     query.filter(User.id != user.id)
                 else:
                     user.score = ratio
-            if sort == 'relevance':
+            if a['sort'] == 'relevance':
                 query.order_by(User.score.desc())
-        if sort == 'save_count':
+        if a['sort'] == 'save_count':
             query.order_by(User.save_count.desc())
-        if sort == 'position':
-            query = location_sort(query, position)
+        if a['sort'] == 'position':
+            query = location_sort(query, a['position'])
         return query
 
     def item_saved(self, id):
