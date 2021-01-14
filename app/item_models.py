@@ -24,7 +24,8 @@ class Item(db.Model):
     @staticmethod
     def fuz(*a):
         query = Item.query\
-        .join(User).filter(User.subscribed==True)\
+        .join(User)\
+        #.filter(User.subscribed==True)\
         .filter(User.visible==True)\
         .filter(Item.itype==a['itype'])\
         .filter(Item.archived==False)
