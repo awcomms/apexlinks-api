@@ -174,13 +174,13 @@ def user():
 
 @bp.route('/users', methods=['POST'])
 def create_user():
-    q = request.get_json()
+    j = request.json.get
     errors = []
-    username = q['username']
-    email = q['email']
-    password = q['password']
+    username = j('username')
+    email = j('email')
+    password = j('password')
     if username is None:
-        errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide an username'})
+        errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide a username'})
         return jsonify({'errors': errors})
     if email is None:
         errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide an email'})
