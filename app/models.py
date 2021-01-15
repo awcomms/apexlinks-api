@@ -3,20 +3,12 @@ import boto3
 import base64, os, jwt
 from time import time
 from app import db
+from app.misc import dist
 from flask import jsonify
-from geopy import distance
+from fuzzywuzzy import process, fuzz
 from datetime import datetime, timedelta
 from flask import jsonify, current_app, request, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
-
-def cdict(query, page=1, per_page=10):
-        page = float(page)
-        resources = query.paginate(page, per_page, False)
-        data = {
-            'items': [item.dict() for item in resources.items],
-            'pages': resources.pages,
-            'total': resources.total}
-        return data
 
 saved_places = db.Table('saved_places',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
@@ -56,7 +48,6 @@ class User(db.Model):
     saved_users = db.relationship('User', secondary=saved_users, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     saved_items = db.relationship('Item', secondary=saved_items, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     
-    distance = db.Column(db.Unicode)
     logo_url = db.Column(db.Unicode)
     customer_code = db.Column(db.Unicode)
 
@@ -98,8 +89,8 @@ class User(db.Model):
                 query.order_by(User.score.desc())
         if sort == 'save_count':
             query.order_by(User.save_count.desc())
-        if sort == 'position':
-            query = location_sort(query, position)
+        if position and sort == 'position':
+            query = User.location_sort(query, position)
         return query
 
     def toggle_item_save(self, id):
@@ -188,13 +179,9 @@ class User(db.Model):
         for user in query:
             subject = (user.location['lat'], user.location['lng'])
             target = (target['lat'], target['lng'])
-            user.distance = distance(subject, target)
+            user.distance = dist(subject, target)
         db.session.commit()
-        return query.order_by(User.distance.desc())
-
-    @staticmethod
-    def distance(p1, p2):
-        return distance.distance(p1, p2)
+        return query.order_by(User.dist.desc())
 
     def __init__(self, username, email, password):
         self.username=username

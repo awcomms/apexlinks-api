@@ -1,15 +1,8 @@
 from app.api import bp
-from app.models import cdict
-from ip2geotools.databases.noncommercial import DbIpCity
+from app.misc import cdict
+from app.models import User
 from app.geo_models import Place, Town, State, Nation
 from flask import request, jsonify
-
-@bp.route('/ip')
-def ip():
-    ip = request.args.get('ip')
-    response = DbIpCity.get(ip, api_key='free')
-    location = {lat: response.latitude, lng: response.longitude}
-    return jsonify(location)
 
 @bp.route('/place_saved', methods=['GET'])
 def place_saved():

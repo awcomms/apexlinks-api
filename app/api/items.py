@@ -1,26 +1,34 @@
 import json
 from app.api import bp
-from app.models import cdict, User
+from app.misc import cdict
+from app.models import User
 from app.item_models import Item
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
 
 @bp.route('/items', methods=['GET'])
 def items():
+    errors = []
     a = request.args.get
     q = a('q') or ''
-    id = (a('id'))
+    id = a('id')
+    sort = a('sort')
     page = a('page')
     itype = a('itype')
-    tags = json.loads(a('tags'))
-    coords = None
+    tags = None
+    _tags = a('tags')
+    try:
+        if _tags and type(json.loads(_tags)) is list:
+                tags = json.loads(_tags)
+    except:
+        pass
     position = None
-    if a(position):      
+    if a('position'):      
         coords = json.loads(a('position'))
         position = ( coords['lat'], coords['lng'] )
     nation_id = a('nation_id')
     state_id = a('state_id')
-    return cdict(Item.fuz(q, id, itype, tags, position, nation_id, state_id), page)
+    return cdict(Item.fuz(q, id, sort, itype, tags, position, nation_id, state_id), page)
 
 @bp.route('/items', methods=['POST'])
 @jwt_required
@@ -38,7 +46,7 @@ def add_item():
         errors.append({'id': 1, 'kind': 'error', 'title': 'A name is required'})
         return jsonify({'errors': errors})
     if Item.query.filter_by(itype=itype).filter_by(user_id=user.id).filter_by(name=name).first():
-        errors.append({'id': 1, 'kind': 'error', 'title': 'One of your %itype%s already has that name'})
+        errors.append({'id': 1, 'kind': 'error', 'title': f'One of your {itype}s already has that name'})
         return jsonify({'errors': errors})
     i = Item(data)
     print(i)
@@ -47,7 +55,8 @@ def add_item():
 @bp.route('/items', methods=['PUT'])
 @jwt_required
 def edit_item():
-    a = request.args.get
+    errors = []
+    j = request.json.get
     token = request.headers['Authorization']
     id = a('id')
     item = Item.query.get(id)
@@ -57,7 +66,7 @@ def edit_item():
     if not item:
         return jsonify({'error': 'item does not exist'})
     if j('name') == '':
-        errors.append({'id': 1, 'kind': error, 'title': "The name shouldn't be empty"})
+        errors.append({'id': 1, 'kind': 'error', 'title': "The name shouldn't be empty"})
         return jsonify({'errors': errors})
     if not j('name'):
         errors.append({'id': 1, 'kind': error, 'title': 'A name is required'})

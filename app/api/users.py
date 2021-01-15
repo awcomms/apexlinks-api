@@ -4,7 +4,8 @@ from flask import jsonify, request
 from app import db
 from app.api import bp
 from app.geo_models import Place
-from app.models import User, cdict
+from app.models import User
+from app.misc import cdict
 
 @bp.route('/users/toggle_item_save', methods=['PUT'])
 @jwt_required
