@@ -15,7 +15,7 @@ class Item(db.Model):
     distance = db.Column(db.Float)
     price = db.Column(db.Unicode)
     json = db.Column(db.JSON)
-    links = db.Column(db.Unicode)
+    link = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
     description = db.Column(db.Unicode)
     paid_in = db.Column(db.Unicode)
@@ -120,9 +120,9 @@ class Item(db.Model):
     def exists(user, name):
         return Item.query.filter_by(user_id = user.id).count()>0
 
-    def __init__(self, data=[]):
+    def __init__(self, data):
         for field in data:
-            if data[field]:
+            if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])
         db.session.add(self)
         db.session.commit()
@@ -130,7 +130,7 @@ class Item(db.Model):
     def edit(self, data):
         for field in data:
             if hasattr(self, field) and data[field]:
-                setattr(self, field, data['field'])
+                setattr(self, field, data[field])
         db.session.commit()
         return item
 

@@ -232,10 +232,10 @@ class User(db.Model):
     def edit(self, data):
         print(data)
         for field in data:
-            print(field)
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])
         if 'password' in data:
             self.set_password(data['password'])
+        print(self.phone)
         db.session.add(self)
         db.session.commit()

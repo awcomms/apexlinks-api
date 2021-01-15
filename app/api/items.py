@@ -29,22 +29,24 @@ def add_item():
     j = request.json.get
     token = request.headers['Authorization']
     user = User.query.filter_by(token=token).first()
+    name = j('name')
     if not user:
         return {}, 401
-    if not j('name'):
+    if not name:
         errors.append({'id': 1, 'kind': 'error', 'title': 'A name is required'})
         return jsonify({'errors': errors})
-    if Item.query.join(User).filter(User.id==user.id).filter(Item.name==j('name')):
-        errors.append({'id': 1, 'kind': error, 'title': 'One of your items already has that name'})
+    if Item.query.filter_by(user_id=user.id).filter_by(name=name).first():
+        errors.append({'id': 1, 'kind': 'error', 'title': 'One of your items already has that name'})
         return jsonify({'errors': errors})
     data = {
         'user': user,
-        'name': j('name'),
+        'name': name,
         'description': j('description'),
         'price': j('price'),
         'paid_in': j('paid_in')
     }
     i = Item(data)
+    print(i)
     return jsonify({'id': i.id})
 
 @bp.route('/items', methods=['PUT'])
