@@ -110,7 +110,7 @@ class Item(db.Model):
             },
             'paid_in': self.paid_in
         }
-        if not self.user.show_email:
+        if self.user.show_email:
             data['user']['email'] = self.user.email
         if not self.user.hide_location:
             data['user']['location'] = self.user.location
