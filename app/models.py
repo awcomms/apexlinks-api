@@ -231,10 +231,14 @@ class User(db.Model):
         return data
 
     def edit(self, data):
+        print(data)
         for field in data:
+            print(field)
             if hasattr(self, field) and data[field]:
-                setattr(self, field, data['field'])
+                setattr(self, field, data[field])
         if 'password' in data:
             self.set_password(data['password'])
+        print('before', self)
         db.session.add(self)
+        print('after', self)
         db.session.commit()

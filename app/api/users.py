@@ -1,3 +1,4 @@
+import json
 from flask_jwt_extended import jwt_required, create_access_token
 from flask import jsonify, request
 from app import db
@@ -198,7 +199,7 @@ def create_user():
     user.token = create_access_token(identity=username)
     return jsonify({'user': user.dict()})
 
-@bp.route('/user/', methods=['PUT'])
+@bp.route('/users', methods=['PUT'])
 @jwt_required
 def edit_user():
     errors = []
