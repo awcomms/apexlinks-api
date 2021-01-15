@@ -1,7 +1,7 @@
 from geopy import distance
 
 def cdict(query, page=1, per_page=10):
-        page = float(page)
+        if page: page = float(page)
         resources = query.paginate(page, per_page, False)
         data = {
             'items': [item.dict() for item in resources.items],

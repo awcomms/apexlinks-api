@@ -38,9 +38,10 @@ class Item(db.Model):
             query.join(User, (User.state_id==state_id))
         
         for item in query:
-            for tag in item.tags:
-                if process.extractOne(tag, tags)[1] < 90:
-                    query.filter(Item.id != item.id)
+            if item.tags:
+                for tag in item.tags:
+                    if process.extractOne(tag, tags)[1] < 90:
+                        query.filter(Item.id != item.id)
         if q != '':
             for item in query:
                 ratio = fuzz.ratio(q, item.name)
