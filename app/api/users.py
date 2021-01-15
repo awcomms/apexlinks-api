@@ -183,7 +183,7 @@ def create_user():
         errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide a username'})
         return jsonify({'errors': errors})
     if email is None:
-        errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide an email'})
+        errors.append({'id': 2, 'kind': 'error', 'title': 'You must provide an email'})
         return jsonify({'errors': errors})
     if password is None:
         errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide a password'})

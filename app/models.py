@@ -198,6 +198,7 @@ class User(db.Model):
         return distance.distance(p1, p2)
 
     def __init__(self, username, email, password):
+        self.username=username
         self.email=email
         self.set_password(password)
         db.session.add(self)

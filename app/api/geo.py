@@ -124,7 +124,7 @@ def search_towns():
     q = a('q')
     return jsonify([{'id': town.id, 'text': town.name} for town in Town.query.search('"' + q + '"')])
 
-@bp.route('/states', methods=['GET'])
+@bp.route('/states')
 def states():
     id = request.args.get('id')
     return jsonify([{'id': state.id, 'text': state.name} for state in State.query.filter_by(nation_id=id)])
