@@ -22,37 +22,37 @@ class Item(db.Model):
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(*a):
+    def fuz(q, id, itype, tags, position, nation_id, state_id):
         query = Item.query\
         .join(User)\
         .filter(User.visible==True)\
-        .filter(Item.itype==a['itype'])\
+        .filter(Item.itype==itype)\
         .filter(Item.archived==False)
-        if a['id']:
-            query.join(User, (User.id==a['id']))
-        if a['nation_id']:
-            query.join(User, (User.nation_id==a['nation_id']))
-        if a['state_id']:
-            query.join(User, (User.state_id==a['state_id']))
+        if id:
+            query.join(User, (User.id==id))
+        if nation_id:
+            query.join(User, (User.nation_id==nation_id))
+        if state_id:
+            query.join(User, (User.state_id==state_id))
         
         for item in query:
             for tag in item.tags:
-                if process.extractOne(tag, a['tags'])[1] < 90:
+                if process.extractOne(tag, tags)[1] < 90:
                     query.filter(Item.id != item.id)
-        if a['q'] != '':
+        if q != '':
             for item in query:
-                ratio = fuzz.ratio(a['q'], item.name)
-                description_ratio = fuzz.token_set_ratio(a['q'], item.description)
+                ratio = fuzz.ratio(q, item.name)
+                description_ratio = fuzz.token_set_ratio(q, item.description)
                 if ratio < 79 or description_ratio < 90: 
                     query.filter(Item.id != item.id)
                 else:
                     item.score = ratio
-            if a['sort'] == 'relevance':
+            if sort == 'relevance':
                 query.order_by(Item.score.desc())
-        if a['sort'] == 'save_count':
+        if sort == 'save_count':
             query.order_by(Item.savers.count().desc())
-        if a['sort'] == 'position':
-            query = location_sort(query, a['position'])
+        if sort == 'position':
+            query = location_sort(query, position)
         return query
 
     @staticmethod

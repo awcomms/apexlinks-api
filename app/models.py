@@ -63,44 +63,43 @@ class User(db.Model):
     subscribed = db.Column(db.Boolean, default=False)
     visible = db.Column(db.Boolean, default=False)
     
-    email = db.Column(db.Unicode(123), unique=True)
-    name = db.Column(db.Unicode(123))
-    password_hash = db.Column(db.String(123))
-    description = db.Column(db.Unicode(123))
-    about = db.Column(db.UnicodeText())
-    website = db.Column(db.String())
-    phone = db.Column(db.String())
+    email = db.Column(db.Unicode, unique=True)
+    name = db.Column(db.Unicode)
+    password_hash = db.Column(db.String)
+    about = db.Column(db.Unicode)
+    website = db.Column(db.String)
+    phone = db.Column(db.String)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     token = db.Column(db.String(373), index=True, unique=True)
 
     @staticmethod
-    def fuz(*a):
+    def fuz(q, sort, tags, position, nation_id, state_id):
         query = User.query\
         .filter(User.subscribed==True)\
         .filter(User.visible==True)
-        if a['nation_id']:
+        if nation_id:
             query.filter(User.nation_id==nation_id)
-        if a['state_id']:
+        if state_id:
             query.filter(User.state_id==state_id)
         
         for user in query:
             for tag in user.tags:
-                if process.extractOne(tag, a['tags'])[1] < 90:
+                if process.extractOne(tag, tags)[1] < 90:
                     query.filter(User.id != user.id)
-        if a['q'] != '':
+        if q != '':
             for user in query:
-                ratio = fuzz.ratio(a['q'], user.name)
-                about_ratio = fuzz.token_set_ratio(a['q'], user.about)
+                ratio = fuzz.ratio(q, user.name)
+                about_ratio = fuzz.token_set_ratio(q, user.about)
                 if ratio < 79 or about_ratio < 90: 
                     query.filter(User.id != user.id)
                 else:
                     user.score = ratio
-            if a['sort'] == 'relevance':
+            if sort == 'relevance':
                 query.order_by(User.score.desc())
-        if a['sort'] == 'save_count':
+        if sort == 'save_count':
             query.order_by(User.save_count.desc())
-        if a['sort'] == 'position':
-            query = location_sort(query, a['position'])
+        if sort == 'position':
+            query = location_sort(query, position)
         return query
 
     def toggle_item_save(self, id):
@@ -238,7 +237,5 @@ class User(db.Model):
                 setattr(self, field, data[field])
         if 'password' in data:
             self.set_password(data['password'])
-        print('before', self)
         db.session.add(self)
-        print('after', self)
         db.session.commit()

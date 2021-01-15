@@ -20,7 +20,7 @@ def items():
         position = ( coords['lat'], coords['lng'] )
     nation_id = a('nation_id')
     state_id = a('state_id')
-    return cdict(Item.fuz(id, itype, tags, q, position, nation_id, state_id), page)
+    return cdict(Item.fuz(q, id, itype, tags, position, nation_id, state_id), page)
 
 @bp.route('/items', methods=['POST'])
 @jwt_required
@@ -32,7 +32,7 @@ def add_item():
     if not user:
         return {}, 401
     if not j('name'):
-        errors.append({'id': 1, 'kind': error, 'title': 'A name is required'})
+        errors.append({'id': 1, 'kind': 'error', 'title': 'A name is required'})
         return jsonify({'errors': errors})
     if Item.query.join(User).filter(User.id==user.id).filter(Item.name==j('name')):
         errors.append({'id': 1, 'kind': error, 'title': 'One of your items already has that name'})

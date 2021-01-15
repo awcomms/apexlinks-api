@@ -72,7 +72,6 @@ def toggle_user_save():
     user.toggle_user_save(id)
     return jsonify({'yes': True})
 
-
 @bp.route('/users/saved_users')
 @jwt_required
 def saved_users():
@@ -154,7 +153,7 @@ def users():
         position = ( coords['lat'], coords['lng'] )
     nation_id = a('nation_id')
     state_id = a('state_id')
-    return cdict(User.fuz(sort, tags, q, position, nation_id, state_id), page)
+    return cdict(User.fuz(q, sort, tags, position, nation_id, state_id), page)
 
 @bp.route('/user')
 def user():
@@ -204,7 +203,7 @@ def create_user():
 def edit_user():
     errors = []
     token = request.headers['Authorization']
-    user = User.query.filter_by(token = token).first()
+    user = User.query.filter_by(token=token).first()
     data = request.get_json()
     if not user:
         return {}, 401
