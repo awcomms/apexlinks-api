@@ -61,7 +61,7 @@ class User(db.Model):
     website = db.Column(db.String)
     phone = db.Column(db.String)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    token = db.Column(db.String(373), index=True, unique=True)
+    token = db.Column(db.String, index=True, unique=True)
 
     @staticmethod
     def fuz(q, sort, tags, position, nation_id, state_id):
@@ -93,86 +93,28 @@ class User(db.Model):
             query = User.location_sort(query, position)
         return query
 
-    def toggle_item_save(self, id):
-        item = Item.query.get(id)
-        if not self.item_saved(id):
-            self.saved_items.append(item)
-            db.session.commit()
-            item.save_count = item.savers.count()
-            db.session.commit()
-        elif self.item.saved(id):
-            self.saved_items.remove(item)
-            db.session.commit()
-            item.save_count = item.savers.count()
-            db.session.commit()
-
-    def toggle_user_save(self, id):
-        user = Item.query.get(id)
-        if not self.user_saved(id):
+    def toggle_save(self, user):
+        saved = self.user_saved(user.id)
+        if not saved:
             self.saved_users.append(user)
             db.session.commit()
             user.save_count = user.savers.count()
             db.session.commit()
-        elif self.user.saved(id):
+        elif saved:
             self.saved_users.remove(user)
             db.session.commit()
             user.save_count = user.savers.count()
             db.session.commit()
+        return self.user_saved(user.id)
 
     def item_saved(self, id):
         return self.saved_items.filter_by(id=id).count()>0
 
-    def save_item(self, id):
-        if not self.item_saved(id):
-            item = Item.query.get(id)
-            self.saved_items.append(item)
-            db.session.commit()
-            item.save_count = item.savers.count()
-            db.session.commit()
-
-    def unsave_item(self, id):
-        if self.item_saved(id):
-            item = Item.query.get(id)
-            self.saved_items.remove(item)
-            db.session.commit()
-            item.save_count = item.savers.count()
-            db.session.commit()
-
     def user_saved(self, id):
         return self.saved_users.filter_by(id==id).count()>0
 
-    def save_user(self, id):
-        if not self.user_saved(id):
-            user = User.query.get(id)
-            self.saved_users.append(user)
-            db.session.commit()
-            user.save_count = user.savers.count()
-            db.session.commit()
-
-    def unsave_user(self, id):
-        if self.user_saved(id):
-            user = User.query.get(id)
-            self.saved_users.remove(user)
-            db.session.commit()
-            user.save_count = user.savers.count()
-            db.session.commit()
-
     def place_saved(self, id):
         return self.saved_places.filter_by(place_id=id).count()>0
-
-    def save_place(self, place):
-        if not self.place_saved(place.id):
-            self.saved_places.append(place)
-            db.session.commit()
-            place.save_count = place.savers.count()
-            db.session.commit()
-
-    def unsave_place(self, place):
-        if self.place_saved(place.id):
-            self.saved_places.remove(place)
-            db.session.commit()
-            place.save_count = place.savers.count()
-            db.session.commit()
 
     @staticmethod
     def location_sort(query, target):

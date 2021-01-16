@@ -1,7 +1,7 @@
 from flask_jwt_extended import jwt_required, create_access_token
 from flask_cors import cross_origin
 from werkzeug.datastructures import Headers
-from flask import make_response, request, jsonify, g
+from flask import make_response, request, jsonify
 from app import db
 from app.models import User
 from app.api import bp
@@ -23,8 +23,6 @@ def get_token():
         errors.append({'id': 1, 'kind': 'error', 'title': 'Wrong password'})
         return jsonify({'errors': errors})
     user.token = create_access_token(identity=username)
-    print(user.token)
-    g.current_user = user
     db.session.add(user)
     db.session.commit()
     body = {'user': user.dict()}

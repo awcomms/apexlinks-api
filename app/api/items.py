@@ -6,6 +6,17 @@ from app.item_models import Item
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
 
+@bp.route('/items/toggle_save', methods=['PUT'])
+def toggle_item_save():
+    token = request.headers.get('Authorization')
+    id = request.args.get('id')
+    user = User.query.filter_by(token=token).first()
+    if not user:
+        return {}, 401
+    item = Item.query.get(id)
+    saved = item.toggle_save(user)
+    return jsonify({'saved': saved})
+
 @bp.route('/items', methods=['GET'])
 def items():
     errors = []
@@ -31,17 +42,16 @@ def items():
     return cdict(Item.fuz(q, id, sort, itype, tags, position, nation_id, state_id), page)
 
 @bp.route('/items', methods=['POST'])
-@jwt_required
 def add_item():
     errors = []
     data = request.get_json()
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
+    if not user:
+        return {}, 401
     itype = data['itype']
     name = data['name']
     data['user'] = user
-    if not user:
-        return {}, 401
     if not name:
         errors.append({'id': 1, 'kind': 'error', 'title': 'A name is required'})
         return jsonify({'errors': errors})
@@ -53,11 +63,10 @@ def add_item():
     return jsonify({'id': i.id})
 
 @bp.route('/items', methods=['PUT'])
-@jwt_required
 def edit_item():
     errors = []
     j = request.json.get
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     id = a('id')
     item = Item.query.get(id)
     user = User.query.filter_by(token==token).first()
@@ -83,13 +92,25 @@ def edit_item():
     item.edit(data)
     return jsonify({'id': item.id})
 
+@bp.route('/items/toggle_archive/<int:id>', methods=['PUT'])
+def toggle_archive(id):
+    token = request.headers.get('Authorization')
+    if token: user = User.query.filter_by(token=token).first()
+    if type(id) == int: item = Item.query.get(id)
+    if not item:
+        return {'error': 'item does not exist'}
+    if not user or item.user != user:
+        return {}, 401
+    item.archived = not item.archived
+    return {'archived': item.archived}
+
 @bp.route('/items/<int:id>', methods=['GET'])
 def item(id):
     return jsonify(Item.query.get(id).dict())
 
 @bp.route('/items/<int:id>', methods=['DELETE'])
 def del_item(id):
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
         return {}, 401

@@ -3,25 +3,13 @@ from flask_jwt_extended import jwt_required, create_access_token
 from flask import jsonify, request
 from app import db
 from app.api import bp
-from app.geo_models import Place
 from app.models import User
 from app.misc import cdict
 
-@bp.route('/users/toggle_item_save', methods=['PUT'])
-@jwt_required
-def toggle_item_save():
-    token = request.headers['Authorization']
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    user.toggle_item_save(id)
-    return jsonify({'yes': True})
-
 @bp.route('/users/saved_items')
-@jwt_required
+
 def saved_items():
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     id = request.args.get('id')
     page = request.args.get('page')
     user = User.query.filter_by(token=token).first()
@@ -30,9 +18,9 @@ def saved_items():
     return jsonify(cdict(user.saved_items, page))
 
 @bp.route('/users/item_saved')
-@jwt_required
+
 def item_saved():
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     id = request.args.get('id')
     user = User.query.filter_by(token=token).first()
     if not user:
@@ -40,43 +28,22 @@ def item_saved():
     res = user.item_saved(id)
     return jsonify({'res': res})
 
-@bp.route('/users/save_item', methods=['PUT'])
-@jwt_required
-def save_item():
-    token = request.headers['Authorization']
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    user.save_item(id)
-    return jsonify({'yes': True})
+@bp.route('/users/toggle_save', methods=['PUT'])
 
-@bp.route('/users/unsave_item', methods=['PUT'])
-@jwt_required
-def unsave_item():
-    token = request.headers['Authorization']
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    user.unsave_item(id)
-    return jsonify({'yes': True})
-
-@bp.route('/users/toggle_usersave', methods=['PUT'])
-@jwt_required
 def toggle_user_save():
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     id = request.args.get('id')
     user = User.query.filter_by(token=token).first()
     if not user:
         return {}, 401
-    user.toggle_user_save(id)
-    return jsonify({'yes': True})
+    _user = User.query.get(id)
+    saved = user.toggle_save(_user)
+    return jsonify({'saved': saved})
 
 @bp.route('/users/saved_users')
-@jwt_required
+
 def saved_users():
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     id = request.args.get('id')
     page = request.args.get('page')
     user = User.query.filter_by(token=token).first()
@@ -85,9 +52,9 @@ def saved_users():
     return jsonify(cdict(user.saved_users, page))
 
 @bp.route('/users/user_saved')
-@jwt_required
+
 def user_saved():
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     id = request.args.get('id')
     user = User.query.filter_by(token=token).first()
     if not user:
@@ -95,33 +62,11 @@ def user_saved():
     res = user.user_saved(id)
     return jsonify({'res': res})
 
-@bp.route('/users/save', methods=['PUT'])
-@jwt_required
-def save_user():
-    token = request.headers['Authorization']
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    user.save_user(id)
-    return jsonify({'yes': True})
-
-@bp.route('/users/unsave', methods=['PUT'])
-@jwt_required
-def unsave_user():
-    token = request.headers['Authorization']
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    user.unsave_user(id)
-    return jsonify({'yes': True})
-
 @bp.route('/del_card', methods=['PUT'])
-@jwt_required
+
 def del_card():
     j = request.json.get
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
         return {}, 401
@@ -133,9 +78,9 @@ def del_card():
     return {}, 202
 
 @bp.route('/user/saved', methods=['GET'])
-@jwt_required
+
 def user_saved_items():
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     page = request.args.get('page')
     return cdict(user.saved_items, page)
@@ -200,10 +145,10 @@ def create_user():
     return jsonify({'user': user.dict()})
 
 @bp.route('/users', methods=['PUT'])
-@jwt_required
+
 def edit_user():
     errors = []
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     data = request.get_json()
     if not user:

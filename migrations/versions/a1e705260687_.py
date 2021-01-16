@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: f8aded2a661f
+Revision ID: a1e705260687
 Revises: 
-Create Date: 2021-01-13 16:03:24.238133
+Create Date: 2021-01-16 05:08:57.491867
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f8aded2a661f'
+revision = 'a1e705260687'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -40,7 +40,8 @@ def upgrade():
     op.create_table('place',
     sa.Column('name', sa.Unicode(), nullable=True),
     sa.Column('tags', sa.Unicode(), nullable=True),
-    sa.Column('coordinates', sa.JSON(), nullable=True),
+    sa.Column('location', sa.JSON(), nullable=True),
+    sa.Column('save_count', sa.Integer(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('state_id', sa.Integer(), nullable=False),
     sa.Column('town_id', sa.Integer(), nullable=True),
@@ -49,6 +50,7 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user',
+    sa.Column('save_count', sa.Integer(), nullable=True),
     sa.Column('card', sa.JSON(), nullable=True),
     sa.Column('score', sa.Integer(), nullable=True),
     sa.Column('tags', sa.JSON(), nullable=True),
@@ -58,6 +60,7 @@ def upgrade():
     sa.Column('place_id', sa.Integer(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('location', sa.JSON(), nullable=True),
+    sa.Column('distance', sa.Float(), nullable=True),
     sa.Column('openby', sa.DateTime(), nullable=True),
     sa.Column('closedby', sa.DateTime(), nullable=True),
     sa.Column('online', sa.Boolean(), nullable=True),
@@ -65,32 +68,32 @@ def upgrade():
     sa.Column('customer_code', sa.Unicode(), nullable=True),
     sa.Column('subscribed', sa.Boolean(), nullable=True),
     sa.Column('visible', sa.Boolean(), nullable=True),
-    sa.Column('email', sa.Unicode(length=123), nullable=True),
-    sa.Column('name', sa.Unicode(length=123), nullable=True),
-    sa.Column('password_hash', sa.String(length=123), nullable=True),
-    sa.Column('description', sa.Unicode(length=123), nullable=True),
-    sa.Column('about', sa.UnicodeText(), nullable=True),
+    sa.Column('email', sa.Unicode(), nullable=True),
+    sa.Column('name', sa.Unicode(), nullable=True),
+    sa.Column('password_hash', sa.String(), nullable=True),
+    sa.Column('about', sa.Unicode(), nullable=True),
     sa.Column('website', sa.String(), nullable=True),
     sa.Column('phone', sa.String(), nullable=True),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
-    sa.Column('token', sa.String(length=373), nullable=True),
+    sa.Column('token', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['place_id'], ['place.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
-    with op.batch_alter_table('user', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_user_token'), ['token'], unique=True)
-
+    op.create_index(op.f('ix_user_token'), 'user', ['token'], unique=True)
     op.create_table('item',
+    sa.Column('tags', sa.JSON(), nullable=True),
+    sa.Column('save_count', sa.Integer(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('archived', sa.Boolean(), nullable=True),
     sa.Column('img_urls', sa.JSON(), nullable=True),
     sa.Column('itype', sa.Unicode(), nullable=True),
     sa.Column('location', sa.JSON(), nullable=True),
+    sa.Column('distance', sa.Float(), nullable=True),
     sa.Column('price', sa.Unicode(), nullable=True),
     sa.Column('json', sa.JSON(), nullable=True),
-    sa.Column('links', sa.Unicode(), nullable=True),
+    sa.Column('link', sa.Unicode(), nullable=True),
     sa.Column('name', sa.Unicode(), nullable=True),
     sa.Column('description', sa.Unicode(), nullable=True),
     sa.Column('paid_in', sa.Unicode(), nullable=True),
@@ -123,9 +126,7 @@ def downgrade():
     op.drop_table('saved_users')
     op.drop_table('saved_places')
     op.drop_table('item')
-    with op.batch_alter_table('user', schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f('ix_user_token'))
-
+    op.drop_index(op.f('ix_user_token'), table_name='user')
     op.drop_table('user')
     op.drop_table('place')
     op.drop_table('town')

@@ -20,7 +20,7 @@ def place_saved():
 
 @bp.route('/save_place', methods=['PUT'])
 def save_place():
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     j = request.json.get
     place_id = j('place_id')
     user = User.query.filter_by(token=token).first()
@@ -32,7 +32,7 @@ def save_place():
 
 @bp.route('/unsave_place', methods=['PUT'])
 def unsave_place():
-    token = request.headers['Authorization']
+    token = request.headers.get('Authorization')
     j = request.json.get
     place_id = j('place_id')
     user = User.query.filter_by(token=token).first()
