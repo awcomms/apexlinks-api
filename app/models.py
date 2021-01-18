@@ -82,17 +82,10 @@ class User(db.Model):
                 ratio = fuzz.token_set_ratio(q, user.name)
                 #about_ratio = fuzz.token_set_ratio(q, user.about)
                 #if ratio < 79 or about_ratio < 90: 
-                if ratio < 79: 
+                if ratio < 100: 
                     query.filter(User.id != user.id)
-                else:
-                    user.score = ratio
-            if sort == 'relevance':
-                query.order_by(User.score.desc())
-        if sort == 'save_count':
-            query.order_by(User.save_count.desc())
-        if location and sort == 'location':
+        if location:
             query = User.location_sort(query, location)
-        print(query.all())
         return query
 
     def toggle_save(self, user):
