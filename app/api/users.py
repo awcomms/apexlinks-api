@@ -6,8 +6,15 @@ from app.api import bp
 from app.models import User
 from app.misc import cdict
 
-@bp.route('/users/saved_items')
+@bp.route('/username_available/<username>')
+def username_available(username):
+    return {'res': User.query.filter_by(username=username).count()<1}
 
+@bp.route('/email_available/<email>')
+def email_available(email):
+    return {'res': User.query.filter_by(email=email).count()<1}
+
+@bp.route('/users/saved_items')
 def saved_items():
     token = request.headers.get('Authorization')
     id = request.args.get('id')
@@ -18,7 +25,6 @@ def saved_items():
     return jsonify(cdict(user.saved_items, page))
 
 @bp.route('/users/item_saved')
-
 def item_saved():
     token = request.headers.get('Authorization')
     id = request.args.get('id')
@@ -91,12 +97,13 @@ def users():
     q = a('q') or ''
     sort = a('sort')
     page = a('page')
-    tags = json.loads(a('tags'))
-    coords = None
-    location = None
-    if a(location):      
+    try:
+        tags = json.loads(a('tags'))
+    except: tags = []
+    try:   
         coords = json.loads(a('location'))
-        location = ( coords['lat'], coords['lng'] )
+        location = ( coords['lat'], coords['lon'] )
+    except: location = None
     nation_id = a('nation_id')
     state_id = a('state_id')
     return cdict(User.fuz(q, sort, tags, location, nation_id, state_id), page)
@@ -145,7 +152,6 @@ def create_user():
     return jsonify({'user': user.dict()})
 
 @bp.route('/users', methods=['PUT'])
-
 def edit_user():
     errors = []
     token = request.headers.get('Authorization')

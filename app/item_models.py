@@ -38,8 +38,7 @@ class Item(db.Model):
         if nation_id:
             query.join(User, (User.nation_id==nation_id))
         if state_id:
-            query.join(User, (User.state_id==state_id))
-        
+            query.join(User, (User.state_id==state_id))       
         for item in query:
             if item.tags:
                 for tag in item.tags:
@@ -50,14 +49,14 @@ class Item(db.Model):
                 ratio = fuzz.ratio(q, item.name)
                 #description_ratio = fuzz.token_set_ratio(q, item.description)
                 #if ratio < 79 or description_ratio < 90: 
-                    query.filter(Item.id != item.id)
                 if ratio < 79: 
+                    query.filter(Item.id != item.id)
                 else:
                     item.score = ratio
             if sort == 'relevance':
                 query.order_by(Item.score.desc())
         if sort == 'save_count':
-            query.order_by(Item.savers.count().desc())
+            query.order_by(Item.save_count.desc())
         if location and sort == 'location':
             query = Item.location_sort(query, location)
         return query
@@ -104,8 +103,8 @@ class Item(db.Model):
     @staticmethod
     def location_sort(query, target):
         for item in query:
-            subject = (item.location['lat'], item.location['lng'])
-            target = (target['lat'], target['lng'])
+            subject = (item.location['lat'], item.location['lon'])
+            target = (target['lat'], target['lon'])
             item.distance = dist(subject, target)
         db.session.commit()
         return query.order_by(Item.distance.desc())
@@ -115,12 +114,14 @@ class Item(db.Model):
             'id': self.id,
             'link': self.link,
             'name': self.name,
+            'itype': self.itype,
             #'description': self.description,
             'img_urls': self.img_urls,
             'user': {
                 'id': self.user.id,
             },
-            'paid_in': self.paid_in
+            'price': self.price,
+            'archived': self.archived
         }
         if self.user.show_email:
             data['user']['email'] = self.user.email
@@ -140,4 +141,3 @@ class Item(db.Model):
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])
         db.session.commit()
-        return jsonify(self.dict())

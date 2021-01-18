@@ -66,17 +66,17 @@ class User(db.Model):
     @staticmethod
     def fuz(q, sort, tags, location, nation_id, state_id):
         query = User.query\
-        .filter(User.subscribed==True)\
         .filter(User.visible==True)
         if nation_id:
             query.filter(User.nation_id==nation_id)
         if state_id:
             query.filter(User.state_id==state_id)
         
-        for user in query:
-            for tag in user.tags:
-                if process.extractOne(tag, tags)[1] < 90:
-                    query.filter(User.id != user.id)
+        if tags: 
+            for user in query:
+                for tag in user.tags:
+                    if process.extractOne(tag, tags)[1] < 90:
+                        query.filter(User.id != user.id)
         if q != '':
             for user in query:
                 ratio = fuzz.token_set_ratio(q, user.name)
@@ -92,6 +92,7 @@ class User(db.Model):
             query.order_by(User.save_count.desc())
         if location and sort == 'location':
             query = User.location_sort(query, location)
+        print(query.all())
         return query
 
     def toggle_save(self, user):
@@ -120,8 +121,8 @@ class User(db.Model):
     @staticmethod
     def location_sort(query, target):
         for user in query:
-            subject = (user.location['lat'], user.location['lng'])
-            target = (target['lat'], target['lng'])
+            subject = (user.location['lat'], user.location['lon'])
+            target = (target['lat'], target['lon'])
             user.distance = dist(subject, target)
         db.session.commit()
         return query.order_by(User.dist.desc())
