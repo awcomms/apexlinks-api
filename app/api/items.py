@@ -26,6 +26,7 @@ def items():
     sort = a('sort')
     page = a('page')
     itype = a('itype')
+    archived = a('archived')
     tags = None
     _tags = a('tags')
     try:
@@ -33,13 +34,13 @@ def items():
                 tags = json.loads(_tags)
     except:
         pass
-    position = None
-    if a('position'):      
-        coords = json.loads(a('position'))
-        position = ( coords['lat'], coords['lng'] )
+    location = None
+    if a('location'):      
+        coords = json.loads(a('location'))
+        location = ( coords['lat'], coords['lng'] )
     nation_id = a('nation_id')
     state_id = a('state_id')
-    return cdict(Item.fuz(q, id, sort, itype, tags, position, nation_id, state_id), page)
+    return cdict(Item.fuz(q, id, sort, archived, itype, tags, location, nation_id, state_id), page)
 
 @bp.route('/items', methods=['POST'])
 def add_item():
@@ -85,7 +86,7 @@ def edit_item():
         return jsonify({'errors': errors})
     data = {
         'name': j('name'),
-        'description': j('description'),
+        #'description': j('description'),
         'price': j('price'),
         'paid_in': j('paid_in')
     }

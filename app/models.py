@@ -57,14 +57,14 @@ class User(db.Model):
     email = db.Column(db.Unicode, unique=True)
     name = db.Column(db.Unicode)
     password_hash = db.Column(db.String)
-    about = db.Column(db.Unicode)
+    #about = db.Column(db.Unicode)
     website = db.Column(db.String)
     phone = db.Column(db.String)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     token = db.Column(db.String, index=True, unique=True)
 
     @staticmethod
-    def fuz(q, sort, tags, position, nation_id, state_id):
+    def fuz(q, sort, tags, location, nation_id, state_id):
         query = User.query\
         .filter(User.subscribed==True)\
         .filter(User.visible==True)
@@ -79,9 +79,10 @@ class User(db.Model):
                     query.filter(User.id != user.id)
         if q != '':
             for user in query:
-                ratio = fuzz.ratio(q, user.name)
-                about_ratio = fuzz.token_set_ratio(q, user.about)
-                if ratio < 79 or about_ratio < 90: 
+                ratio = fuzz.token_set_ratio(q, user.name)
+                #about_ratio = fuzz.token_set_ratio(q, user.about)
+                #if ratio < 79 or about_ratio < 90: 
+                if ratio < 79: 
                     query.filter(User.id != user.id)
                 else:
                     user.score = ratio
@@ -89,8 +90,8 @@ class User(db.Model):
                 query.order_by(User.score.desc())
         if sort == 'save_count':
             query.order_by(User.save_count.desc())
-        if position and sort == 'position':
-            query = User.location_sort(query, position)
+        if location and sort == 'location':
+            query = User.location_sort(query, location)
         return query
 
     def toggle_save(self, user):

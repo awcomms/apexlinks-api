@@ -18,20 +18,23 @@ class Item(db.Model):
     json = db.Column(db.JSON)
     link = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
-    description = db.Column(db.Unicode)
+    #description = db.Column(db.Unicode)
     paid_in = db.Column(db.Unicode)
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(q, id, sort, itype, tags, position, nation_id, state_id):
+    def fuz(q, id, sort, archived, itype, tags, location, nation_id, state_id):
         query = Item.query\
         .join(User)\
-        .filter(User.visible==True)\
-        .filter(Item.archived==False)
+        .filter(User.visible==True)
         if id:
             query.join(User, (User.id==id))
         if itype:
             query.filter(Item.itype==itype)
+        if archived:
+            query.filter(Item.archived==True)
+        else:
+            query.filter(Item.archived==False)
         if nation_id:
             query.join(User, (User.nation_id==nation_id))
         if state_id:
@@ -45,17 +48,18 @@ class Item(db.Model):
         if q != '':
             for item in query:
                 ratio = fuzz.ratio(q, item.name)
-                description_ratio = fuzz.token_set_ratio(q, item.description)
-                if ratio < 79 or description_ratio < 90: 
+                #description_ratio = fuzz.token_set_ratio(q, item.description)
+                #if ratio < 79 or description_ratio < 90: 
                     query.filter(Item.id != item.id)
+                if ratio < 79: 
                 else:
                     item.score = ratio
             if sort == 'relevance':
                 query.order_by(Item.score.desc())
         if sort == 'save_count':
             query.order_by(Item.savers.count().desc())
-        if position and sort == 'position':
-            query = Item.location_sort(query, position)
+        if location and sort == 'location':
+            query = Item.location_sort(query, location)
         return query
 
     def toggle_save(self, user):
@@ -111,7 +115,7 @@ class Item(db.Model):
             'id': self.id,
             'link': self.link,
             'name': self.name,
-            'description': self.description,
+            #'description': self.description,
             'img_urls': self.img_urls,
             'user': {
                 'id': self.user.id,
@@ -136,4 +140,4 @@ class Item(db.Model):
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])
         db.session.commit()
-        return jsonify(item.dict())
+        return jsonify(self.dict())

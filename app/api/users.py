@@ -93,13 +93,13 @@ def users():
     page = a('page')
     tags = json.loads(a('tags'))
     coords = None
-    position = None
-    if a(position):      
-        coords = json.loads(a('position'))
-        position = ( coords['lat'], coords['lng'] )
+    location = None
+    if a(location):      
+        coords = json.loads(a('location'))
+        location = ( coords['lat'], coords['lng'] )
     nation_id = a('nation_id')
     state_id = a('state_id')
-    return cdict(User.fuz(q, sort, tags, position, nation_id, state_id), page)
+    return cdict(User.fuz(q, sort, tags, location, nation_id, state_id), page)
 
 @bp.route('/user')
 def user():
