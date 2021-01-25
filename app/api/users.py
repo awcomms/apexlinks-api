@@ -18,7 +18,6 @@ def check_email(email):
 @bp.route('/users/saved_items')
 def saved_items():
     token = request.headers.get('Authorization')
-    id = request.args.get('id')
     page = request.args.get('page')
     user = User.query.filter_by(token=token).first()
     if not user:
@@ -36,7 +35,6 @@ def item_saved():
     return jsonify({'res': res})
 
 @bp.route('/users/toggle_save', methods=['PUT'])
-
 def toggle_user_save():
     token = request.headers.get('Authorization')
     id = request.args.get('id')
@@ -48,10 +46,8 @@ def toggle_user_save():
     return jsonify({'saved': saved})
 
 @bp.route('/users/saved_users')
-
 def saved_users():
     token = request.headers.get('Authorization')
-    id = request.args.get('id')
     page = request.args.get('page')
     user = User.query.filter_by(token=token).first()
     if not user:
@@ -59,7 +55,6 @@ def saved_users():
     return jsonify(cdict(user.saved_users, page))
 
 @bp.route('/users/user_saved')
-
 def user_saved():
     token = request.headers.get('Authorization')
     id = request.args.get('id')
@@ -69,23 +64,7 @@ def user_saved():
     res = user.user_saved(id)
     return jsonify({'res': res})
 
-@bp.route('/del_card', methods=['PUT'])
-
-def del_card():
-    j = request.json.get
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    card = Card.query.get(j('id'))
-    if not card:
-        return jsonify({'error': 'card does not exist'})
-    db.session.delete(card)
-    db.session.commit()
-    return {}, 202
-
 @bp.route('/user/saved', methods=['GET'])
-
 def user_saved_items():
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
@@ -95,35 +74,21 @@ def user_saved_items():
 @bp.route('/users')
 def users():
     a = request.args.get
-    q = a('q') or ''
-    sort = a('sort')
-    page = a('page')
     try:
         tags = json.loads(a('tags'))
-    except: tags = []
-    try:   
-        coords = json.loads(a('location'))
-        location = ( coords['lat'], coords['lon'] )
-    except: location = None
-    nation_id = a('nation_id')
-    state_id = a('state_id')
-    return cdict(User.fuz(q, sort, tags, location, nation_id, state_id), page)
+        len(tags) > 0
+    except:
+        tags = None
+    page = a('page')
+    return cdict(User.fuz(tags), page)
 
-@bp.route('/user')
-def user():
-    errors = []
-    id = request.args.get('id')
-    email = request.args.get('email')
-    if id:
-        user = User.query.get(id)
-    if email:
-        user = User.query.filter_by(email=email).first()
-    if not user.subscribed:
-        errors.append('not_subscribed')
-        return jsonify({'errors': errors})
+@bp.route('/user/<username>')
+def user(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return '404'
     if not user.visible:
-        errors.append('not_visible')
-        return jsonify({'errors': errors})
+        return '423'
     return jsonify(user.dict())
 
 @bp.route('/users', methods=['POST'])
@@ -136,27 +101,44 @@ def create_user():
     if not password or password == '':
         return {'passwordInvalid': True}
     if User.query.filter_by(username=username).first():
-        return {'usernameInvalid': True}
+        return {
+            'usernameInvalid': True,
+            'usernameError': 'Username taken'
+        }
     user = User(username, password)
     user.token = create_access_token(identity=username)
     return jsonify({'user': user.dict()})
 
 @bp.route('/users', methods=['PUT'])
 def edit_user():
-    errors = []
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
-    data = request.get_json()
     if not user:
-        return {}, 401
-    if 'username' in data and data['username'] != user.username and \
-            User.query.filter_by(username=data['username']).first():
-        errors.append({'id': 1, 'kind': 'error', 'title': 'Username taken'})
-        return jsonify({'errors': errors})
-    if 'email' in data and data['email'] != user.email and \
-            User.query.filter_by(email=data['email']).first():
-        errors.append({'id': 2, 'kind': 'error', 'title': 'Email taken'})
-        return jsonify({'errors': errors})
-    user.edit(data)
-    db.session.commit()
-    return jsonify({'user': user.dict()})
+        return '401'
+    json = request.json.get
+    tags = json('tags')
+    username = json('username')
+    j = {
+        'username': username,
+        'website': json('website'),
+        'about': json('about'),
+        'phone': json('phone'),
+        'email': json('email'),
+        'name': json('name'),
+    }
+    if tags:
+        for data in j:
+            i = j[data]
+            if not i in tags:
+                tags.append(i)
+    j['visible'] = json('visible')
+    j['images'] = json('images')
+    j['image'] = json('image')
+    j['tags'] = tags
+    if not username or username == '':
+        return {'usernameInvalid': True, 'usernameError': 'No username'}
+    if username and username != user.username and \
+        User.query.filter_by(username=username).first():
+        return {'usernameInvalid': True, 'usernameError': 'Username taken'}
+    user.edit(j)
+    return user.dict()

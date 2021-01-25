@@ -14,9 +14,15 @@ def get_token():
     password = q['password']
     user = User.query.filter_by(username=username).first()
     if not user:
-        return {'usernameInvalid': True}
+        return {
+            'usernameInvalid': True,
+            'usernameError': 'User does not exist'
+        }
     if not user.check_password(password):
-        return {'passwordInvalid': True}
+        return {
+            'passwordInvalid': True,
+            'passwordError': 'Wrong password'
+        }
     user.token = create_access_token(identity=username)
     db.session.commit()
     body = {'user': user.dict()}

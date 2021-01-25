@@ -9,43 +9,36 @@ class Item(db.Model):
     save_count = db.Column(db.Integer)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    archived = db.Column(db.Boolean, default=False)
-    img_urls = db.Column(db.JSON)
+    visible = db.Column(db.Boolean, default=False)
+    image = db.Column(db.Unicode)
+    images = db.Column(db.JSON)
     itype = db.Column(db.Unicode)
-    location = db.Column(db.JSON)
-    distance = db.Column(db.Float)
     price = db.Column(db.Unicode)
-    json = db.Column(db.JSON)
-    link = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
-    #description = db.Column(db.Unicode)
-    paid_in = db.Column(db.Unicode)
+    description = db.Column(db.Unicode)
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(id, archived, itype, tags):
+    def fuz(id, visible, itype, tags):
+        query_length = len(tags)
         query = Item.query.join(User)\
         .filter(User.visible==True)
         if id:
             query.filter(User.id==id)
         if itype:
             query.filter(Item.itype==itype)
-        if archived:
-            query.filter(Item.archived==True)
+        if visible:
+            query.filter(Item.visible==True)
         else:
-            query.filter(Item.archived==False)  
+            query.filter(Item.visible==False)
         for item in query:
-            if item.tags:
+            length = len(item.tags)
+            item.score = 1
+            if tags and item.tags:
                 for tag in item.tags:
-                    item.score += process.extractOne(tag, tags)[1]
+                    ratio = query_length/length
+                    item.score += ratio*process.extractOne(tag, tags)[1]
         query.order_by(Item.score.desc())
-        """if q != '': 
-            for item in query:
-                ratio = fuzz.ratio(q, item.name)
-                if ratio < 79: 
-                    query.filter(Item.id != item.id)
-                else:
-                    item.score = ratio"""
         return query
 
     def toggle_save(self, user):
@@ -65,25 +58,25 @@ class Item(db.Model):
         return user.item_saved(self.id)
 
     @staticmethod
-    def archive(id, token):
+    def visible(id, token):
         user = User.query.filter_by(token=token).first()
         if not user:
             return {}, 401
         item = Item.query.get(id)
         if item.user != user:
             return {'errors': ['Item does not belong to user']}
-        item.archived = True
+        item.visible = True
         db.session.commit()
 
     @staticmethod
-    def unarchive(id, token):
+    def unvisible(id, token):
         user = User.query.filter_by(token=token).first()
         if not user:
             return {}, 401
         item = Item.query.get(id)
         if item.user != user:
             return {'errors': ['Item does not belong to user']}
-        item.archived = False
+        item.visible = False
         db.session.commit()
         return {}, 201
 
@@ -102,13 +95,12 @@ class Item(db.Model):
             'link': self.link,
             'name': self.name,
             'itype': self.itype,
-            #'description': self.description,
-            'img_urls': self.img_urls,
-            'user': {
-                'id': self.user.id,
-            },
+            'username': self.user.username,
+            'description': self.description,
+            'image': self.image,
+            'images': self.images,
             'price': self.price,
-            'archived': self.archived
+            'visible': self.visible
         }
         if self.user.show_email:
             data['user']['email'] = self.user.email

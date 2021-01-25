@@ -10,10 +10,6 @@ from datetime import datetime, timedelta
 from flask import jsonify, current_app, request, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
-saved_places = db.Table('saved_places',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('place_id', db.Integer, db.ForeignKey('place.id')))
-
 saved_users = db.Table('saved_users',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
@@ -23,6 +19,7 @@ saved_items = db.Table('saved_items',
     db.Column('item', db.Integer, db.ForeignKey('item.id')))
 
 class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
     save_count = db.Column(db.Integer)
     card = db.Column(db.JSON)
     score = db.Column(db.Integer)
@@ -32,9 +29,6 @@ class User(db.Model):
     show_email = db.Column(db.Boolean, default=True)
     hide_location = db.Column(db.Boolean, default=False)
 
-    place_id = db.Column(db.Integer, db.ForeignKey('place.id'))
-
-    id = db.Column(db.Integer, primary_key=True)
     location = db.Column(db.JSON)
     distance = db.Column(db.Float)
     openby = db.Column(db.DateTime)
@@ -44,15 +38,15 @@ class User(db.Model):
 
     items = db.relationship('Item', backref='user', lazy='dynamic')
     
-    saved_places = db.relationship('Place', secondary=saved_places, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     saved_users = db.relationship('User', secondary=saved_users, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     saved_items = db.relationship('Item', secondary=saved_items, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     
-    logo_url = db.Column(db.Unicode)
+    images = db.Column(db.Unicode)
+    image = db.Column(db.Unicode)
     customer_code = db.Column(db.Unicode)
 
     subscribed = db.Column(db.Boolean, default=False)
-    visible = db.Column(db.Boolean, default=False)
+    visible = db.Column(db.Boolean, default=True)
     
     email = db.Column(db.Unicode, unique=True)
     name = db.Column(db.Unicode)
@@ -64,28 +58,18 @@ class User(db.Model):
     token = db.Column(db.String, index=True, unique=True)
 
     @staticmethod
-    def fuz(q, sort, tags, location, nation_id, state_id):
-        query = User.query\
-        .filter(User.visible==True)
-        if nation_id:
-            query.filter(User.nation_id==nation_id)
-        if state_id:
-            query.filter(User.state_id==state_id)
-        
-        if tags: 
-            for user in query:
+    def fuz(tags):
+        query_length = len(tags) or 1
+        query = User.query.filter(User.visible==True)
+        print(query.all())
+        for user in query:
+            if tags and type(user.tags) == str:
+                length = len(user.tags)
+                user.score = 0
                 for tag in user.tags:
-                    if process.extractOne(tag, tags)[1] < 90:
-                        query.filter(User.id != user.id)
-        if q != '':
-            for user in query:
-                ratio = fuzz.token_set_ratio(q, user.name)
-                #about_ratio = fuzz.token_set_ratio(q, user.about)
-                #if ratio < 79 or about_ratio < 90: 
-                if ratio < 100: 
-                    query.filter(User.id != user.id)
-        if location:
-            query = User.location_sort(query, location)
+                    r = query_length/length
+                    user.score += r*process.extractOne(tag, tags)[1]
+        query.order_by(User.score.desc())
         return query
 
     def toggle_save(self, user):
@@ -121,8 +105,8 @@ class User(db.Model):
         return query.order_by(User.dist.desc())
 
     def __init__(self, username, password):
-        self.username=username
         self.set_password(password)
+        self.username=username
         db.session.add(self)
         db.session.commit()
         
@@ -136,9 +120,11 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def dict(self):
-        data = {
+        return {
             'id': self.id,
             'card': self.card,
+            'image': self.image,
+            'images': self.images,
             'username': self.username,
             'name': self.name,
             'email': self.email,
@@ -148,17 +134,12 @@ class User(db.Model):
             'visible': self.visible,
             'subscribed': self.subscribed,
         }
-        if self.location != None:
-            data['location'] = self.location
-        return data
 
     def edit(self, data):
-        print(data)
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])
         if 'password' in data:
             self.set_password(data['password'])
-        print(self.phone)
         db.session.add(self)
         db.session.commit()
