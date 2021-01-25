@@ -33,7 +33,6 @@ def toggle_item_save():
 
 @bp.route('/items', methods=['GET'])
 def items():
-    errors = []
     a = request.args.get
     q = a('q') or ''
     id = a('id')
@@ -45,14 +44,9 @@ def items():
         tags = json.loads(a('tags'))
     except:
         tags = None
-    try:      
-        coords = json.loads(a('location'))
-        location = ( coords['lat'], coords['lon'] )
-    except:
-        location = None
     nation_id = a('nation_id')
     state_id = a('state_id')
-    return cdict(Item.fuz(q, id, sort, archived, itype, tags, location, nation_id, state_id), page)
+    return cdict(Item.fuz(id, archived, itype, tags), page)
 
 @bp.route('/items', methods=['POST'])
 def add_item():

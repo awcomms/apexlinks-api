@@ -23,42 +23,29 @@ class Item(db.Model):
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(q, id, sort, archived, itype, tags, location, nation_id, state_id):
-        query = Item.query\
-        .join(User)\
+    def fuz(id, archived, itype, tags):
+        query = Item.query.join(User)\
         .filter(User.visible==True)
         if id:
-            query.join(User, (User.id==id))
+            query.filter(User.id==id)
         if itype:
             query.filter(Item.itype==itype)
         if archived:
             query.filter(Item.archived==True)
         else:
-            query.filter(Item.archived==False)
-        if nation_id:
-            query.join(User, (User.nation_id==nation_id))
-        if state_id:
-            query.join(User, (User.state_id==state_id))       
+            query.filter(Item.archived==False)  
         for item in query:
             if item.tags:
                 for tag in item.tags:
-                    if process.extractOne(tag, tags)[1] < 90:
-                        query.filter(Item.id != item.id)
-        if q != '':
+                    item.score += process.extractOne(tag, tags)[1]
+        query.order_by(Item.score.desc())
+        """if q != '': 
             for item in query:
                 ratio = fuzz.ratio(q, item.name)
-                #description_ratio = fuzz.token_set_ratio(q, item.description)
-                #if ratio < 79 or description_ratio < 90: 
                 if ratio < 79: 
                     query.filter(Item.id != item.id)
                 else:
-                    item.score = ratio
-            if sort == 'relevance':
-                query.order_by(Item.score.desc())
-        if sort == 'save_count':
-            query.order_by(Item.save_count.desc())
-        if location and sort == 'location':
-            query = Item.location_sort(query, location)
+                    item.score = ratio"""
         return query
 
     def toggle_save(self, user):

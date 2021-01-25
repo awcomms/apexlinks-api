@@ -6,12 +6,13 @@ from app.api import bp
 from app.models import User
 from app.misc import cdict
 
-@bp.route('/username_available/<username>')
-def username_available(username):
+#returns `False` if username exists
+@bp.route('/check_username/<username>')
+def check_username(username):
     return {'res': User.query.filter_by(username=username).count()<1}
 
-@bp.route('/email_available/<email>')
-def email_available(email):
+@bp.route('/check_email/<email>')
+def check_email(email):
     return {'res': User.query.filter_by(email=email).count()<1}
 
 @bp.route('/users/saved_items')
@@ -128,26 +129,15 @@ def user():
 @bp.route('/users', methods=['POST'])
 def create_user():
     j = request.json.get
-    errors = []
     username = j('username')
-    email = j('email')
     password = j('password')
-    if username is None:
-        errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide a username'})
-        return jsonify({'errors': errors})
-    if email is None:
-        errors.append({'id': 2, 'kind': 'error', 'title': 'You must provide an email'})
-        return jsonify({'errors': errors})
-    if password is None:
-        errors.append({'id': 1, 'kind': 'error', 'title': 'You must provide a password'})
-        return jsonify({'errors': errors})
+    if not username or username == '':
+        return {'usernameInvalid': True}
+    if not password or password == '':
+        return {'passwordInvalid': True}
     if User.query.filter_by(username=username).first():
-        errors.append({'id': 2, 'kind': 'error', 'title': 'Username taken'})
-        return jsonify({'errors': errors})
-    if User.query.filter_by(email=email).first():
-        errors.append({'id': 1, 'kind': 'error', 'title': 'Email taken'})
-        return jsonify({'errors': errors})
-    user = User(username, email, password)
+        return {'usernameInvalid': True}
+    user = User(username, password)
     user.token = create_access_token(identity=username)
     return jsonify({'user': user.dict()})
 

@@ -57,7 +57,7 @@ class User(db.Model):
     email = db.Column(db.Unicode, unique=True)
     name = db.Column(db.Unicode)
     password_hash = db.Column(db.String)
-    #about = db.Column(db.Unicode)
+    about = db.Column(db.Unicode)
     website = db.Column(db.String)
     phone = db.Column(db.String)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -120,9 +120,8 @@ class User(db.Model):
         db.session.commit()
         return query.order_by(User.dist.desc())
 
-    def __init__(self, username, email, password):
+    def __init__(self, username, password):
         self.username=username
-        self.email=email
         self.set_password(password)
         db.session.add(self)
         db.session.commit()
