@@ -14,7 +14,7 @@ class Config(object):
         'http://localhost:9200'
     FRONT_END = os.environ.get('FRONT_END')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://postgres:love@localhost:5432/marketlinks'
+        'postgresql://edge:edge@localhost:5432/marketlinks'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_HEADERS = 'Content-Type'
     LANGUAGES = ['en', 'es']

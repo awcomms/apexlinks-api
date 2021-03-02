@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: b1734ab9da1e
+Revision ID: 1b16124b8e8a
 Revises: 
-Create Date: 2021-01-30 16:50:14.100480
+Create Date: 2021-03-02 09:47:34.302443
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b1734ab9da1e'
+revision = '1b16124b8e8a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -32,7 +32,8 @@ def upgrade():
     sa.Column('openby', sa.DateTime(), nullable=True),
     sa.Column('closedby', sa.DateTime(), nullable=True),
     sa.Column('online', sa.Boolean(), nullable=True),
-    sa.Column('logo_url', sa.Unicode(), nullable=True),
+    sa.Column('images', sa.Unicode(), nullable=True),
+    sa.Column('image', sa.Unicode(), nullable=True),
     sa.Column('customer_code', sa.Unicode(), nullable=True),
     sa.Column('subscribed', sa.Boolean(), nullable=True),
     sa.Column('visible', sa.Boolean(), nullable=True),
@@ -53,17 +54,12 @@ def upgrade():
     sa.Column('save_count', sa.Integer(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('visible', sa.Boolean(), nullable=True),
-    sa.Column('img_urls', sa.JSON(), nullable=True),
+    sa.Column('image', sa.Unicode(), nullable=True),
+    sa.Column('images', sa.JSON(), nullable=True),
     sa.Column('itype', sa.Unicode(), nullable=True),
-    sa.Column('location', sa.JSON(), nullable=True),
-    sa.Column('distance', sa.Float(), nullable=True),
     sa.Column('price', sa.Unicode(), nullable=True),
-    sa.Column('json', sa.JSON(), nullable=True),
-    sa.Column('link', sa.Unicode(), nullable=True),
     sa.Column('name', sa.Unicode(), nullable=True),
     sa.Column('description', sa.Unicode(), nullable=True),
-    sa.Column('paid_in', sa.Unicode(), nullable=True),
     sa.Column('score', sa.Float(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
