@@ -61,7 +61,6 @@ class User(db.Model):
     def fuz(tags):
         query_length = len(tags) or 1
         query = User.query.filter(User.visible==True)
-        print(query.all())
         for user in query:
             if tags and type(user.tags) == str:
                 length = len(user.tags)
@@ -69,7 +68,9 @@ class User(db.Model):
                 for tag in user.tags:
                     r = query_length/length
                     user.score += r*process.extractOne(tag, tags)[1]
+                    db.session.commit()
         query.order_by(User.score.desc())
+        print(query)
         return query
 
     def toggle_save(self, user):
@@ -111,7 +112,7 @@ class User(db.Model):
         db.session.commit()
         
     def __repr__(self):
-        return 'email: {}'.format(self.email)
+        return 'username: {}'.format(self.username)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
