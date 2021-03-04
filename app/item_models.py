@@ -90,23 +90,16 @@ class Item(db.Model):
         return query.order_by(Item.distance.desc())
 
     def dict(self):
-        data = {
+       return {
             'id': self.id,
-            'link': self.link,
             'name': self.name,
             'itype': self.itype,
-            'username': self.user.username,
             'description': self.description,
             'image': self.image,
             'images': self.images,
             'price': self.price,
             'visible': self.visible
         }
-        if self.user.show_email:
-            data['user']['email'] = self.user.email
-        if not self.user.hide_location:
-            data['user']['location'] = self.user.location
-        return data
 
     def __init__(self, data):
         for field in data:

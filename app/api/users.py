@@ -107,7 +107,6 @@ def create_user():
         }
     user = User(username, password)
     user.images = []
-    user.tags.append(username)
     user.token = create_access_token(identity=username)
     return jsonify({'user': user.dict()})
 
@@ -116,7 +115,7 @@ def edit_user():
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '401'
+        return '', 401
     json = request.json.get
     tags = json('tags')
     username = json('username')
@@ -130,7 +129,8 @@ def edit_user():
     }
     if tags:
         for data in j:
-            i = j[data]
+            if data != user.about:
+                i = j[data]
             if not i in tags:
                 if i:
                     tags.append(i)

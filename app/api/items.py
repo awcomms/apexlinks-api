@@ -52,8 +52,8 @@ def add_item():
         'name': name,
     }
     if tags:
-        for data in json:
-            i = json[data]
+        for field in data:
+            i = data[field]
             if not i in tags:
                 tags.append(i)
     data['visible'] = json('visible')
@@ -111,7 +111,9 @@ def toggle_visible(id):
 
 @bp.route('/items/<int:id>', methods=['GET'])
 def item(id):
-    return Item.query.get(id).dict()
+    item = Item.query.get(id).dict()
+    print(type(item))
+    return item
 
 @bp.route('/items/<int:id>', methods=['DELETE'])
 def del_item(id):

@@ -59,19 +59,19 @@ class User(db.Model):
 
     @staticmethod
     def fuz(tags):
-        query_length = len(tags) or 1
         query = User.query.filter(User.visible==True)
         for user in query:
             if type(user.tags) == list and tags:
-                length = len(user.tags)
                 user.score = 0
+                score = 0
                 for tag in tags:
                     for user_tag in user.tags:
-                        r = query_length/length
-                        user.score += r*fuzz.token_set_ratio(tag, user_tag)
-                        print(tag, user_tag, user.score)
+                        score += fuzz.token_set_ratio(tag, user_tag)
+                user.score = score/len(user.tags)/len(tags)
+            print(user.username, user.score)
         db.session.commit()
-        query.order_by(User.score.desc())
+        query = query.order_by(User.score.desc())
+        print(query.all())
         return query
 
     def toggle_save(self, user):
@@ -130,6 +130,7 @@ class User(db.Model):
             'username': self.username,
             'name': self.name,
             'email': self.email,
+            'score': self.score,
             'token': self.token,
             'tags': self.tags,
             'location': self.location,
