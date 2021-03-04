@@ -71,7 +71,7 @@ def user_saved_items():
     page = request.args.get('page')
     return cdict(user.saved_items, page)
 
-@bp.route('/users')
+@bp.route('/users', methods=['GET'])
 def users():
     a = request.args.get
     try:
@@ -82,7 +82,7 @@ def users():
     page = a('page')
     return cdict(User.fuz(tags), page)
 
-@bp.route('/user/<username>')
+@bp.route('/user/<username>', methods=['GET'])
 def user(username):
     user = User.query.filter_by(username=username).first()
     if not user:
@@ -106,6 +106,8 @@ def create_user():
             'usernameError': 'Username taken'
         }
     user = User(username, password)
+    user.images = []
+    user.tags.append(username)
     user.token = create_access_token(identity=username)
     return jsonify({'user': user.dict()})
 
@@ -130,7 +132,8 @@ def edit_user():
         for data in j:
             i = j[data]
             if not i in tags:
-                tags.append(i)
+                if i:
+                    tags.append(i)
     j['visible'] = json('visible')
     j['images'] = json('images')
     j['image'] = json('image')
@@ -141,4 +144,5 @@ def edit_user():
         User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}
     user.edit(j)
+    print(user, user.dict())
     return user.dict()

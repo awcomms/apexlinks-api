@@ -62,15 +62,16 @@ class User(db.Model):
         query_length = len(tags) or 1
         query = User.query.filter(User.visible==True)
         for user in query:
-            if tags and type(user.tags) == str:
+            if type(user.tags) == list and tags:
                 length = len(user.tags)
                 user.score = 0
-                for tag in user.tags:
-                    r = query_length/length
-                    user.score += r*process.extractOne(tag, tags)[1]
-                    db.session.commit()
+                for tag in tags:
+                    for user_tag in user.tags:
+                        r = query_length/length
+                        user.score += r*fuzz.token_set_ratio(tag, user_tag)
+                        print(tag, user_tag, user.score)
+        db.session.commit()
         query.order_by(User.score.desc())
-        print(query)
         return query
 
     def toggle_save(self, user):
