@@ -34,10 +34,8 @@ class Item(db.Model):
         for item in query:
             length = len(item.tags)
             item.score = 1
-            if tags and item.tags:
-                for tag in item.tags:
-                    ratio = query_length/length
-                    item.score += ratio*process.extractOne(tag, tags)[1]
+            for tag in item.tags:
+                item.score += process.extractOne(tag, tags)[1]/len(item.tags)
         query.order_by(Item.score.desc())
         return query
 
@@ -58,7 +56,7 @@ class Item(db.Model):
         return user.item_saved(self.id)
 
     @staticmethod
-    def visible(id, token):
+    def is_visible(id, token):
         user = User.query.filter_by(token=token).first()
         if not user:
             return {}, 401

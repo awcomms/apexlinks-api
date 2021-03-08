@@ -67,7 +67,7 @@ class User(db.Model):
                 for tag in tags:
                     for user_tag in user.tags:
                         score += fuzz.token_set_ratio(tag, user_tag)
-                user.score = score/len(user.tags)/len(tags)
+                user.score = score/len(user.tags)
             print(user.username, user.score)
         db.session.commit()
         query = query.order_by(User.score.desc())
