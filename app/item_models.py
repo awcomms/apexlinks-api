@@ -20,22 +20,21 @@ class Item(db.Model):
 
     @staticmethod
     def fuz(id, visible, itype, tags):
-        query_length = len(tags)
         query = Item.query.join(User)\
         .filter(User.visible==True)
         if id:
-            query.filter(User.id==id)
+            query=query.filter(User.id==id)
         if itype:
-            query.filter(Item.itype==itype)
-        if visible:
-            query.filter(Item.visible==True)
-        else:
-            query.filter(Item.visible==False)
+            query=query.filter(Item.itype==itype)
+        query=query.filter(Item.visible==visible)
+        
         for item in query:
-            length = len(item.tags)
-            item.score = 1
+            item.score = 0
             for tag in item.tags:
-                item.score += process.extractOne(tag, tags)[1]/len(item.tags)
+                score = process.extractOne(tag, tags)
+                if score:
+                    item.score += score[1]
+                item.score /= len(item.tags)
         query.order_by(Item.score.desc())
         return query
 
@@ -96,13 +95,15 @@ class Item(db.Model):
             'image': self.image,
             'images': self.images,
             'price': self.price,
-            'visible': self.visible
+            'visible': self.visible,
+            'user': self.user.username
         }
 
     def __init__(self, data):
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])
+        self.tags = []
         db.session.add(self)
         db.session.commit()
 

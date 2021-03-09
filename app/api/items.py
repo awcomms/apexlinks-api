@@ -21,6 +21,7 @@ def toggle_item_save():
 @bp.route('/items', methods=['GET'])
 def items():
     a = request.args.get
+    print(request.args)
     id = a('id')
     if id:
         user = User.query.get(id)
@@ -56,6 +57,7 @@ def add_item():
             i = data[field]
             if not i in tags:
                 tags.append(i)
+    print(tags)
     data['visible'] = json('visible')
     data['images'] = json('images')
     data['itype'] = json('itype')
@@ -111,18 +113,17 @@ def toggle_visible(id):
 
 @bp.route('/items/<int:id>', methods=['GET'])
 def item(id):
-    item = Item.query.get(id).dict()
-    print(type(item))
-    return item
+    return Item.query.get(id).dict()
 
 @bp.route('/items/<int:id>', methods=['DELETE'])
 def del_item(id):
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return {}, 401
+        return '', 401
     item = Item.query.get(id)
     if item.user != user:
-        return {}, 401
+        return '', 401
     db.session.delete(item)
+    db.session.commit()
     return jsonify({'yes': True})

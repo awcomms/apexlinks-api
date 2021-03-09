@@ -146,3 +146,12 @@ def edit_user():
     user.edit(j)
     print(user, user.dict())
     return user.dict()
+
+@bp.route('/users/<int:id>', methods=['DELETE'])
+def delete_user(id):
+    user = User.query.get(id)
+    for item in user.items:
+        db.session.delete(item)
+    db.session.delete(user)
+    db.session.commit()
+    return {'yes': True}, 202
