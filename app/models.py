@@ -67,7 +67,6 @@ class User(db.Model):
                         user.score += process.extractOne(tag, user.tags)
         db.session.commit()
         query = query.order_by(User.score.desc())
-        print(query.all())
         return query
 
     def toggle_save(self, user):

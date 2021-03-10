@@ -9,7 +9,7 @@ class Item(db.Model):
     save_count = db.Column(db.Integer)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    visible = db.Column(db.Boolean, default=False)
+    visible = db.Column(db.Boolean, default=True)
     image = db.Column(db.Unicode)
     images = db.Column(db.JSON)
     itype = db.Column(db.Unicode)
@@ -26,11 +26,17 @@ class Item(db.Model):
             query=query.filter(User.id==id)
         if itype:
             query=query.filter(Item.itype==itype)
-        query=query.filter(Item.visible==visible)
+        try:
+            query=query.filter(Item.visible==bool(visible))
+        except:
+            pass
         for item in query:
             item.score = 0
             for tag in tags:
-                item.score += process.extractOne(tag, item.tags)[1]
+                try:
+                    item.score += process.extractOne(tag, item.tags)[1]
+                except:
+                    pass
         db.session.commit()
         query.order_by(Item.score.desc())
         return query
@@ -87,6 +93,7 @@ class Item(db.Model):
        return {
             'id': self.id,
             'name': self.name,
+            'tags': self.tags,
             'itype': self.itype,
             'description': self.description,
             'image': self.image,
@@ -100,8 +107,6 @@ class Item(db.Model):
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])
-        self.images = []
-        self.tags = []
         db.session.add(self)
         db.session.commit()
 

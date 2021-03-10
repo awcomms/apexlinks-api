@@ -29,9 +29,9 @@ def items():
             return '404'
         if not user.visible:
             return '423'
-    page = a('page')
+    page = int(a('page'))
     itype = a('itype')
-    visible = a('visible')
+    visible = int(a('visible'))
     try:
         tags = json.loads(a('tags'))
     except:
@@ -57,7 +57,6 @@ def add_item():
             i = data[field]
             if not i in tags:
                 tags.append(i)
-    print(tags)
     data['visible'] = json('visible')
     data['images'] = json('images')
     data['itype'] = json('itype')
@@ -87,8 +86,8 @@ def edit_item():
         'description': json('description'),
     }
     if tags:
-        for data in json:
-            i = json[data]
+        for field in data:
+            i = data[field]
             if not i in tags:
                 tags.append(i)
     data['visible'] = json('visible')

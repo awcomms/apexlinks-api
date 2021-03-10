@@ -76,10 +76,9 @@ def users():
     a = request.args.get
     try:
         tags = json.loads(a('tags'))
-        len(tags) > 0
     except:
-        tags = None
-    page = a('page')
+        tags = []
+    page = int(a('page'))
     return cdict(User.fuz(tags), page)
 
 @bp.route('/user/<username>', methods=['GET'])
@@ -143,7 +142,6 @@ def edit_user():
         User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}
     user.edit(j)
-    print(user, user.dict())
     return user.dict()
 
 @bp.route('/users/<int:id>', methods=['DELETE'])
