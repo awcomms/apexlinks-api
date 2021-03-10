@@ -85,9 +85,9 @@ def users():
 def user(username):
     user = User.query.filter_by(username=username).first()
     if not user:
-        return '404'
+        return '404', 404
     if not user.visible:
-        return '423'
+        return '423', 423
     return jsonify(user.dict())
 
 @bp.route('/users', methods=['POST'])
@@ -114,33 +114,41 @@ def edit_user():
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
-    json = request.json.get
-    tags = json('tags')
-    username = json('username')
-    j = {
-        'username': username,
-        'website': json('website'),
-        'about': json('about'),
-        'phone': json('phone'),
-        'email': json('email'),
-        'name': json('name'),
-    }
-    if tags:
-        for data in j:
-            if data != user.about:
-                i = j[data]
-            if not i in tags:
-                if i:
-                    tags.append(i)
-    j['visible'] = json('visible')
-    j['images'] = json('images')
-    j['image'] = json('image')
-    j['tags'] = tags
+    _json = request.json.get
+    username = _json('username')
     if not username or username == '':
         return {'usernameInvalid': True, 'usernameError': 'No username'}
     if username and username != user.username and \
         User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}
+    tags = _json('tags') or []
+    # if type(tags) != list:
+    #     try:
+    #         tags = json.loads(tags)
+    #     except:
+    #         tags = tags.split(',')
+    #     except:
+    #         tags = tags.split(';')
+    #     finally:
+    #         return 'Unsupported tags format', 301
+    j = {
+        'username': username,
+        'address': _json('address'),
+        'website': _json('website'),
+        'phone': _json('phone'),
+        'email': _json('email'),
+        'name': _json('name'),
+    }
+    for data in j:
+        if data != user.about:
+            i = j[data]
+        if not i in tags:
+            if i:
+                tags.append(i)
+    j['visible'] = _json('visible')
+    j['images'] = _json('images')
+    j['image'] = _json('image')
+    j['tags'] = tags
     user.edit(j)
     return user.dict()
 

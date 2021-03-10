@@ -64,7 +64,10 @@ class User(db.Model):
             if type(user.tags) == list and tags:
                 user.score = 0
                 for tag in tags:
-                        user.score += process.extractOne(tag, user.tags)
+                    try:
+                        user.score += process.extractOne(tag, user.tags)[1]
+                    except:
+                        pass
         db.session.commit()
         query = query.order_by(User.score.desc())
         return query

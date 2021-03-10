@@ -31,7 +31,13 @@ def items():
             return '423'
     page = int(a('page'))
     itype = a('itype')
-    visible = int(a('visible'))
+    visible = a('visible')
+    if visible == 'true':
+        visible = True
+    elif visible == 'false':
+        visible = False
+    else:
+        visible = True
     try:
         tags = json.loads(a('tags'))
     except:
@@ -43,28 +49,34 @@ def add_item():
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '401'
+        return '401', 401
     json = request.json.get
-    tags = json('tags')
     name = json('name')
     itype = json('itype')
+    price = json('price')
+    if Item.query.filter_by(itype=itype)\
+        .filter_by(user_id=user.id)\
+            .filter_by(name=name).first():
+        return {'nameError': 'Another item owned by same user has that name'}
+    tags = json('tags') or []
+    tags.append(name)
+    tags.append(price)
     data = {
-        'description': json('description'),
         'name': name,
+        'itype': itype,
+        'description': json('description'),
+        'visible': json('visible'),
+        'images': json('images'),
+        'image': json('image'),
+        'price': price,
+        'user': user,
+        'tags': tags
     }
-    if tags:
-        for field in data:
-            i = data[field]
-            if not i in tags:
-                tags.append(i)
-    data['visible'] = json('visible')
-    data['images'] = json('images')
-    data['itype'] = json('itype')
-    data['image'] = json('image')
-    data['user'] = user
-    data['tags'] = tags
-    if Item.query.filter_by(itype=itype).filter_by(user_id=user.id).filter_by(name=name).first():
-        return {'nameError': 'Another item owned by user has that name'}
+    # if tags:
+    #     for field in data:
+    #         i = data[field]
+    #         if not i in tags:
+    #             tags.append(i)
     i = Item(data)
     return {'id': i.id}
 
@@ -75,26 +87,35 @@ def edit_item():
     if not user:
         return '', 401
     json = request.json.get
-    tags = json('tags')
-    name = json('name')
     id = json('id')
     item = Item.query.get(id)
+    name = json('name')
+    itype = json('itype')
+    price = json('price')
+    if name != item.name and Item.query.filter_by(itype=itype)\
+        .filter_by(user_id=user.id)\
+            .filter_by(name=name).first():
+        return {'nameError': 'Another item owned by same user has that name'}, 301 #wrong error code
+    tags = json('tags') or []
     if item and item.user != user:
         return '', 401
+    tags.append(name)
+    tags.append(price)
     data = {
         'name': name,
         'description': json('description'),
+        'visible': json('visible'),
+        'images': json('images'),
+        'itype': json('itype'),
+        'image': json('image'),
+        'price': price,
+        'tags': tags
     }
-    if tags:
-        for field in data:
-            i = data[field]
-            if not i in tags:
-                tags.append(i)
-    data['visible'] = json('visible')
-    data['images'] = json('images')
-    data['itype'] = json('itype')
-    data['image'] = json('image')
-    data['tags'] = tags
+    # if tags:
+    #     for field in data:
+    #         i = data[field]
+    #         if not i in tags:
+    #             tags.append(i)
     item.edit(data)
     return {'id': item.id}
 

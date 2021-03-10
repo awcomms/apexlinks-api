@@ -27,7 +27,7 @@ class Item(db.Model):
         if itype:
             query=query.filter(Item.itype==itype)
         try:
-            query=query.filter(Item.visible==bool(visible))
+            query=query.filter(Item.visible==visible)
         except:
             pass
         for item in query:
