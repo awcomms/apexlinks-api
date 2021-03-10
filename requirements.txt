@@ -58,6 +58,7 @@ pyquery==1.4.3
 python-dateutil==2.8.1
 python-dotenv==0.15.0
 python-editor==1.0.4
+python-Levenshtein
 pywin32-ctypes==0.2.0
 ratelim==0.1.6
 readme-renderer==28.0

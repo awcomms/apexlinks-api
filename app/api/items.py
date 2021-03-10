@@ -81,7 +81,7 @@ def edit_item():
     id = json('id')
     item = Item.query.get(id)
     if item and item.user != user:
-        return '401'
+        return '', 401
     data = {
         'name': name,
         'description': json('description'),
@@ -98,18 +98,6 @@ def edit_item():
     data['tags'] = tags
     item.edit(data)
     return {'id': item.id}
-
-@bp.route('/items/toggle_visible/<int:id>', methods=['PUT'])
-def toggle_visible(id):
-    token = request.headers.get('Authorization')
-    if token: user = User.query.filter_by(token=token).first()
-    if type(id) == int: item = Item.query.get(id)
-    if not item:
-        return {'error': 'item does not exist'}
-    if not user or item.user != user:
-        return {}, 401
-    item.visible = not item.visible
-    return {'visible': item.visible}
 
 @bp.route('/items/<int:id>', methods=['GET'])
 def item(id):

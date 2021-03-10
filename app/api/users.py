@@ -106,7 +106,6 @@ def create_user():
             'usernameError': 'Username taken'
         }
     user = User(username, password)
-    user.images = []
     user.token = create_access_token(identity=username)
     return jsonify({'user': user.dict()})
 

@@ -63,12 +63,8 @@ class User(db.Model):
         for user in query:
             if type(user.tags) == list and tags:
                 user.score = 0
-                score = 0
                 for tag in tags:
-                    for user_tag in user.tags:
-                        score += fuzz.token_set_ratio(tag, user_tag)
-                user.score = score/len(user.tags)
-            print(user.username, user.score)
+                        user.score += process.extractOne(tag, user.tags)
         db.session.commit()
         query = query.order_by(User.score.desc())
         print(query.all())
@@ -109,6 +105,7 @@ class User(db.Model):
     def __init__(self, username, password):
         self.set_password(password)
         self.username=username
+        self.images=[]
         self.tags = []
         db.session.add(self)
         db.session.commit()

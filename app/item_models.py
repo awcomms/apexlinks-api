@@ -27,14 +27,11 @@ class Item(db.Model):
         if itype:
             query=query.filter(Item.itype==itype)
         query=query.filter(Item.visible==visible)
-        
         for item in query:
             item.score = 0
-            for tag in item.tags:
-                score = process.extractOne(tag, tags)
-                if score:
-                    item.score += score[1]
-                item.score /= len(item.tags)
+            for tag in tags:
+                item.score += process.extractOne(tag, item.tags)[1]
+        db.session.commit()
         query.order_by(Item.score.desc())
         return query
 
@@ -103,6 +100,7 @@ class Item(db.Model):
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])
+        self.images = []
         self.tags = []
         db.session.add(self)
         db.session.commit()
