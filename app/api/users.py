@@ -81,9 +81,13 @@ def users():
     page = int(a('page'))
     return cdict(User.fuz(tags), page)
 
-@bp.route('/user/<username>', methods=['GET'])
-def user(username):
-    user = User.query.filter_by(username=username).first()
+@bp.route('/user/<value>', methods=['GET'])
+def user(value):
+    try:
+        user = User.query.get(int(value))
+    except:
+        user = User.query.filter_by(username=value).first()
+    print(user.images)
     if not user:
         return '404', 404
     if not user.visible:
@@ -105,7 +109,9 @@ def create_user():
             'usernameError': 'Username taken'
         }
     user = User(username, password)
+    print('post', user, user.images)
     user.token = create_access_token(identity=username)
+    print('post', user, user.images)
     return jsonify({'user': user.dict()})
 
 @bp.route('/users', methods=['PUT'])
