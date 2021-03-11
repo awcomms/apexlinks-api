@@ -6,14 +6,14 @@ from app.misc import dist
 
 class Event(db.Model):
     tags = db.Column(db.JSON)
-    save_count = db.Column(db.Integer)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     visible = db.Column(db.Boolean, default=True)
+    location = db.Column(db.Unicode)
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
+    start_time = db.Column(db.DateTime)
     image = db.Column(db.Unicode)
-    images = db.Column(db.JSON)
-    itype = db.Column(db.Unicode)
-    price = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
     description = db.Column(db.Unicode)
     score = db.Column(db.Float)

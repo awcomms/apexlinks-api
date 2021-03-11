@@ -109,9 +109,7 @@ def create_user():
             'usernameError': 'Username taken'
         }
     user = User(username, password)
-    print('post', user, user.images)
     user.token = create_access_token(identity=username)
-    print('post', user, user.images)
     return jsonify({'user': user.dict()})
 
 @bp.route('/users', methods=['PUT'])

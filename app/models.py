@@ -14,9 +14,9 @@ saved_users = db.Table('saved_users',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
 
-saved_events = db.Table('saved_events',
+saved_items = db.Table('saved_items',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('event', db.Integer, db.ForeignKey('event.id')))
+    db.Column('item', db.Integer, db.ForeignKey('item.id')))
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -37,12 +37,12 @@ class User(db.Model):
     online = db.Column(db.Boolean, default=False)
 
     events = db.relationship('Event', backref='user', lazy='dynamic')
-    events = db.relationship('Event', backref='user', lazy='dynamic')
+    items = db.relationship('Item', backref='user', lazy='dynamic')
     
     saved_users = db.relationship('User', secondary=saved_users, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
-    saved_events = db.relationship('Event', secondary=saved_events, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
+    saved_items = db.relationship('Item', secondary=saved_items, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     
-    images = db.Column(db.Unicode)
+    images = db.Column(db.JSON)
     image = db.Column(db.Unicode)
     customer_code = db.Column(db.Unicode)
 
@@ -87,8 +87,8 @@ class User(db.Model):
             db.session.commit()
         return self.user_saved(user.id)
 
-    def event_saved(self, id):
-        return self.saved_events.filter_by(id=id).count()>0
+    def item_saved(self, id):
+        return self.saved_items.filter_by(id=id).count()>0
 
     def user_saved(self, id):
         return self.saved_users.filter_by(id==id).count()>0
@@ -112,6 +112,7 @@ class User(db.Model):
         self.tags=[]
         print('__init__', self, self.images)
         db.session.add(self)
+        print('__init__', self, self.images)
         db.session.commit()
         print('__init__', self, self.images)
         

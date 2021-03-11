@@ -1,6 +1,7 @@
 from flask import jsonify
 from app import create_app, db
-from app.item_models import Item, Event
+from app.event_models import Event
+from app.item_models import Item
 from app.models import User
 
 app = create_app()
