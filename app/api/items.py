@@ -21,7 +21,6 @@ def toggle_item_save():
 @bp.route('/items', methods=['GET'])
 def items():
     a = request.args.get
-    print(request.args)
     id = a('id')
     if id:
         user = User.query.get(id)

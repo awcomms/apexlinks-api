@@ -87,11 +87,8 @@ def user(value):
         user = User.query.get(int(value))
     except:
         user = User.query.filter_by(username=value).first()
-    print(user.images)
     if not user:
         return '404', 404
-    if not user.visible:
-        return '423', 423
     return jsonify(user.dict())
 
 @bp.route('/users', methods=['POST'])

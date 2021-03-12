@@ -47,16 +47,16 @@ class User(db.Model):
     customer_code = db.Column(db.Unicode)
 
     subscribed = db.Column(db.Boolean, default=False)
-    visible = db.Column(db.Boolean, default=True)
+    visible = db.Column(db.Boolean)
     
-    email = db.Column(db.Unicode, unique=True)
+    email = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
     password_hash = db.Column(db.String)
     about = db.Column(db.Unicode)
     website = db.Column(db.String)
     phone = db.Column(db.String)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    token = db.Column(db.String, index=True, unique=True)
+    token = db.Column(db.String, index=True)
 
     @staticmethod
     def fuz(tags):
@@ -110,11 +110,8 @@ class User(db.Model):
         self.username=username
         self.images=[]
         self.tags=[]
-        print('__init__', self, self.images)
         db.session.add(self)
-        print('__init__', self, self.images)
         db.session.commit()
-        print('__init__', self, self.images)
         
     def __repr__(self):
         return 'username: {}'.format(self.username)
@@ -143,6 +140,7 @@ class User(db.Model):
         }
 
     def edit(self, data):
+        setattr(self, 'visible', data['visible'])
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])

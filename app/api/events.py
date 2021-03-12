@@ -21,7 +21,6 @@ def toggle_event_save():
 @bp.route('/events', methods=['GET'])
 def events():
     a = request.args.get
-    print(request.args)
     id = a('id')
     if id:
         user = User.query.get(id)

@@ -43,7 +43,6 @@ class Event(db.Model):
 
     def toggle_save(self, user):
         saved = user.event_saved(self.id)
-        print(saved)
         if not saved:
             user.saved_events.append(self)
             db.session.commit()
@@ -54,7 +53,6 @@ class Event(db.Model):
             db.session.commit()
             self.save_count = self.savers.count()
             db.session.commit()
-        print(user.event_saved(self.id))
         return user.event_saved(self.id)
 
     @staticmethod

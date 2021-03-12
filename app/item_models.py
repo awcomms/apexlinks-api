@@ -43,7 +43,6 @@ class Item(db.Model):
 
     def toggle_save(self, user):
         saved = user.item_saved(self.id)
-        print(saved)
         if not saved:
             user.saved_items.append(self)
             db.session.commit()
@@ -54,7 +53,6 @@ class Item(db.Model):
             db.session.commit()
             self.save_count = self.savers.count()
             db.session.commit()
-        print(user.item_saved(self.id))
         return user.item_saved(self.id)
 
     @staticmethod
