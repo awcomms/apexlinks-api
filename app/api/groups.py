@@ -18,7 +18,6 @@ def groups():
         if not user.visible:
             return '423'
     page = int(a('page'))
-    itype = a('itype')
     visible = a('visible')
     if visible == 'true':
         visible = True
@@ -30,7 +29,7 @@ def groups():
         tags = json.loads(a('tags'))
     except:
         tags = []
-    return cdict(Group.fuz(id, visible, itype, tags), page)
+    return cdict(Group.fuz(id, visible, tags), page)
 
 @bp.route('/groups', methods=['POST'])
 def add_group():
@@ -40,19 +39,15 @@ def add_group():
         return '401', 401
     json = request.json.get
     name = json('name')
-    itype = json('itype')
-    price = json('price')
     if Group.query.filter_by(user_id=user.id)\
             .filter_by(name=name).first():
         return {'nameError': 'Another group owned by same user has that name'}
     tags = json('tags') or []
     tags.append(name)
-    tags.append(price)
     data = {
         'name': name,
-        'description': json('description'),
         'visible': json('visible'),
-        'image': json('image'),
+        'code': json('code'),
         'user': user,
         'tags': tags
     }
@@ -74,29 +69,19 @@ def edit_group():
     id = json('id')
     group = Group.query.get(id)
     name = json('name')
-    itype = json('itype')
-    price = json('price')
-    if name != group.name and Group.query.filter_by(itype=itype)\
-        .filter_by(user_id=user.id)\
+    if name != group.name and Group.query\
             .filter_by(name=name).first():
-        return {'nameError': 'Another group owned by same user has that name'}, 301 #wrong error code
+        return {'nameError': 'Name taken'}, 301 #wrong error code
     tags = json('tags') or []
     if group and group.user != user:
         return '', 401
     tags.append(name)
-    tags.append(price)
     data = {
         'name': name,
-        'description': json('description'),
         'visible': json('visible'),
-        'image': json('image'),
+        'code': json('code'),
         'tags': tags
     }
-    # if tags:
-    #     for field in data:
-    #         i = data[field]
-    #         if not i in tags:
-    #             tags.append(i)
     group.edit(data)
     return {'id': group.id}
 

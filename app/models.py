@@ -40,8 +40,7 @@ class User(db.Model):
     saved_users = db.relationship('User', secondary=saved_users, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     saved_groups = db.relationship('Group', secondary=saved_groups, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     
-    images = db.Column(db.JSON)
-    image = db.Column(db.Unicode)
+    code = db.Column(db.Unicode)
     customer_code = db.Column(db.Unicode)
 
     subscribed = db.Column(db.Boolean, default=False)
@@ -106,7 +105,6 @@ class User(db.Model):
     def __init__(self, username, password):
         self.set_password(password)
         self.username=username
-        self.images=[]
         self.tags=[]
         db.session.add(self)
         db.session.commit()
@@ -123,8 +121,7 @@ class User(db.Model):
     def dict(self):
         return {
             'id': self.id,
-            'image': self.image,
-            'images': self.images,
+            'code': self.code,
             'username': self.username,
             'name': self.name,
             'email': self.email,

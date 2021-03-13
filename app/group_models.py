@@ -9,18 +9,16 @@ class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     visible = db.Column(db.Boolean, default=True)
-    image = db.Column(db.Unicode)
+    code = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(id, visible, itype, tags):
+    def fuz(id, visible, tags):
         query = Group.query.join(User)\
         .filter(User.visible==True)
         if id:
             query=query.filter(User.id==id)
-        if itype:
-            query=query.filter(Group.itype==itype)
         try:
             query=query.filter(Group.visible==visible)
         except:
@@ -41,7 +39,7 @@ class Group(db.Model):
             'id': self.id,
             'name': self.name,
             'tags': self.tags,
-            'image': self.image,
+            'code': self.code,
             'visible': self.visible,
             'user': self.user.username
         }

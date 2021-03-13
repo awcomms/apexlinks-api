@@ -11,75 +11,16 @@ from app.misc import cdict
 def check_username(username):
     return {'res': User.query.filter_by(username=username).count()<1}
 
-@bp.route('/check_email/<email>')
-def check_email(email):
-    return {'res': User.query.filter_by(email=email).count()<1}
-
-@bp.route('/users/saved_groups')
-def saved_groups():
-    token = request.headers.get('Authorization')
-    page = request.args.get('page')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    return jsonify(cdict(user.saved_groups, page))
-
-@bp.route('/users/group_saved')
-def group_saved():
-    token = request.headers.get('Authorization')
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    res = user.group_saved(id)
-    return jsonify({'res': res})
-
-@bp.route('/users/toggle_save', methods=['PUT'])
-def toggle_user_save():
-    token = request.headers.get('Authorization')
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    _user = User.query.get(id)
-    saved = user.toggle_save(_user)
-    return jsonify({'saved': saved})
-
-@bp.route('/users/saved_users')
-def saved_users():
-    token = request.headers.get('Authorization')
-    page = request.args.get('page')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    return jsonify(cdict(user.saved_users, page))
-
-@bp.route('/users/user_saved')
-def user_saved():
-    token = request.headers.get('Authorization')
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    res = user.user_saved(id)
-    return jsonify({'res': res})
-
-@bp.route('/user/saved', methods=['GET'])
-def user_saved_groups():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    page = request.args.get('page')
-    return cdict(user.saved_groups, page)
-
 @bp.route('/users', methods=['GET'])
 def users():
-    a = request.args.get
-    try:
-        tags = json.loads(a('tags'))
-    except:
-        tags = []
-    page = int(a('page'))
-    return cdict(User.fuz(tags), page)
+    # a = request.args.get
+    token = request.headers.get('Authorization')
+    user = User.query.filter_by(token=token).first()
+    if not user:
+        return '401', 401
+    tags = user.tags
+    # page = int(a('page'))
+    return cdict(User.fuz(tags), 1, 1)
 
 @bp.route('/user/<value>', methods=['GET'])
 def user(value):
@@ -147,8 +88,7 @@ def edit_user():
             if i:
                 tags.append(i)
     j['visible'] = _json('visible')
-    j['images'] = _json('images')
-    j['image'] = _json('image')
+    j['code'] = _json('code')
     j['tags'] = tags
     user.edit(j)
     return user.dict()
