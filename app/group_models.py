@@ -41,11 +41,7 @@ class Group(db.Model):
             'id': self.id,
             'name': self.name,
             'tags': self.tags,
-            'itype': self.itype,
-            'description': self.description,
             'image': self.image,
-            'images': self.images,
-            'price': self.price,
             'visible': self.visible,
             'user': self.user.username
         }

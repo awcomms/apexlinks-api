@@ -27,7 +27,6 @@ class User(db.Model):
     username = db.Column(db.Unicode)
     email = db.Column(db.Unicode)
     show_email = db.Column(db.Boolean, default=True)
-    hide_location = db.Column(db.Boolean, default=False)
 
     location = db.Column(db.JSON)
     distance = db.Column(db.Float)
@@ -36,7 +35,6 @@ class User(db.Model):
 
     online = db.Column(db.Boolean, default=False)
 
-    events = db.relationship('Event', backref='user', lazy='dynamic')
     groups = db.relationship('Group', backref='user', lazy='dynamic')
     
     saved_users = db.relationship('User', secondary=saved_users, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
@@ -47,7 +45,7 @@ class User(db.Model):
     customer_code = db.Column(db.Unicode)
 
     subscribed = db.Column(db.Boolean, default=False)
-    visible = db.Column(db.Boolean)
+    visible = db.Column(db.Boolean, default=True)
     
     email = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
@@ -125,7 +123,6 @@ class User(db.Model):
     def dict(self):
         return {
             'id': self.id,
-            'card': self.card,
             'image': self.image,
             'images': self.images,
             'username': self.username,
@@ -134,7 +131,6 @@ class User(db.Model):
             'score': self.score,
             'token': self.token,
             'tags': self.tags,
-            'location': self.location,
             'visible': self.visible,
             'subscribed': self.subscribed,
         }

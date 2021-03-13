@@ -42,8 +42,7 @@ def add_group():
     name = json('name')
     itype = json('itype')
     price = json('price')
-    if Group.query.filter_by(itype=itype)\
-        .filter_by(user_id=user.id)\
+    if Group.query.filter_by(user_id=user.id)\
             .filter_by(name=name).first():
         return {'nameError': 'Another group owned by same user has that name'}
     tags = json('tags') or []
@@ -51,12 +50,9 @@ def add_group():
     tags.append(price)
     data = {
         'name': name,
-        'itype': itype,
         'description': json('description'),
         'visible': json('visible'),
-        'images': json('images'),
         'image': json('image'),
-        'price': price,
         'user': user,
         'tags': tags
     }
@@ -93,10 +89,7 @@ def edit_group():
         'name': name,
         'description': json('description'),
         'visible': json('visible'),
-        'images': json('images'),
-        'itype': json('itype'),
         'image': json('image'),
-        'price': price,
         'tags': tags
     }
     # if tags:
