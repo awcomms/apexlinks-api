@@ -31,7 +31,8 @@ class Group(db.Model):
                 except:
                     pass
         db.session.commit()
-        query.order_by(Group.score.desc())
+        query=query.order_by(Group.score.desc())
+        print(query.all())
         return query
 
     def dict(self):
