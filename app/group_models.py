@@ -2,13 +2,15 @@ from app import db
 from flask import jsonify
 from fuzzywuzzy import process, fuzz
 from app.models import User
-from app.misc import dist
 
 class Group(db.Model):
     tags = db.Column(db.JSON)
+    private = db.Column(db.Boolean, default=False)
     id = db.Column(db.Integer, primary_key=True)
+    socket_id = db.Column(db.Unicode)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     visible = db.Column(db.Boolean, default=True)
+    users = db.Column(db.JSON)
     code = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
     score = db.Column(db.Float)

@@ -1,10 +1,22 @@
 import json
 from flask_jwt_extended import jwt_required, create_access_token
 from flask import jsonify, request
+from fuzzywuzzy import fuzz
 from app import db
 from app.api import bp
 from app.models import User
 from app.misc import cdict
+
+@bp.route('/get/<q>')
+def get(q):
+    token = request.headers['Authorization']
+    user = User.query.filter_by(token=token).first()
+    for link in user.links:
+        link['score'] = fuzz.partial_ratio(q, link)
+    def by_score(e):
+        return e['score']
+    user.links.sort(key=by_score).slice(0, 5)
+    return {'items': user.links}
 
 #returns `False` if username exists
 @bp.route('/check_username/<username>')
@@ -13,16 +25,14 @@ def check_username(username):
 
 @bp.route('/users', methods=['GET'])
 def users():
-    # a = request.args.get
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '401', 401
-    tags = user.tags
-    # page = int(a('page'))
+    a = request.args.get
+    try:
+        tags = json.loads(a('tags'))
+    except:
+        tags = []
     return cdict(User.fuz(tags), 1, 1)
 
-@bp.route('/user/<value>', methods=['GET'])
+@bp.route('/users/<value>', methods=['GET'])
 def user(value):
     try:
         user = User.query.get(int(value))
@@ -64,15 +74,6 @@ def edit_user():
         User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}
     tags = _json('tags') or []
-    # if type(tags) != list:
-    #     try:
-    #         tags = json.loads(tags)
-    #     except:
-    #         tags = tags.split(',')
-    #     except:
-    #         tags = tags.split(';')
-    #     finally:
-    #         return 'Unsupported tags format', 301
     j = {
         'username': username,
         'address': _json('address'),
@@ -87,6 +88,9 @@ def edit_user():
         if not i in tags:
             if i:
                 tags.append(i)
+    if _json('add') and _json('add') not in user.links:
+        user.links.append(_json('add'))
+    j['socket_id'] = _json('socket_id')
     j['visible'] = _json('visible')
     j['code'] = _json('code')
     j['tags'] = tags
