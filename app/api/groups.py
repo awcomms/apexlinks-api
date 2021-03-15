@@ -47,7 +47,6 @@ def add_group():
     data = {
         'name': name,
         'visible': json('visible'),
-        'code': json('code'),
         'user': user,
         'tags': tags
     }
@@ -79,7 +78,6 @@ def edit_group():
     data = {
         'name': name,
         'visible': json('visible'),
-        'code': json('code'),
         'tags': tags
     }
     group.edit(data)

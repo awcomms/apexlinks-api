@@ -11,7 +11,6 @@ class Group(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     visible = db.Column(db.Boolean, default=True)
     users = db.Column(db.JSON)
-    code = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
     score = db.Column(db.Float)
 
@@ -40,7 +39,6 @@ class Group(db.Model):
             'id': self.id,
             'name': self.name,
             'tags': self.tags,
-            'code': self.code,
             'visible': self.visible,
             'user': self.user.username
         }

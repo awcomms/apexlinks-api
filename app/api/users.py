@@ -93,13 +93,12 @@ def edit_user():
         if i and not i in tags:
             tags.append(i)
     add = data('add')
+    links = user.links
     if add and add not in user.links:
-        links = user.links
         links.append(add)
     j['socket_id'] = data('socket_id')
     j['visible'] = data('visible')
-    j['links'] = data('links')
-    j['code'] = data('code')
+    j['links'] = links
     j['tags'] = tags
     user.edit(j)
     return user.dict()
