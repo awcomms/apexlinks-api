@@ -7,16 +7,23 @@ from app.api import bp
 from app.models import User
 from app.misc import cdict
 
-@bp.route('/get/<q>')
-def get(q):
+@bp.route('/get')
+def get():
     token = request.headers['Authorization']
     user = User.query.filter_by(token=token).first()
-    for link in user.links:
-        link['score'] = fuzz.partial_ratio(q, link)
-    def by_score(e):
-        return e['score']
-    user.links.sort(key=by_score).slice(0, 5)
-    return {'items': user.links}
+    if not user:
+        return '401', 401
+    print('get', user.links)
+    q = request.args.get('q')
+    if user.links:
+        for link in user.links:
+            link['score'] = fuzz.partial_ratio(q, link)
+        def by_score(e):
+            return e['score']
+        user.links.sort(key=by_score).slice(0, 5)
+        return {'items': user.links}
+    else:
+        return {'items': []}
 
 #returns `False` if username exists
 @bp.route('/check_username/<username>')
@@ -66,33 +73,33 @@ def edit_user():
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
-    _json = request.json.get
-    username = _json('username')
-    if not username or username == '':
-        return {'usernameInvalid': True, 'usernameError': 'No username'}
+    data = request.json.get
+    username = data('username')
     if username and username != user.username and \
         User.query.filter_by(username=username).first():
-        return {'usernameInvalid': True, 'usernameError': 'Username taken'}
-    tags = _json('tags') or []
+        return {'usernameInvalid': True, 'usernameError': 'Username taken'}, 302 #TODO
+    tags = data('tags') or []
     j = {
         'username': username,
-        'address': _json('address'),
-        'website': _json('website'),
-        'phone': _json('phone'),
-        'email': _json('email'),
-        'name': _json('name'),
+        'address': data('address'),
+        'website': data('website'),
+        'phone': data('phone'),
+        'email': data('email'),
+        'name': data('name'),
     }
-    for data in j:
-        if data != user.about:
-            i = j[data]
-        if not i in tags:
-            if i:
-                tags.append(i)
-    if _json('add') and _json('add') not in user.links:
-        user.links.append(_json('add'))
-    j['socket_id'] = _json('socket_id')
-    j['visible'] = _json('visible')
-    j['code'] = _json('code')
+    for field in j:
+        if field != user.about:
+            i = j[field]
+        if i and not i in tags:
+            tags.append(i)
+    add = data('add')
+    if add and add not in user.links:
+        links = user.links
+        links.append(add)
+    j['socket_id'] = data('socket_id')
+    j['visible'] = data('visible')
+    j['links'] = data('links')
+    j['code'] = data('code')
     j['tags'] = tags
     user.edit(j)
     return user.dict()

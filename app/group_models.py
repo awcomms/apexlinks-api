@@ -17,8 +17,7 @@ class Group(db.Model):
 
     @staticmethod
     def fuz(id, visible, tags):
-        query = Group.query.join(User)\
-        .filter(User.visible==True)
+        query = Group.query.join(User)
         if id:
             query=query.filter(User.id==id)
         try:
@@ -34,7 +33,6 @@ class Group(db.Model):
                     pass
         db.session.commit()
         query=query.order_by(Group.score.desc())
-        print(query.all())
         return query
 
     def dict(self):
