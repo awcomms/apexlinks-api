@@ -11,13 +11,17 @@ from flask_jwt_extended import jwt_required
 def groups():
     a = request.args.get
     id = a('id')
+    try:
+        id = int(id)
+    except:
+        id = None
     if id:
         user = User.query.get(id)
         if not user:
             return '404'
         if not user.visible:
             return '423'
-    page = int(a('page'))
+    
     visible = a('visible')
     if visible == 'true':
         visible = True
@@ -27,8 +31,10 @@ def groups():
         visible = True
     try:
         tags = json.loads(a('tags'))
+        page = int(a('page'))
     except:
         tags = []
+        page = 1
     return cdict(Group.fuz(id, visible, tags), page)
 
 @bp.route('/groups', methods=['POST'])
