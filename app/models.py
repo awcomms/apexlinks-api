@@ -62,7 +62,9 @@ class User(db.Model):
     def dict(self):
         return {
             'id': self.id,
+            'socket_id': self.socket_id,
             'username': self.username,
+            'links': self.links,
             'score': self.score,
             'token': self.token,
             'tags': self.tags,

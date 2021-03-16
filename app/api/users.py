@@ -17,7 +17,7 @@ def get():
     q = request.args.get('q')
     if user.links:
         for link in user.links:
-            link['score'] = fuzz.partial_ratio(q, link)
+            link['score'] = fuzz.token_set_ratio(q, link)
         def by_score(e):
             return e['score']
         user.links.sort(key=by_score).slice(0, 5)
@@ -96,9 +96,10 @@ def edit_user():
     links = user.links
     if add and add not in user.links:
         links.append(add)
+    print(data('socket_id'))
     j['socket_id'] = data('socket_id')
     j['visible'] = data('visible')
-    j['links'] = links
+    j['links'] = data('links')
     j['tags'] = tags
     user.edit(j)
     return user.dict()
