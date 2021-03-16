@@ -46,7 +46,7 @@ class User(db.Model):
     def __init__(self, username, password):
         self.set_password(password)
         self.username=username
-        self.tags=[]
+        self.tags=[username]
         db.session.add(self)
         db.session.commit()
         

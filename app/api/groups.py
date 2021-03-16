@@ -19,8 +19,6 @@ def groups():
         user = User.query.get(id)
         if not user:
             return '404'
-        if not user.visible:
-            return '423'
     
     visible = a('visible')
     if visible == 'true':
