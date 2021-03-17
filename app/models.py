@@ -13,7 +13,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     score = db.Column(db.Integer)
     tags = db.Column(db.JSON)
-    links = db.Column(db.JSON)
+    chats = db.Column(db.JSON)
     socket_id = db.Column(db.Unicode)
     username = db.Column(db.Unicode)
 
@@ -64,7 +64,7 @@ class User(db.Model):
             'id': self.id,
             'socket_id': self.socket_id,
             'username': self.username,
-            'links': self.links,
+            'chats': self.chats,
             'score': self.score,
             'token': self.token,
             'tags': self.tags,

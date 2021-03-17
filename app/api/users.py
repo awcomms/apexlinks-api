@@ -13,15 +13,14 @@ def get():
     user = User.query.filter_by(token=token).first()
     if not user:
         return '401', 401
-    print('get', user.links)
     q = request.args.get('q')
-    if user.links:
-        for link in user.links:
+    if user.chats:
+        for link in user.chats:
             link['score'] = fuzz.token_set_ratio(q, link)
         def by_score(e):
             return e['score']
-        user.links.sort(key=by_score).slice(0, 5)
-        return {'items': user.links}
+        user.chats.sort(key=by_score).slice(0, 5)
+        return {'items': user.chats}
     else:
         return {'items': []}
 
@@ -92,14 +91,9 @@ def edit_user():
             i = j[field]
         if i and not i in tags:
             tags.append(i)
-    add = data('add')
-    links = user.links
-    if add and add not in user.links:
-        links.append(add)
-    print(data('socket_id'))
     j['socket_id'] = data('socket_id')
     j['visible'] = data('visible')
-    j['links'] = data('links')
+    j['chats'] = data('chats')
     j['tags'] = tags
     user.edit(j)
     return user.dict()
