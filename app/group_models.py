@@ -5,7 +5,6 @@ from app.models import User
 
 class Group(db.Model):
     tags = db.Column(db.JSON)
-    private = db.Column(db.Boolean, default=False)
     id = db.Column(db.Integer, primary_key=True)
     socket_id = db.Column(db.Unicode)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))

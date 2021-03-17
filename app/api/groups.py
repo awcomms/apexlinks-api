@@ -53,11 +53,6 @@ def add_group():
         'user': user,
         'tags': tags
     }
-    # if tags:
-    #     for field in data:
-    #         i = data[field]
-    #         if not i in tags:
-    #             tags.append(i)
     i = Group(data)
     return {'id': i.id}
 
