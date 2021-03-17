@@ -18,8 +18,7 @@ def groups():
     if id:
         user = User.query.get(id)
         if not user:
-            return '404'
-    
+            id=None
     visible = a('visible')
     if visible == 'true':
         visible = True
@@ -40,7 +39,7 @@ def add_group():
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '401', 401
+        return '', 401
     json = request.json.get
     name = json('name')
     if Group.query.filter_by(user_id=user.id)\

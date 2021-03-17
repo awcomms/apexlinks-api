@@ -12,7 +12,7 @@ def get():
     token = request.headers['Authorization']
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '401', 401
+        return '', 401
     q = request.args.get('q')
     if user.chats:
         for link in user.chats:
@@ -45,7 +45,7 @@ def user(value):
     except:
         user = User.query.filter_by(username=value).first()
     if not user:
-        return '404', 404
+        return '', 404
     return jsonify(user.dict())
 
 @bp.route('/users', methods=['POST'])
