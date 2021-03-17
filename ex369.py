@@ -1,7 +1,7 @@
 from flask import jsonify
 from app import create_app, db
 from app.group_models import Group
-from app.models import User
+from app.user_models import User
 
 app = create_app()
 

@@ -52,6 +52,8 @@ pycodestyle==2.6.0
 Pygments==2.7.3
 PyJWT==1.7.1
 pylint==2.6.0
+pylint-flask-sqlalchemy
+pylint-flask
 pyparsing==2.4.7
 PyPDF2==1.26.0
 pyquery==1.4.3

@@ -2,7 +2,7 @@ import json
 from app import db
 from app.api import bp
 from app.misc import cdict
-from app.models import User
+from app.user_models import User
 from app.group_models import Group
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required

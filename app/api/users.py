@@ -4,7 +4,7 @@ from flask import jsonify, request
 from fuzzywuzzy import fuzz
 from app import db
 from app.api import bp
-from app.models import User
+from app.user_models import User
 from app.misc import cdict
 
 @bp.route('/get')
@@ -78,6 +78,10 @@ def edit_user():
         User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}, 302 #TODO
     tags = data('tags') or []
+    chat = data('chat')
+    if chat not in user.chats:
+        chat
+        user.chats.append(chat)
     j = {
         'username': username,
         'address': data('address'),
@@ -93,7 +97,6 @@ def edit_user():
             tags.append(i)
     j['socket_id'] = data('socket_id')
     j['visible'] = data('visible')
-    j['chats'] = data('chats')
     j['tags'] = tags
     user.edit(j)
     return user.dict()
