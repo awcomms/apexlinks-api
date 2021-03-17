@@ -78,10 +78,6 @@ def edit_user():
         User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}, 302 #TODO
     tags = data('tags') or []
-    chat = data('chat')
-    if chat not in user.chats:
-        chat
-        user.chats.append(chat)
     j = {
         'username': username,
         'address': data('address'),
@@ -104,8 +100,8 @@ def edit_user():
 @bp.route('/users/<int:id>', methods=['DELETE'])
 def delete_user(id):
     user = User.query.get(id)
-    for group in user.groups:
-        db.session.delete(group)
+    for room in user.rooms:
+        db.session.delete(room)
     db.session.delete(user)
     db.session.commit()
     return {'yes': True}, 202

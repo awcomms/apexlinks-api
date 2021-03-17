@@ -1,37 +1,52 @@
 from app import db
-from flask import jsonify
-from fuzzywuzzy import process, fuzz
-from app.user_models import User
+from fuzzywuzzy import process
+from app.user_models import User, xrooms
 
-class Group(db.Model):
+class Room(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
-    private = db.Column(db.Boolean, default=False)
+    open = db.Column(db.Boolean, default=False)
     socket_id = db.Column(db.Unicode)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    messages = db.relationship('Message', backref='group', lazy='dynamic')
+    messages = db.relationship('Message', backref='room', lazy='dynamic')
     visible = db.Column(db.Boolean, default=True)
     name = db.Column(db.Unicode)
     score = db.Column(db.Float)
 
-    @staticmethod
-    def fuz(id, visible, tags):
-        query = Group.query.join(User)
+    def xfuz(id, tags):
+        query = Room.query
         if id:
-            query=query.filter(User.id==id)
-        try:
-            query=query.filter(Group.visible==visible)
-        except:
-            pass
-        for group in query:
-            group.score = 0
+            query=query.join(xrooms, (xrooms.c.user_id == id))
+        for room in query:
+            room.score = 0
             for tag in tags:
                 try:
-                    group.score += process.extractOne(tag, group.tags)[1]
+                    room.score += process.extractOne(tag, room.tags)[1]
                 except:
                     pass
         db.session.commit()
-        query=query.order_by(Group.score.desc())
+        query=query.order_by(Room.score.desc())
+        return query
+
+    @staticmethod
+    def fuz(id, visible, tags):
+        query = Room.query.join(User)\
+            .filter(Room.open==True)
+        if id:
+            query=query.filter(User.id==id)
+        try:
+            query=query.filter(Room.visible==visible)
+        except:
+            pass
+        for room in query:
+            room.score = 0
+            for tag in tags:
+                try:
+                    room.score += process.extractOne(tag, room.tags)[1]
+                except:
+                    pass
+        db.session.commit()
+        query=query.order_by(Room.score.desc())
         return query
 
     def dict(self):
@@ -39,6 +54,7 @@ class Group(db.Model):
             'id': self.id,
             'name': self.name,
             'tags': self.tags,
+            'open': self.open,
             'visible': self.visible,
             'user': self.user.username
         }

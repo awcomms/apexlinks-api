@@ -9,12 +9,11 @@ class Config(object):
     PAYSTACK = os.environ.get('PAYSTACK')
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
     SECRET_KEY='dev'
-    USERS_PER_PAGE = 10
     ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL') or \
         'http://localhost:9200'
     FRONT_END = os.environ.get('FRONT_END')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://edge:edge@localhost:5432/x369'
+        'postgresql://edge:edge@localhost:5432/ex369'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_HEADERS = 'Content-Type'
     LANGUAGES = ['en', 'es']
