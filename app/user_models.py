@@ -5,7 +5,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 xrooms = db.Table('xrooms',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('room_id', db.Integer, db.ForeignKey('room.id')))
+    db.Column('room_id', db.Integer, db.ForeignKey('room.id')),
+    db.Column('seen', db.Boolean))
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

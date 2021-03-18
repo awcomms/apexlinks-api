@@ -46,7 +46,7 @@ def user(value):
         user = User.query.filter_by(username=value).first()
     if not user:
         return '', 404
-    return jsonify(user.dict())
+    return user.dict()
 
 @bp.route('/users', methods=['POST'])
 def create_user():

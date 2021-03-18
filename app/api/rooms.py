@@ -2,9 +2,13 @@ import json
 from app import db
 from app.api import bp
 from app.misc import cdict
-from app.user_models import User
+from app.user_models import User, xrooms
 from app.room_models import Room
 from flask import request, jsonify
+
+@bp.route('/idsinroom/<int:id>', methods=['GET'])
+def noinroom(id):
+    return {'ids': [u.id for u in Room.query.get(id).users]}
 
 @bp.route('/join', methods=['PUT'])
 def join():
@@ -14,10 +18,10 @@ def join():
         return '', 401
     data = request.json.get
     id = data('id')
-    room = Room.query.get(id)
-    if not room:
-        name = data('name')
-        room = Room({'private': True, 'name': name})
+    try:
+        room = Room.query.get(id)
+    except:
+        room = None
     user.join(room)
     return '', 202
 
@@ -38,15 +42,16 @@ def leave():
 def xrooms():
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
+    args = request.args.get
     if not user:
         return '', 401
     try:
-        tags = json.loads(a('tags'))
-        page = int(a('page'))
+        tags = json.loads(args('tags'))
+        page = int(args('page'))
     except:
         tags = []
         page = 1
-    return cdict(Room.fuz(user.id, tags), page, 100, 'rooms')
+    return cdict(Room.xfuz(user.id, tags), page, 100, 'rooms')
 
 @bp.route('/rooms', methods=['GET'])
 def rooms():
@@ -81,8 +86,11 @@ def add_room():
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
+    data = request.json.get
     open = data('open')
-    data = request.data.get
+    username = data('username')
+    if username and not open:
+        user2 = User.query.filter_by(username=username).first()
     name = data('name')
     if Room.query.filter_by(name=name).first():
         return {'nameError': 'name taken'}, 423
@@ -95,8 +103,10 @@ def add_room():
         'open': open,
         'tags': tags
     }
-    i = Room(data)
-    return {'id': i.id}
+    room = Room(data)
+    user.join(room)
+    user2.join(room)
+    return {'id': room.id}
 
 @bp.route('/rooms', methods=['PUT'])
 def edit_room():
@@ -124,9 +134,17 @@ def edit_room():
     room.edit(data)
     return {'id': room.id}
 
-@bp.route('/rooms/<int:id>', methods=['GET'])
-def room(id):
-    return Room.query.get(id).dict()
+@bp.route('/rooms/<value>', methods=['GET'])
+def room(value):
+    try:
+        room = Room.query.get(int(id))
+    except:
+        room = Room.query.filter_by(name=value).first()
+    if not room:
+        return '', 404
+    token = request.headers.get('Authorization')
+    user = User.query.filter_by(token=token).first()
+    return room.dict()
 
 @bp.route('/rooms/<int:id>', methods=['DELETE'])
 def del_room(id):
