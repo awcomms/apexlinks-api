@@ -1,5 +1,6 @@
 from flask import request
 from app.api import bp
+from app import db
 from app.misc import cdict
 from app.user_models import User
 from app.room_models import Room
@@ -34,7 +35,7 @@ def post_message():
         return '', 404
     body = data('body')
     Message(body, user, room)
-    for user in room:
+    for user in room.users:
         if not room.id in user.in_rooms:
             if not room.id in user.unseen_rooms:
                 user.unseen_rooms.append(room.id)
