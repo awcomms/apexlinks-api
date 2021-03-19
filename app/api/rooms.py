@@ -1,13 +1,46 @@
 import json
+from copy import copy
+from flask import request, jsonify
 from app import db
 from app.api import bp
 from app.misc import cdict
 from app.user_models import User, xrooms
 from app.room_models import Room
-from flask import request, jsonify
 
+@bp.route('/in_room/<int:id>', methods=['PUT'])
+def in_room(id):
+    token=request.headers.get('Authorization')
+    user=User.query.filter_by(token=token).first()
+    if not user:
+        return '', 401
+    room=Room.query.get(id)
+    if not room:
+        return '', 404
+    in_rooms=user.in_rooms
+    if id not in in_rooms:
+        in_rooms.append(id)
+    user.in_rooms=in_rooms
+    db.session.commit()
+    return user.dict()
+
+@bp.route('/left/<int:id>', methods=['PUT'])
+def left(id):
+    token = request.headers.get('Authorization')
+    user = User.query.filter_by(token=token).first()
+    if not user:
+        return '', 401
+    room = Room.query.get(id)
+    if not room:
+        return '', 404
+    in_rooms = user.in_rooms
+    if id in in_rooms:
+        in_rooms.pop(in_rooms.index(id))
+    user.in_rooms = in_rooms
+    db.session.commit()
+    return user.dict()
+    
 @bp.route('/idsinroom/<int:id>', methods=['GET'])
-def noinroom(id):
+def idsinroom(id):
     return {'ids': [u.id for u in Room.query.get(id).users]}
 
 @bp.route('/join', methods=['PUT'])
@@ -55,6 +88,10 @@ def xrooms():
 
 @bp.route('/rooms', methods=['GET'])
 def rooms():
+    token = request.headers.get('Authorization')
+    user = User.query.filter_by(token=token).first()
+    if not user:
+        return '', 401
     a = request.args.get
     id = a('id')
     try:
@@ -65,20 +102,20 @@ def rooms():
         user = User.query.get(id)
         if not user:
             id=None
-    visible = a('visible')
-    if visible == 'true':
-        visible = True
-    elif visible == 'false':
-        visible = False
-    else:
-        visible = True
     try:
         tags = json.loads(a('tags'))
         page = int(a('page'))
     except:
         tags = []
         page = 1
-    return cdict(Room.fuz(id, visible, tags), page)
+    query = Room.fuz(id, tags)
+    for room in query:
+        if room.id in user.unseen_rooms:
+            room.unseen = True
+        else:
+            room.unseen = False
+    db.session.commit()
+    return cdict(query, page)
 
 @bp.route('/rooms', methods=['POST'])
 def add_room():
@@ -96,7 +133,6 @@ def add_room():
     tags.append(name)
     data = {
         'name': name,
-        'visible': data('visible'),
         'user': user,
         'open': open,
         'tags': tags
@@ -136,7 +172,11 @@ def edit_room():
     return {'id': room.id}
 
 @bp.route('/rooms/<value>', methods=['GET'])
-def room(value):
+def get_room(value):
+    token = request.headers.get('Authorization')
+    user = User.query.filter_by(token=token).first()
+    if not user:
+        return '', 401
     try:
         room = Room.query.get(int(value))
     except:

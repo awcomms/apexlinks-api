@@ -9,8 +9,8 @@ class Room(db.Model):
     socket_id = db.Column(db.Unicode)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     messages = db.relationship('Message', backref='room', lazy='dynamic')
-    visible = db.Column(db.Boolean, default=True)
     name = db.Column(db.Unicode)
+    unseen = db.Column(db.Boolean, default=False)
     score = db.Column(db.Float)
 
     def xfuz(id, tags):
@@ -29,15 +29,11 @@ class Room(db.Model):
         return query
 
     @staticmethod
-    def fuz(id, visible, tags):
+    def fuz(id, tags):
         query = Room.query.join(User)\
             .filter(Room.open==True)
         if id:
             query=query.filter(User.id==id)
-        try:
-            query=query.filter(Room.visible==visible)
-        except:
-            pass
         for room in query:
             room.score = 0
             for tag in tags:
@@ -55,7 +51,7 @@ class Room(db.Model):
             'name': self.name,
             'tags': self.tags,
             'open': self.open,
-            'visible': self.visible,
+            'unseen': self.unseen,
             'user': self.user.username
         }
 

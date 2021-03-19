@@ -11,6 +11,8 @@ xrooms = db.Table('xrooms',
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     score = db.Column(db.Integer)
+    in_rooms = db.Column(db.JSON)
+    unseen_rooms = db.Column(db.JSON)
     tags = db.Column(db.JSON)
     socket_id = db.Column(db.Unicode)
     username = db.Column(db.Unicode)
@@ -46,6 +48,8 @@ class User(db.Model):
     def __init__(self, username, password):
         self.set_password(password)
         self.username=username
+        self.unseen_rooms=[]
+        self.in_rooms=[]
         self.tags=[username]
         db.session.add(self)
         db.session.commit()
@@ -77,6 +81,7 @@ class User(db.Model):
             'id': self.id,
             'socket_id': self.socket_id,
             'username': self.username,
+            'unseen': len(self.unseen_rooms),
             'score': self.score,
             'token': self.token,
             'tags': self.tags,
