@@ -89,8 +89,6 @@ def add_room():
     data = request.json.get
     open = data('open')
     username = data('username')
-    if username and not open:
-        user2 = User.query.filter_by(username=username).first()
     name = data('name')
     if Room.query.filter_by(name=name).first():
         return {'nameError': 'name taken'}, 423
@@ -105,7 +103,10 @@ def add_room():
     }
     room = Room(data)
     user.join(room)
-    user2.join(room)
+    if username and not open:
+        user2 = User.query.filter_by(username=username).first()
+        if user2:
+            user2.join(room)
     return {'id': room.id}
 
 @bp.route('/rooms', methods=['PUT'])
@@ -137,13 +138,11 @@ def edit_room():
 @bp.route('/rooms/<value>', methods=['GET'])
 def room(value):
     try:
-        room = Room.query.get(int(id))
+        room = Room.query.get(int(value))
     except:
         room = Room.query.filter_by(name=value).first()
     if not room:
         return '', 404
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
     return room.dict()
 
 @bp.route('/rooms/<int:id>', methods=['DELETE'])
