@@ -84,7 +84,6 @@ def xrooms():
 
 @bp.route('/rooms', methods=['GET'])
 def rooms():
-    print(request.origin)
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
@@ -170,7 +169,6 @@ def edit_room():
 
 @bp.route('/rooms/<value>', methods=['GET'])
 def get_room(value):
-    print(request.origin)
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
