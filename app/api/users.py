@@ -64,6 +64,7 @@ def create_user():
         }
     user = User(username, password)
     user.token = create_access_token(identity=username)
+    db.session.commit()
     return jsonify({'user': user.dict()})
 
 @bp.route('/users', methods=['PUT'])

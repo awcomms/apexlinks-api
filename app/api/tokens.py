@@ -32,6 +32,8 @@ def get_token():
 def revoke_token():
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
+    if not user:
+        return '', 401
     if user:
         user.token = None
         db.session.commit()

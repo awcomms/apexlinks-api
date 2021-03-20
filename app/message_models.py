@@ -5,11 +5,11 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
-    body = db.Column(db.Unicode)
+    value = db.Column(db.Unicode)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow())
 
-    def __init__(self, body, user, room):
-        self.body=body
+    def __init__(self, value, user, room):
+        self.value=value
         self.user=user
         self.room=room
         db.session.add(self)
@@ -19,5 +19,5 @@ class Message(db.Model):
         return {
             'user': self.user.username,
             'room': self.room.id,
-            'body': self.body
+            'value': self.value
         }

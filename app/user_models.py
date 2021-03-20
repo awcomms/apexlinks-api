@@ -13,6 +13,7 @@ class User(db.Model):
     score = db.Column(db.Integer)
     in_rooms = db.Column(db.JSON)
     unseen_rooms = db.Column(db.JSON)
+    subs = db.relationship('Sub', backref='user', lazy='dynamic')
     tags = db.Column(db.JSON)
     socket_id = db.Column(db.Unicode)
     username = db.Column(db.Unicode)

@@ -19,7 +19,7 @@ def get_messages():
         page = int(page)
     except:
         page = 1
-    messages = room.messages.order_by(Message.timestamp.desc())
+    messages = room.messages.order_by(Message.timestamp.asc())
     return cdict(messages, page, 100)
 
 @bp.route('/messages', methods=['PUT'])
@@ -33,8 +33,8 @@ def post_message():
     room = Room.query.get(id)
     if not room:
         return '', 404
-    body = data('body')
-    Message(body, user, room)
+    value = data('value')
+    Message(value, user, room)
     for user in room.users:
         if not room.id in user.in_rooms:
             if not room.id in user.unseen_rooms:
