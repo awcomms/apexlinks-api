@@ -14,8 +14,10 @@ class Room(db.Model):
     score = db.Column(db.Float)
 
     def xfuz(id, tags):
-        query = Room.query.filter(Room.open==True)
-        if id:
+        query = Room.query
+        if not id:
+            query = query.filter(Room.open==True)
+        else:
             query=query.join(xrooms, (xrooms.c.user_id == id))
         for room in query:
             room.score = 0
@@ -30,9 +32,10 @@ class Room(db.Model):
 
     @staticmethod
     def fuz(id, tags):
-        query = Room.query.join(User)\
-            .filter(Room.open==True)
-        if id:
+        query = Room.query.join(User)
+        if not id:
+            query=query.filter(Room.open==True)
+        else:
             query=query.filter(User.id==id)
         for room in query:
             room.score = 0

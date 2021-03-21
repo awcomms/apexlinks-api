@@ -73,21 +73,19 @@ def xrooms():
     user = User.query.filter_by(token=token).first()
     args = request.args.get
     if not user:
-        return '', 401
+        return '401', 401
     try:
         tags = json.loads(args('tags'))
         page = int(args('page'))
     except:
         tags = []
         page = 1
-    return cdict(Room.xfuz(user.id, tags), page, 100, 'rooms')
+    return cdict(Room.xfuz(user.id, tags), page, 100)
 
 @bp.route('/rooms', methods=['GET'])
 def rooms():
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
-    if not user:
-        return '', 401
     a = request.args.get
     id = a('id')
     try:
@@ -105,11 +103,12 @@ def rooms():
         tags = []
         page = 1
     query = Room.fuz(id, tags)
-    for room in query:
-        if room.id in user.unseen_rooms:
-            room.unseen = True
-        else:
-            room.unseen = False
+    if user:
+        for room in query:
+            if room.id in user.unseen_rooms:
+                room.unseen = True
+            else:
+                room.unseen = False
     db.session.commit()
     return cdict(query, page)
 
@@ -139,7 +138,6 @@ def add_room():
         user2 = User.query.filter_by(username=username).first()
         if user2:
             user2.join(room)
-    db.session.commit()
     return {'id': room.id}
 
 @bp.route('/rooms', methods=['PUT'])
@@ -148,7 +146,7 @@ def edit_room():
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
-    data = request.data.get
+    data = request.json.get
     id = data('id')
     room = Room.query.get(id)
     name = data('name')
