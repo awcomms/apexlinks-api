@@ -14,7 +14,7 @@ class Room(db.Model):
     score = db.Column(db.Float)
 
     def xfuz(id, tags):
-        query = Room.query
+        query = Room.query.filter(Room.open==True)
         if id:
             query=query.join(xrooms, (xrooms.c.user_id == id))
         for room in query:

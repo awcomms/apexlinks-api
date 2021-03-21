@@ -135,10 +135,11 @@ def add_room():
     }
     room = Room(data)
     user.join(room)
-    if username and not open:
+    if username:
         user2 = User.query.filter_by(username=username).first()
         if user2:
             user2.join(room)
+    db.session.commit()
     return {'id': room.id}
 
 @bp.route('/rooms', methods=['PUT'])
