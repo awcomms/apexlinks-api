@@ -1,4 +1,4 @@
-def cdict(query, page=1, per_page=10, items='items'):
+def cdict(query, page=1, per_page=369, items='items'):
         resources = query.paginate(page, per_page, False)
         return {
             items: [item.dict() for item in resources.items],

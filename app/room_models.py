@@ -49,7 +49,7 @@ class Room(db.Model):
         return query
 
     def dict(self):
-       return {
+        data = {
             'id': self.id,
             'name': self.name,
             'tags': self.tags,
@@ -57,6 +57,9 @@ class Room(db.Model):
             'unseen': self.unseen,
             'user': self.user.username
         }
+        if not self.open:
+            data['users'] = [user.username for user in self.users]
+        return data
 
     def __init__(self, data):
         for field in data:
