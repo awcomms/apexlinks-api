@@ -2,24 +2,13 @@ import json
 from app import db
 from app.api import bp
 from app.misc import cdict
-from app.models import User
-from app.event_models import Event
+from app.user_models import User
+from app.blog_models import Blog
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
 
-@bp.route('/events/toggle_save', methods=['PUT'])
-def toggle_event_save():
-    token = request.headers.get('Authorization')
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    event = Event.query.get(id)
-    saved = event.toggle_save(user)
-    return jsonify({'saved': saved})
-
-@bp.route('/events', methods=['GET'])
-def events():
+@bp.route('/blogs', methods=['GET'])
+def blogs():
     a = request.args.get
     id = a('id')
     if id:
@@ -41,10 +30,10 @@ def events():
         tags = json.loads(a('tags'))
     except:
         tags = []
-    return cdict(Event.fuz(id, visible, itype, tags), page)
+    return cdict(Blog.fuz(id, visible, itype, tags), page)
 
-@bp.route('/events', methods=['POST'])
-def add_event():
+@bp.route('/blogs', methods=['POST'])
+def add_blog():
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
@@ -53,17 +42,17 @@ def add_event():
     name = json('name')
     itype = json('itype')
     price = json('price')
-    if Event.query.filter_by(itype=itype)\
+    if Blog.query.filter_by(itype=itype)\
         .filter_by(user_id=user.id)\
             .filter_by(name=name).first():
-        return {'nameError': 'Another event owned by same user has that name'}
+        return {'nameError': 'Another blog owned by same user has that name'}
     tags = json('tags') or []
     tags.append(name)
     tags.append(price)
     data = {
         'name': name,
         'itype': itype,
-        'description': json('description'),
+        'itext': json('itext'),
         'visible': json('visible'),
         'images': json('images'),
         'image': json('image'),
@@ -76,33 +65,33 @@ def add_event():
     #         i = data[field]
     #         if not i in tags:
     #             tags.append(i)
-    i = Event(data)
+    i = Blog(data)
     return {'id': i.id}
 
-@bp.route('/events', methods=['PUT'])
-def edit_event():
+@bp.route('/blogs', methods=['PUT'])
+def edit_blog():
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
     json = request.json.get
     id = json('id')
-    event = Event.query.get(id)
+    blog = Blog.query.get(id)
     name = json('name')
     itype = json('itype')
     price = json('price')
-    if name != event.name and Event.query.filter_by(itype=itype)\
+    if name != blog.name and Blog.query.filter_by(itype=itype)\
         .filter_by(user_id=user.id)\
             .filter_by(name=name).first():
-        return {'nameError': 'Another event owned by same user has that name'}, 301 #wrong error code
+        return {'nameError': 'Another blog owned by same user has that name'}, 400
     tags = json('tags') or []
-    if event and event.user != user:
+    if blog and blog.user != user:
         return '', 401
     tags.append(name)
     tags.append(price)
     data = {
         'name': name,
-        'description': json('description'),
+        'itext': json('itext'),
         'visible': json('visible'),
         'images': json('images'),
         'itype': json('itype'),
@@ -115,22 +104,22 @@ def edit_event():
     #         i = data[field]
     #         if not i in tags:
     #             tags.append(i)
-    event.edit(data)
-    return {'id': event.id}
+    blog.edit(data)
+    return {'id': blog.id}
 
-@bp.route('/events/<int:id>', methods=['GET'])
-def event(id):
-    return Event.query.get(id).dict()
+@bp.route('/blogs/<int:id>', methods=['GET'])
+def blog(id):
+    return Blog.query.get(id).dict()
 
-@bp.route('/events/<int:id>', methods=['DELETE'])
-def del_event(id):
+@bp.route('/blogs/<int:id>', methods=['DELETE'])
+def del_blog(id):
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
-    event = Event.query.get(id)
-    if event.user != user:
+    blog = Blog.query.get(id)
+    if blog.user != user:
         return '', 401
-    db.session.delete(event)
+    db.session.delete(blog)
     db.session.commit()
     return jsonify({'yes': True})

@@ -1,43 +1,39 @@
+from sqlalchemy.orm import backref
 from app import db
 from flask import jsonify
 from fuzzywuzzy import process, fuzz
 from app.user_models import User
 
-class Item(db.Model):
+class Blog(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     visible = db.Column(db.Boolean, default=True)
-    image = db.Column(db.Unicode)
     data = db.Column(db.Unicode)
-    images = db.Column(db.JSON)
-    link = db.Column(db.Unicode)
-    redirect = db.Column(db.Boolean, default=True)
-    itype = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
-    itext = db.Column(db.Unicode)
+    post = db.relationship('Post', backref='user', lazy='dynamic')
     score = db.Column(db.Float)
 
     @staticmethod
     def fuz(id, visible, tags):
-        query = Item.query.join(User)
+        query = Blog.query.join(User)
         if not id:
             query = query.filter(User.visible==True)
         elif id:
-            query = query.filter(User.id==id)
+            query=query.filter(User.id==id)
         try:
-            query = query.filter(Item.visible==visible)
+            query=query.filter(Blog.visible==visible)
         except:
             pass
-        for item in query:
-            item.score = 0
+        for blog in query:
+            blog.score = 0
             for tag in tags:
                 try:
-                    item.score += process.extractOne(tag, item.tags)[1]
+                    blog.score += process.extractOne(tag, blog.tags)[1]
                 except:
                     pass
         db.session.commit()
-        query = query.order_by(Item.score.desc())
+        query.order_by(Blog.score.desc())
         return query
 
     def dict(self, **kwargs):
@@ -45,10 +41,7 @@ class Item(db.Model):
             'id': self.id,
             'name': self.name,
             'tags': self.tags,
-            'itype': self.itype,
-            'itext': self.itext,
-            'image': self.image,
-            'images': self.images,
+            'body': self.body,
             'visible': self.visible,
             'user': self.user.username
         }

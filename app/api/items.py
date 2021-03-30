@@ -2,21 +2,10 @@ import json
 from app import db
 from app.api import bp
 from app.misc import cdict
-from app.models import User
+from app.user_models import User
 from app.item_models import Item
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required
-
-@bp.route('/items/toggle_save', methods=['PUT'])
-def toggle_item_save():
-    token = request.headers.get('Authorization')
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    item = Item.query.get(id)
-    saved = item.toggle_save(user)
-    return jsonify({'saved': saved})
 
 @bp.route('/items', methods=['GET'])
 def items():
@@ -41,7 +30,7 @@ def items():
         tags = json.loads(a('tags'))
     except:
         tags = []
-    return cdict(Item.fuz(id, visible, itype, tags), page)
+    return cdict(Item.fuz(id, visible, tags), page)
 
 @bp.route('/items', methods=['POST'])
 def add_item():
@@ -63,7 +52,7 @@ def add_item():
     data = {
         'name': name,
         'itype': itype,
-        'description': json('description'),
+        'itext': json('itext'),
         'visible': json('visible'),
         'images': json('images'),
         'image': json('image'),
@@ -91,23 +80,24 @@ def edit_item():
     name = json('name')
     itype = json('itype')
     price = json('price')
-    if name != item.name and Item.query.filter_by(itype=itype)\
+    if name != item.name and Item.query\
         .filter_by(user_id=user.id)\
             .filter_by(name=name).first():
-        return {'nameError': 'Another item owned by same user has that name'}, 301 #wrong error code
-    tags = json('tags') or []
+        return {'nameError': 'Author already has item with same name'}, 400
     if item and item.user != user:
         return '', 401
+    tags = json('tags') or []
     tags.append(name)
     tags.append(price)
+    tags.append(itype)
     data = {
-        'name': name,
-        'description': json('description'),
+        'itext': json('itext'),
         'visible': json('visible'),
         'images': json('images'),
-        'itype': json('itype'),
         'image': json('image'),
+        'itype': itype,
         'price': price,
+        'name': name,
         'tags': tags
     }
     # if tags:

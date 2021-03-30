@@ -53,7 +53,11 @@ def set_prefs(prefs):
     prefs['validate_objectdb'] = True
 
     # How many undos to hold?
+<<<<<<< HEAD
     prefs['max_history_items'] = 32
+=======
+    prefs['max_history_groups'] = 32
+>>>>>>> 076fd3061686b5fbe750a06de1c456a851614e44
 
     # Shows whether to save history across sessions.
     prefs['save_history'] = True

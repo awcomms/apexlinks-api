@@ -3,73 +3,13 @@ from flask_jwt_extended import jwt_required, create_access_token
 from flask import jsonify, request
 from app import db
 from app.api import bp
-from app.models import User
+from app.user_models import User
 from app.misc import cdict
 
 #returns `False` if username exists
 @bp.route('/check_username/<username>')
 def check_username(username):
     return {'res': User.query.filter_by(username=username).count()<1}
-
-@bp.route('/check_email/<email>')
-def check_email(email):
-    return {'res': User.query.filter_by(email=email).count()<1}
-
-@bp.route('/users/saved_items')
-def saved_items():
-    token = request.headers.get('Authorization')
-    page = request.args.get('page')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    return jsonify(cdict(user.saved_items, page))
-
-@bp.route('/users/item_saved')
-def item_saved():
-    token = request.headers.get('Authorization')
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    res = user.item_saved(id)
-    return jsonify({'res': res})
-
-@bp.route('/users/toggle_save', methods=['PUT'])
-def toggle_user_save():
-    token = request.headers.get('Authorization')
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    _user = User.query.get(id)
-    saved = user.toggle_save(_user)
-    return jsonify({'saved': saved})
-
-@bp.route('/users/saved_users')
-def saved_users():
-    token = request.headers.get('Authorization')
-    page = request.args.get('page')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    return jsonify(cdict(user.saved_users, page))
-
-@bp.route('/users/user_saved')
-def user_saved():
-    token = request.headers.get('Authorization')
-    id = request.args.get('id')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
-    res = user.user_saved(id)
-    return jsonify({'res': res})
-
-@bp.route('/user/saved', methods=['GET'])
-def user_saved_items():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    page = request.args.get('page')
-    return cdict(user.saved_items, page)
 
 @bp.route('/users', methods=['GET'])
 def users():
@@ -81,15 +21,15 @@ def users():
     page = int(a('page'))
     return cdict(User.fuz(tags), page)
 
-@bp.route('/user/<value>', methods=['GET'])
+@bp.route('/users/<value>', methods=['GET'])
 def user(value):
     try:
         user = User.query.get(int(value))
     except:
         user = User.query.filter_by(username=value).first()
     if not user:
-        return '404', 404
-    return jsonify(user.dict())
+        return '', 404
+    return user.dict()
 
 @bp.route('/users', methods=['POST'])
 def create_user():
@@ -107,6 +47,7 @@ def create_user():
         }
     user = User(username, password)
     user.token = create_access_token(identity=username)
+    db.session.commit()
     return jsonify({'user': user.dict()})
 
 @bp.route('/users', methods=['PUT'])
@@ -115,42 +56,53 @@ def edit_user():
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
-    _json = request.json.get
-    username = _json('username')
+    request_json = request.json.get
+    username = request_json('username')
     if not username or username == '':
-        return {'usernameInvalid': True, 'usernameError': 'No username'}
+        return {'usernameInvalid': True, 'usernameError': 'No username'}, 400
     if username and username != user.username and \
         User.query.filter_by(username=username).first():
-        return {'usernameInvalid': True, 'usernameError': 'Username taken'}
-    tags = _json('tags') or []
-    # if type(tags) != list:
-    #     try:
-    #         tags = json.loads(tags)
-    #     except:
-    #         tags = tags.split(',')
-    #     except:
-    #         tags = tags.split(';')
-    #     finally:
-    #         return 'Unsupported tags format', 301
-    j = {
+        return {'usernameInvalid': True, 'usernameError': 'Username taken'}, 400
+    tags = request_json('tags') or []
+    # if user.username != request_json('username'):
+    #       tags.pop(tags.index(user.username))
+    # if tags.index(user.name) and user.name != request_json('name'):
+    #       tags.pop(tags.index(user.name))
+    # if tags.index(user.email) and user.email != request_json('email'):
+    #       tags.pop(tags.index(user.email))
+    # if tags.index(user.phone) and user.phone != request_json('phone'):
+    #       tags.pop(tags.index(user.phone))
+    # if tags.index(user.website) and user.website != request_json('website'):
+    #       tags.pop(tags.index(user.website))
+    # if tags.index(user.address) and user.address != request_json('address'):
+    #       tags.pop(tags.index(user.address))
+    if type(tags) != list:
+        try:
+            tags = json.loads(tags)
+        except SyntaxError or TypeError:
+            tags = tags.split(',')
+        except SyntaxError or TypeError:
+            tags = tags.split(';')
+        except SyntaxError or TypeError:
+            return 'Unsupported tags format', 415
+    data = {
         'username': username,
-        'address': _json('address'),
-        'website': _json('website'),
-        'phone': _json('phone'),
-        'email': _json('email'),
-        'name': _json('name'),
+        'address': request_json('address'),
+        'website': request_json('website'),
+        'phone': request_json('phone'),
+        'email': request_json('email'),
+        'name': request_json('name'),
     }
-    for data in j:
-        if data != user.about:
-            i = j[data]
-        if not i in tags:
-            if i:
-                tags.append(i)
-    j['visible'] = _json('visible')
-    j['images'] = _json('images')
-    j['image'] = _json('image')
-    j['tags'] = tags
-    user.edit(j)
+    for field in data:
+        value = data[field]
+        if value and not value in tags:
+            tags.append(value)
+    data['about'] = request_json('about')
+    data['visible'] = request_json('visible')
+    data['images'] = request_json('images')
+    data['image'] = request_json('image')
+    data['tags'] = tags
+    user.edit(data)
     return user.dict()
 
 @bp.route('/users/<int:id>', methods=['DELETE'])
@@ -158,6 +110,8 @@ def delete_user(id):
     user = User.query.get(id)
     for item in user.items:
         db.session.delete(item)
+    for room in user.rooms:
+        db.session.delete(room)
     db.session.delete(user)
     db.session.commit()
     return {'yes': True}, 202

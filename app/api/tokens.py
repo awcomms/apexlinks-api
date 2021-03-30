@@ -2,7 +2,7 @@ from flask_jwt_extended import create_access_token
 from werkzeug.datastructures import Headers
 from flask import make_response, request, jsonify
 from app import db
-from app.models import User
+from app.user_models import User
 from app.api import bp
 
 @bp.route('/tokens', methods=['POST'])
@@ -32,6 +32,8 @@ def get_token():
 def revoke_token():
     token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
+    if not user:
+        return '', 401
     if user:
         user.token = None
         db.session.commit()

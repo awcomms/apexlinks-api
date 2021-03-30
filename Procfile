@@ -1,1 +1,1 @@
-web: flask db upgrade; gunicorn marketlinks:app
+web: flask db upgrade; gunicorn apexlinks:app
