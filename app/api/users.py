@@ -18,7 +18,10 @@ def users():
         tags = json.loads(a('tags'))
     except:
         tags = []
-    page = int(a('page'))
+    try:
+        page = int(a('page'))
+    except:
+        page = 1
     return cdict(User.fuz(tags), page)
 
 @bp.route('/users/<value>', methods=['GET'])
