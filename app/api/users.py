@@ -1,10 +1,28 @@
+import csv
 import json
-from flask_jwt_extended import jwt_required, create_access_token
+from flask_jwt_extended import create_access_token
 from flask import jsonify, request
 from app import db
 from app.api import bp
-from app.user_models import User
+from app.user_model import User
 from app.misc import cdict
+
+
+# @bp.route('/create_users')
+# def create_users():
+#     users = []
+#     path = r'/home/edge/spd/new.csv'
+#     with open(path) as file:
+#         reader = csv.DictReader(file)
+#         for row in reader:
+#             username = row['username']
+#             password = row['password']
+#             users.append({'username': username, 'password': password})
+#     for user in users:
+#         username = user['username']
+#         password = user['password']
+#         u = User(username, password)
+#     return 'zone'
 
 #returns `False` if username exists
 @bp.route('/check_username/<username>')
@@ -35,10 +53,11 @@ def user(value):
     return user.dict()
 
 @bp.route('/users', methods=['POST'])
-def create_user():
+def post_user():
     j = request.json.get
     username = j('username')
     password = j('password')
+    email = j('email')
     if not username or username == '':
         return {'usernameInvalid': True}
     if not password or password == '':
@@ -48,7 +67,7 @@ def create_user():
             'usernameInvalid': True,
             'usernameError': 'Username taken'
         }
-    user = User(username, password)
+    user = User(username, password, email)
     user.token = create_access_token(identity=username)
     db.session.commit()
     return jsonify({'user': user.dict()})

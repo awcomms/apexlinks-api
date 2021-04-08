@@ -40,6 +40,7 @@ nosetests.xml
 
 ~bin.txt
 
+misc.py
 venv
 app.db
 app.db-journal

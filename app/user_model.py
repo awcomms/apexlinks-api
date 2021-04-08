@@ -28,11 +28,11 @@ class User(db.Model):
     visible = db.Column(db.Boolean, default=True)
     socket_id = db.Column(db.Unicode)
 
-    xrooms = db.relationship('Room', secondary=xrooms, backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
-    messages = db.relationship('Message', backref='user', lazy='dynamic')
+    # xrooms = db.relationship('Room', secondary=xrooms, backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
+    # messages = db.relationship('Message', backref='user', lazy='dynamic')
     items = db.relationship('Item', backref='user', lazy='dynamic')
-    rooms = db.relationship('Room', backref='user', lazy='dynamic')
-    subs = db.relationship('Sub', backref='user', lazy='dynamic')
+    # rooms = db.relationship('Room', backref='user', lazy='dynamic')
+    # subs = db.relationship('Sub', backref='user', lazy='dynamic')
 
     @staticmethod
     def fuz(tags):
@@ -49,11 +49,10 @@ class User(db.Model):
         query = query.order_by(User.score.desc())
         return query
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, email=None):
+        self.email=email
         self.set_password(password)
         self.username=username
-        self.unseen_rooms=[]
-        self.in_rooms=[]
         self.tags=[username]
         db.session.add(self)
         db.session.commit()

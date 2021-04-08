@@ -1,6 +1,6 @@
 from app import create_app, db
 from app.item_models import Item
-from app.user_models import User
+from app.user_model import User
 
 app = create_app()
 

@@ -2,7 +2,7 @@ from flask_jwt_extended import create_access_token
 from werkzeug.datastructures import Headers
 from flask import make_response, request, jsonify
 from app import db
-from app.user_models import User
+from app.user_model import User
 from app.api import bp
 
 @bp.route('/tokens', methods=['POST'])

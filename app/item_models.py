@@ -1,7 +1,7 @@
 from app import db
 from flask import jsonify
 from fuzzywuzzy import process, fuzz
-from app.user_models import User
+from app.user_model import User
 
 class Item(db.Model):
     tags = db.Column(db.JSON)
@@ -62,6 +62,6 @@ class Item(db.Model):
 
     def edit(self, data):
         for field in data:
-            if hasattr(self, field) and data[field]:
+            if hasattr(self, field):
                 setattr(self, field, data[field])
         db.session.commit()

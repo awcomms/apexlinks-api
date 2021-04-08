@@ -5,7 +5,7 @@ from app import db
 from app.api import bp
 from app.sub_models import Sub
 from app.room_models import Room
-from app.user_models import User
+from app.user_model import User
 
 @bp.route('/subs', methods=['POST'])
 # @cross_origin(origins=['http://localhost:3000', 'https://apexlinks.org','https://x369.herokuapp.com'])

@@ -1,6 +1,6 @@
 from app import db
 from fuzzywuzzy import process
-from app.user_models import User, xrooms
+from app.user_model import User, xrooms
 
 class Room(db.Model):
     tags = db.Column(db.JSON)
