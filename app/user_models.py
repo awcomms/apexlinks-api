@@ -100,7 +100,7 @@ class User(db.Model):
     def edit(self, data):
         print(data)
         for field in data:
-            if hasattr(self, field) and data[field]:
+            if hasattr(self, field):
                 setattr(self, field, data[field])
         if 'password' in data:
             self.set_password(data['password'])
