@@ -1,0 +1,7 @@
+Apexlinks
+
+Use this link to reset your password:
+
+https://apexlinks.org/reset_password?q={{token}}
+
+This link expires 10 minutes after this email has been received

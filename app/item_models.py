@@ -50,6 +50,7 @@ class Item(db.Model):
             'image': self.image,
             'images': self.images,
             'visible': self.visible,
+            'redirect': self.redirect,
             'user': self.user.username
         }
 

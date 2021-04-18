@@ -15,13 +15,12 @@ def send_email(subject, sender, recipients, text_body, html_body):
     mail.send(msg)
     Thread(target=send_async_email, args=(current_app._get_current_object(), msg)).start()
 
-def send_user_email(user):
-    token = user.get_utoken()
+def send_reset_password_email(user):
+    token = user.get_reset_password_token()
     send_email(
-        '[Marketlnx] Verify your account',
-        sender=current_app.config['MAIL_email'],
+        '[Apexlinks] Reset password',
+        sender=current_app.config['ADMINS'][0],
         recipients=[user.email],
-        text_body=render_template('email/confirm_account.txt', user=user, token=token),
-        html_body=render_template('email/confirm_account.htm', user=user, token=token)
-    )
+        text_body=render_template('email/reset_password/txt.txt', user=user, token=token),
+        html_body=render_template('email/reset_password/htm.htm', user=user, token=token))
 

@@ -1,4 +1,4 @@
-import csv
+from app.email import send_reset_password_email
 import json
 from flask_jwt_extended import create_access_token
 from flask import jsonify, request
@@ -6,23 +6,37 @@ from app import db
 from app.api import bp
 from app.user_model import User
 from app.misc import cdict
+from app.misc import check_email
 
+@bp.route('/forgot_password', methods=['PUT'])
+def forgot_password():
+    username = request.json.get('username')
+    # if not check_email(email):
+    #     return {'emailInvalid': True, 'emailError': 'Invalid email address'} #TODO 'Invalid email'
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return {'usernameInvalid': True, 'usernameError': 'No user with that username'}
+    send_reset_password_email(user)
+    return {'sent': True}
 
-# @bp.route('/create_users')
-# def create_users():
-#     users = []
-#     path = r'/home/edge/spd/new.csv'
-#     with open(path) as file:
-#         reader = csv.DictReader(file)
-#         for row in reader:
-#             username = row['username']
-#             password = row['password']
-#             users.append({'username': username, 'password': password})
-#     for user in users:
-#         username = user['username']
-#         password = user['password']
-#         u = User(username, password)
-#     return 'zone'
+@bp.route('/reset_password', methods=['PUT'])
+def reset_password():
+    token = request.headers.get('Authorization')
+    password = request.json.get('password')
+    user = User.check_reset_password_token(token)
+    if user:
+        user.set_password(password)
+        return {'email': user.email}
+    else:
+        return 'false'
+
+@bp.route('/check_reset_password_token')
+def check_reset_password_token():
+    token = request.headers.get('Authorization')
+    if User.check_reset_password_token(token):
+        return 'true'
+    else:
+        return 'false'
 
 #returns `False` if username exists
 @bp.route('/check_username/<username>')
@@ -53,15 +67,19 @@ def user(value):
     return user.dict()
 
 @bp.route('/users', methods=['POST'])
-def post_user():
+def create_user():
     j = request.json.get
     username = j('username')
     password = j('password')
     email = j('email')
+    if not email or email == '':
+        return {'emailInvalid': True, 'emailError': 'Empty'}
+    if not check_email(email):
+        return {'emailInvalid': True, 'emailError': 'Unaccepted'}
     if not username or username == '':
-        return {'usernameInvalid': True}
+        return {'usernameInvalid': True, 'usernameError': 'Empty'}
     if not password or password == '':
-        return {'passwordInvalid': True}
+        return {'passwordInvalid': True, 'passwordError': 'Empty'}
     if User.query.filter_by(username=username).first():
         return {
             'usernameInvalid': True,
@@ -86,18 +104,6 @@ def edit_user():
         User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}, 400
     tags = request_json('tags') or []
-    # if user.username != request_json('username'):
-    #       tags.pop(tags.index(user.username))
-    # if tags.index(user.name) and user.name != request_json('name'):
-    #       tags.pop(tags.index(user.name))
-    # if tags.index(user.email) and user.email != request_json('email'):
-    #       tags.pop(tags.index(user.email))
-    # if tags.index(user.phone) and user.phone != request_json('phone'):
-    #       tags.pop(tags.index(user.phone))
-    # if tags.index(user.website) and user.website != request_json('website'):
-    #       tags.pop(tags.index(user.website))
-    # if tags.index(user.address) and user.address != request_json('address'):
-    #       tags.pop(tags.index(user.address))
     if type(tags) != list:
         try:
             tags = json.loads(tags)
@@ -109,6 +115,7 @@ def edit_user():
             return 'Unsupported tags format', 415
     data = {
         'username': username,
+        'show_email': request_json('show_email'),
         'address': request_json('address'),
         'website': request_json('website'),
         'phone': request_json('phone'),

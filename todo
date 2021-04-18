@@ -1,1 +1,4 @@
+validate email - pip validate_email
+forgot password
+replace jwt-tokens
 turn selection into regexp

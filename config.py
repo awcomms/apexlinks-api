@@ -15,7 +15,7 @@ class Config(object):
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True
     MAIL_EMAIL = 'edge3769@gmail.com'
-    MAIL_PASSWORD = 'loveGM1!'
-    ADMINS = ['edge2347@gmail.com']
+    MAIL_PASSWORD = 'loveGO1!'
+    ADMINS = ['edge3769@gmail.com']
     JWT_HEADER_TYPE = ''
     JWT_ACCESS_TOKEN_EXPIRES = False

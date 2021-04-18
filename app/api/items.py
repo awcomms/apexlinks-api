@@ -54,17 +54,13 @@ def add_item():
         'itype': itype,
         'itext': json('itext'),
         'visible': json('visible'),
+        'redirect': json('redirect'),
         'images': json('images'),
         'image': json('image'),
         'price': price,
         'user': user,
         'tags': tags
     }
-    # if tags:
-    #     for field in data:
-    #         i = data[field]
-    #         if not i in tags:
-    #             tags.append(i)
     i = Item(data)
     return {'id': i.id}
 
@@ -95,16 +91,12 @@ def edit_item():
         'visible': json('visible'),
         'images': json('images'),
         'image': json('image'),
+        'redirect': json('redirect'),
         'itype': itype,
         'price': price,
         'name': name,
         'tags': tags
     }
-    # if tags:
-    #     for field in data:
-    #         i = data[field]
-    #         if not i in tags:
-    #             tags.append(i)
     item.edit(data)
     return {'id': item.id}
 

@@ -1,5 +1,7 @@
-from sqlalchemy.orm import backref
+import jwt
+from time import time
 from app import db
+from flask import current_app
 from fuzzywuzzy import process
 from datetime import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -21,6 +23,8 @@ class User(db.Model):
     address = db.Column(db.Unicode)
     tags = db.Column(db.JSON)
 
+    show_email = db.Column(db.Boolean, default=True)
+
     password_hash = db.Column(db.String)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     token = db.Column(db.String, index=True)
@@ -28,11 +32,25 @@ class User(db.Model):
     visible = db.Column(db.Boolean, default=True)
     socket_id = db.Column(db.Unicode)
 
+    items = db.relationship('Item', backref='user', lazy='dynamic')
     # xrooms = db.relationship('Room', secondary=xrooms, backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
     # messages = db.relationship('Message', backref='user', lazy='dynamic')
-    items = db.relationship('Item', backref='user', lazy='dynamic')
     # rooms = db.relationship('Room', backref='user', lazy='dynamic')
     # subs = db.relationship('Sub', backref='user', lazy='dynamic')
+
+    def get_reset_password_token(self, expires_in=600):
+        return jwt.encode(
+            {'reset_password': self.id, 'exp': time() + expires_in},
+            current_app.config['SECRET_KEY'], algorithm='HS256')
+
+    @staticmethod
+    def check_reset_password_token(token):
+        try:
+            id = jwt.decode(token, current_app.config['SECRET_KEY'],
+                algorithms=['HS256'])['reset_password']
+        except:
+            return
+        return User.query.get(id)
 
     @staticmethod
     def fuz(tags):
@@ -75,6 +93,7 @@ class User(db.Model):
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
+        db.session.commit()
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -85,6 +104,7 @@ class User(db.Model):
             'socket_id': self.socket_id,
             'score': self.score,
             'token': self.token,
+            'show_email': self.show_email,
             'visible': self.visible,
             'username': self.username,
             'name': self.name,
