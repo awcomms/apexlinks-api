@@ -4,7 +4,7 @@ from app.api import bp
 from app.misc import cdict
 from app.user_model import User
 from app.item_models import Item
-from flask import request, jsonify
+from flask import request
 from flask_jwt_extended import jwt_required
 
 @bp.route('/items', methods=['GET'])
@@ -115,4 +115,4 @@ def del_item(id):
         return '', 401
     db.session.delete(item)
     db.session.commit()
-    return jsonify({'yes': True})
+    return {'yes': True}

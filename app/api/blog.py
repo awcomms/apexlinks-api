@@ -4,7 +4,7 @@ from app.api import bp
 from app.misc import cdict
 from app.user_model import User
 from app.blog_models import Blog
-from flask import request, jsonify
+from flask import request
 from flask_jwt_extended import jwt_required
 
 @bp.route('/blogs', methods=['GET'])
@@ -122,4 +122,4 @@ def del_blog(id):
         return '', 401
     db.session.delete(blog)
     db.session.commit()
-    return jsonify({'yes': True})
+    return {'yes': True}

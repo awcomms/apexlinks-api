@@ -1,6 +1,5 @@
 from sqlalchemy.orm import backref
 from app import db
-from flask import jsonify
 from fuzzywuzzy import process, fuzz
 from app.user_model import User
 

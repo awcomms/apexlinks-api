@@ -1,6 +1,7 @@
 from flask_jwt_extended import create_access_token
 from werkzeug.datastructures import Headers
-from flask import make_response, request, jsonify
+from flask import make_response
+from flask import request
 from app import db
 from app.user_model import User
 from app.api import bp

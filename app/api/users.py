@@ -1,7 +1,7 @@
 from app.email import send_reset_password_email
 import json
 from flask_jwt_extended import create_access_token
-from flask import jsonify, request
+from flask import request
 from app import db
 from app.api import bp
 from app.user_model import User
@@ -11,8 +11,6 @@ from app.misc import check_email
 @bp.route('/forgot_password', methods=['PUT'])
 def forgot_password():
     username = request.json.get('username')
-    # if not check_email(email):
-    #     return {'emailInvalid': True, 'emailError': 'Invalid email address'} #TODO 'Invalid email'
     user = User.query.filter_by(username=username).first()
     if not user:
         return {'usernameInvalid': True, 'usernameError': 'No user with that username'}
@@ -88,7 +86,7 @@ def create_user():
     user = User(username, password, email)
     user.token = create_access_token(identity=username)
     db.session.commit()
-    return jsonify({'user': user.dict()})
+    return {'user': user.dict()}
 
 @bp.route('/users', methods=['PUT'])
 def edit_user():
@@ -123,9 +121,13 @@ def edit_user():
         'name': request_json('name'),
     }
     for field in data:
+        for tag in tags:
+            #use regex to check for colon definition #TODO
+            pass
         value = data[field]
-        if value and not value in tags:
-            tags.append(value)
+        if value:
+            tag = f'{field}: {value}'
+            tags.append(tag)
     data['about'] = request_json('about')
     data['visible'] = request_json('visible')
     data['images'] = request_json('images')

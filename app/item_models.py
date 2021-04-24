@@ -1,5 +1,4 @@
 from app import db
-from flask import jsonify
 from fuzzywuzzy import process, fuzz
 from app.user_model import User
 
@@ -33,7 +32,7 @@ class Item(db.Model):
             item.score = 0
             for tag in tags:
                 try:
-                    item.score += process.extractOne(tag, item.tags)[1]
+                    item.score += process.extractOne(tag, item.tags, scorer=fuzz.ratio)[1]
                 except:
                     pass
         db.session.commit()

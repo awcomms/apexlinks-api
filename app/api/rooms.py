@@ -1,6 +1,6 @@
 import json
 from copy import copy
-from flask import request, jsonify
+from flask import request
 from app import db
 from app.api import bp
 from app.misc import cdict
@@ -159,4 +159,4 @@ def del_room(id):
         return '', 401
     db.session.delete(room)
     db.session.commit()
-    return jsonify({'yes': True})
+    return {'yes': True}

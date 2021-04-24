@@ -1,4 +1,5 @@
-validate email - pip validate_email
+use regex to check for colon definition in api.edit_user
+
 forgot password
 replace jwt-tokens
 turn selection into regexp
