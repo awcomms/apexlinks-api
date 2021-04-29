@@ -14,8 +14,11 @@ def forgot_password():
     user = User.query.filter_by(username=username).first()
     if not user:
         return {'usernameInvalid': True, 'usernameError': 'No user with that username'}
-    send_reset_password_email(user)
-    return {'sent': True}
+    if user.email:
+        send_reset_password_email(user)
+    else:
+        return {'res': 'No email for to this user'}
+    return {'res': True}
 
 @bp.route('/reset_password', methods=['PUT'])
 def reset_password():
