@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 class Config(object):
     PAYSTACK = os.environ.get('PAYSTACK')
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
-    SECRET_KEY='dev'
+    SECRET_KEY= os.environ.get('SECRET_KEY') or 'dev'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'postgresql://edge:edge@localhost:5432/apexlinks'
     SQLALCHEMY_TRACK_MODIFICATIONS = False

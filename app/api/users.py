@@ -13,12 +13,12 @@ def forgot_password():
     username = request.json.get('username')
     user = User.query.filter_by(username=username).first()
     if not user:
-        return {'usernameInvalid': True, 'usernameError': 'No user with that username'}
+        return {'usernameInvalid': True, 'usernameError': 'No user with that username'}, 401
     if user.email:
         send_reset_password_email(user)
     else:
-        return {'res': 'No email for to this user'}
-    return {'res': True}
+        return {'r': 'No email set for this user'}, 404
+    return {'r': 'Check for an email'}
 
 @bp.route('/reset_password', methods=['PUT'])
 def reset_password():
@@ -27,17 +27,17 @@ def reset_password():
     user = User.check_reset_password_token(token)
     if user:
         user.set_password(password)
-        return {'email': user.email}
+        return {'r': True}
     else:
-        return 'false'
+        return ''
 
 @bp.route('/check_reset_password_token')
 def check_reset_password_token():
     token = request.headers.get('Authorization')
     if User.check_reset_password_token(token):
-        return 'true'
+        return {'r': True}
     else:
-        return 'false'
+        return ''
 
 #returns `False` if username exists
 @bp.route('/check_username/<username>')

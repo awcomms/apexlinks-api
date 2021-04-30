@@ -38,7 +38,7 @@ class User(db.Model):
     # rooms = db.relationship('Room', backref='user', lazy='dynamic')
     # subs = db.relationship('Sub', backref='user', lazy='dynamic')
 
-    def get_reset_password_token(self, expires_in=600):
+    def set_reset_password_token(self, expires_in=600):
         return jwt.encode(
             {'reset_password': self.id, 'exp': time() + expires_in},
             current_app.config['SECRET_KEY'], algorithm='HS256')
@@ -49,6 +49,7 @@ class User(db.Model):
             id = jwt.decode(token, current_app.config['SECRET_KEY'],
                 algorithms=['HS256'])['reset_password']
         except:
+            print('not')
             return
         return User.query.get(id)
 
