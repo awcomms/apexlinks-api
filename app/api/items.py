@@ -18,7 +18,7 @@ def items():
         if not user.visible:
             return '423'
     page = int(a('page'))
-    itype = a('itype')
+    print('page ', page)
     visible = a('visible')
     if visible == 'true':
         visible = True
@@ -47,8 +47,7 @@ def add_item():
             .filter_by(name=name).first():
         return {'nameError': 'Another item owned by same user has that name'}
     tags = json('tags') or []
-    tags.append(name)
-    tags.append(price)
+    if name and name not in tags: tags.append(name)
     data = {
         'name': name,
         'itype': itype,
@@ -83,9 +82,8 @@ def edit_item():
     if item and item.user != user:
         return '', 401
     tags = json('tags') or []
-    tags.append(name)
-    tags.append(price)
-    tags.append(itype)
+    if name and name not in tags: tags.append(name)
+    if itype and itype not in tags: tags.append(itype)
     data = {
         'itext': json('itext'),
         'visible': json('visible'),

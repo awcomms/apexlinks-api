@@ -39,21 +39,17 @@ class User(db.Model):
     # subs = db.relationship('Sub', backref='user', lazy='dynamic')
 
     def set_reset_password_token(self, expires_in=600):
-        print(self.username)
-        print(current_app.config['SECRET_KEY'])
         return jwt.encode(
             {'reset_password': self.id, 'exp': time() + expires_in},
             current_app.config['SECRET_KEY'], algorithm='HS256')
 
     @staticmethod
     def check_reset_password_token(token):
-        print(token[11:])
-        print(current_app.config['SECRET_KEY'])
+        print('t', token)
         try:
             id = jwt.decode(token, current_app.config['SECRET_KEY'],
                 algorithms=['HS256'])['reset_password']
         except:
-            print('not')
             return
         return User.query.get(id)
 
@@ -123,7 +119,6 @@ class User(db.Model):
 
     def edit(self, data):
         for field in data:
-            print(field, data[field])
             if hasattr(self, field):
                 setattr(self, field, data[field])
         db.session.commit()

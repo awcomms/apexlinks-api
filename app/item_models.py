@@ -28,13 +28,12 @@ class Item(db.Model):
             query = query.filter(Item.visible==visible)
         except:
             pass
+        print('count 1', query.count())
         for item in query:
             item.score = 0
             for tag in tags:
-                try:
-                    item.score += process.extractOne(tag, item.tags, scorer=fuzz.ratio)[1]
-                except:
-                    pass
+                item.score += process.extractOne(tag, item.tags, scorer=fuzz.ratio)[1]
+                print('item ', item.name, item.score)
         db.session.commit()
         query = query.order_by(Item.score.desc())
         return query
