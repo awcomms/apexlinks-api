@@ -44,6 +44,7 @@ class Item(db.Model):
             'name': self.name,
             'tags': self.tags,
             'itype': self.itype,
+            'link': self.link,
             'itext': self.itext,
             'image': self.image,
             'images': self.images,

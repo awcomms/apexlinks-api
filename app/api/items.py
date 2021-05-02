@@ -56,6 +56,7 @@ def add_item():
         'redirect': json('redirect'),
         'images': json('images'),
         'image': json('image'),
+        'link': json('link'),
         'price': price,
         'user': user,
         'tags': tags
@@ -70,6 +71,7 @@ def edit_item():
     if not user:
         return '', 401
     json = request.json.get
+    print(json('link'))
     id = json('id')
     item = Item.query.get(id)
     name = json('name')
@@ -89,6 +91,7 @@ def edit_item():
         'visible': json('visible'),
         'images': json('images'),
         'image': json('image'),
+        'link': json('link'),
         'redirect': json('redirect'),
         'itype': itype,
         'price': price,
