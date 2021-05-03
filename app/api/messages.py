@@ -3,8 +3,8 @@ from app.api import bp
 from app import db
 from app.misc import cdict
 from app.user_model import User
-from app.room_models import Room
-from app.message_models import Message
+from app.room_model import Room
+from app.message_model import Message
 
 @bp.route('/messages', methods=['POST'])
 def get_messages():

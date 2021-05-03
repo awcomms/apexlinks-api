@@ -3,8 +3,8 @@ from flask import request
 # from flask_cors import cross_origin
 from app import db
 from app.api import bp
-from app.sub_models import Sub
-from app.room_models import Room
+from app.sub_model import Sub
+from app.room_model import Room
 from app.user_model import User
 
 @bp.route('/subs', methods=['POST'])

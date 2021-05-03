@@ -1,11 +1,11 @@
 from app import db
-from fuzzywuzzy import process
+from fuzzywuzzy import fuzz, process
 from app.user_model import User, xrooms
 
 class Room(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
-    open = db.Column(db.Boolean, default=False)
+    open = db.Column(db.Boolean, default=True)
     socket_id = db.Column(db.Unicode)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     messages = db.relationship('Message', backref='room', lazy='dynamic')
@@ -33,15 +33,15 @@ class Room(db.Model):
     @staticmethod
     def fuz(id, tags):
         query = Room.query.join(User)
-        if not id:
-            query=query.filter(Room.open==True)
-        else:
+        if id:
             query=query.filter(User.id==id)
+        else:
+            query=query.filter(Room.open==True)
         for room in query:
             room.score = 0
             for tag in tags:
                 try:
-                    room.score += process.extractOne(tag, room.tags)[1]
+                    room.score += process.extractOne(tag, room.tags, scorer=fuzz.ratio)[1]
                 except:
                     pass
         db.session.commit()

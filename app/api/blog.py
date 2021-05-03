@@ -3,7 +3,7 @@ from app import db
 from app.api import bp
 from app.misc import cdict
 from app.user_model import User
-from app.blog_models import Blog
+from app.blog_model import Blog
 from flask import request
 from flask_jwt_extended import jwt_required
 

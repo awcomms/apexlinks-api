@@ -33,7 +33,6 @@ class Item(db.Model):
             item.score = 0
             for tag in tags:
                 item.score += process.extractOne(tag, item.tags, scorer=fuzz.ratio)[1]
-                print('item ', item.name, item.score)
         db.session.commit()
         query = query.order_by(Item.score.desc())
         return query

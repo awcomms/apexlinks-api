@@ -33,10 +33,10 @@ class User(db.Model):
     socket_id = db.Column(db.Unicode)
 
     items = db.relationship('Item', backref='user', lazy='dynamic')
-    # xrooms = db.relationship('Room', secondary=xrooms, backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
-    # messages = db.relationship('Message', backref='user', lazy='dynamic')
-    # rooms = db.relationship('Room', backref='user', lazy='dynamic')
-    # subs = db.relationship('Sub', backref='user', lazy='dynamic')
+    xrooms = db.relationship('Room', secondary=xrooms, backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
+    messages = db.relationship('Message', backref='user', lazy='dynamic')
+    rooms = db.relationship('Room', backref='user', lazy='dynamic')
+    subs = db.relationship('Sub', backref='user', lazy='dynamic')
 
     def set_reset_password_token(self, expires_in=600):
         return jwt.encode(

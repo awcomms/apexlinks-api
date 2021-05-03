@@ -5,7 +5,7 @@ from app import db
 from app.api import bp
 from app.misc import cdict
 from app.user_model import User, xrooms
-from app.room_models import Room
+from app.room_model import Room
 
 @bp.route('/join', methods=['PUT'])
 def join():
@@ -66,18 +66,13 @@ def rooms():
             id=None
     try:
         tags = json.loads(a('tags'))
-        page = int(a('page'))
     except:
         tags = []
+    try:
+        page = int(a('page'))
+    except:
         page = 1
     query = Room.fuz(id, tags)
-    if user:
-        for room in query:
-            if room.id in user.unseen_rooms:
-                room.unseen = True
-            else:
-                room.unseen = False
-    db.session.commit()
     return cdict(query, page)
 
 @bp.route('/rooms', methods=['POST'])
