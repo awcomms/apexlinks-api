@@ -18,7 +18,7 @@ class Item(db.Model):
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(id, visible, tags):
+    def fuz(user, id, visible, tags):
         query = Item.query.join(User)
         if not id:
             query = query.filter(User.visible==True)
@@ -28,11 +28,17 @@ class Item(db.Model):
             query = query.filter(Item.visible==visible)
         except:
             pass
-        print('count 1', query.count())
+        item_tag_score = 0 #TODO optimize
+        user_tag_score = 0
         for item in query:
-            item.score = 0
             for tag in tags:
-                item.score += process.extractOne(tag, item.tags, scorer=fuzz.ratio)[1]
+                item_tag_score += process.extractOne(tag, item.tags, scorer=fuzz.partial_ratio)[1]
+            if user:
+                for tag in user.tags:
+                    user_tag_score += process.extractOne(tag, item.user.tags, scorer=fuzz.partial_ratio)[1]
+                item.score = item_tag_score * user_tag_score
+            else:
+                item.score = item_tag_score
         db.session.commit()
         query = query.order_by(Item.score.desc())
         return query

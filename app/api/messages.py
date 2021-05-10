@@ -6,7 +6,7 @@ from app.user_model import User
 from app.room_model import Room
 from app.message_model import Message
 
-@bp.route('/messages', methods=['POST'])
+@bp.route('/messages', methods=['GET'])
 def get_messages():
     args = request.args.get
     id = args('id')

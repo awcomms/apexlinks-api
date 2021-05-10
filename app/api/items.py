@@ -10,6 +10,10 @@ from flask_jwt_extended import jwt_required
 @bp.route('/items', methods=['GET'])
 def items():
     a = request.args.get
+    user = None
+    token = request.headers.get('Authorization')
+    if token:
+        user = User.query.filter_by(token=token).first()
     id = a('id')
     if id:
         user = User.query.get(id)
@@ -30,7 +34,7 @@ def items():
         tags = json.loads(a('tags'))
     except:
         tags = []
-    return cdict(Item.fuz(id, visible, tags), page)
+    return cdict(Item.fuz(user, id, visible, tags), page)
 
 @bp.route('/items', methods=['POST'])
 def add_item():

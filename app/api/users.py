@@ -116,21 +116,23 @@ def edit_user():
             return 'Unsupported tags format', 415
     data = {
         'username': username,
-        'show_email': request_json('show_email'),
         'address': request_json('address'),
         'website': request_json('website'),
         'phone': request_json('phone'),
         'email': request_json('email'),
         'name': request_json('name'),
     }
-    for field in data:
-        for tag in tags:
-            #use regex to check for colon definition #TODO
-            pass
-        value = data[field]
-        if value:
-            tag = f'{field}: {value}'
-            tags.append(tag)
+    # for field in data:
+    #     for tag in tags:
+    #         #use regex to check for colon definition #TODO
+    #         pass
+    #     value = data[field]
+    #     if value:
+    #         # tag = f'{field}: {value}'
+    #         tags.append(value)
+    # tags.append(username)
+    # tags.append(data['name'])
+    data['show_email'] = request_json('show_email')
     data['about'] = request_json('about')
     data['visible'] = request_json('visible')
     data['images'] = request_json('images')

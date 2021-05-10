@@ -22,6 +22,8 @@ class User(db.Model):
     about = db.Column(db.Unicode)
     address = db.Column(db.Unicode)
     tags = db.Column(db.JSON)
+    image = db.Column(db.Unicode)
+    paid = db.Column(db.Boolean, default=False)
 
     show_email = db.Column(db.Boolean, default=True)
 
@@ -110,11 +112,13 @@ class User(db.Model):
             'username': self.username,
             'name': self.name,
             'email': self.email,
+            'paid': self.paid,
             'phone': self.phone,
+            'image': self.image,
             'website': self.website,
             'about': self.about,
             'address': self.address,
-            'tags': self.tags
+            'tags': self.tags,
         }
 
     def edit(self, data):
