@@ -14,12 +14,20 @@ def send_email(subject, sender, recipients, text_body, html_body):
     msg.html = html_body
     Thread(target=send_async_email, args=(current_app._get_current_object(), msg)).start()
 
-def send_reset_password_email(user):
+def send_reset_password(user):
     token = user.set_reset_password_token()
     send_email(
-        '[Apexlinks] Reset password',
+        'Reset password',
         sender=current_app.config['ADMINS'][0],
         recipients=[user.email],
         text_body=render_template('email/reset_password/txt.txt', user=user, token=token),
         html_body=render_template('email/reset_password/htm.htm', user=user, token=token))
+
+def send_renewal_failure(user):
+    send_email(
+        'Automatic subscription renewal failure',
+        sender=current_app.config['ADMINS'][0],
+        recipients=[user.email],
+        text_body=render_template('email/renewal_failure/txt.txt', user=user),
+        html_body=render_template('email/renewal_failure/htm.htm', user=user))
 

@@ -1,6 +1,4 @@
-Apexlinks
-
-Use this link to reset your password:
+Use this link to reset your Apexlinks password:
 
 https://apexlinks.org/reset_password?q={{token}}
 

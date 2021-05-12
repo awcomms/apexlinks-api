@@ -22,13 +22,14 @@ class User(db.Model):
     about = db.Column(db.Unicode)
     address = db.Column(db.Unicode)
     tags = db.Column(db.JSON)
+    card = db.Column(db.JSON)
     image = db.Column(db.Unicode)
+    last_paid = db.Column(db.DateTime)
     paid = db.Column(db.Boolean, default=False)
 
     show_email = db.Column(db.Boolean, default=True)
 
     password_hash = db.Column(db.String)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     token = db.Column(db.String, index=True)
     score = db.Column(db.Integer)
     visible = db.Column(db.Boolean, default=True)
@@ -58,6 +59,7 @@ class User(db.Model):
     @staticmethod
     def fuz(tags):
         query = User.query.filter(User.visible==True)
+        query = query.filter(User.paid==True)
         for user in query:
             if isinstance(user.tags, list) and tags:
                 user.score = 0

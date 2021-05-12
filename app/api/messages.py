@@ -35,9 +35,5 @@ def post_message():
         return '', 404
     value = data('value')
     Message(value, user, room)
-    for user in room.users:
-        if not room.id in user.in_rooms:
-            if not room.id in user.unseen_rooms:
-                user.unseen_rooms.append(room.id)
     db.session.commit()
     return '', 200

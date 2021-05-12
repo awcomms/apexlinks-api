@@ -21,6 +21,7 @@ class Item(db.Model):
     def fuz(user, id, visible, tags):
         query = Item.query.join(User)
         if not id:
+            query = query.filter(User.paid==True)
             query = query.filter(User.visible==True)
         elif id:
             query = query.filter(User.id==id)

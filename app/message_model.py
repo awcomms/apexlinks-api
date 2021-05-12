@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timezone
 from app import db
 
 class Message(db.Model):
@@ -6,7 +7,7 @@ class Message(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
     value = db.Column(db.Unicode)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow())
+    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     def __init__(self, value, user, room):
         self.value=value

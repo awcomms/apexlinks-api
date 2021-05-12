@@ -1,4 +1,4 @@
-from app.email import send_reset_password_email
+from app.email import send_reset_password
 import json
 from flask_jwt_extended import create_access_token
 from flask import request
@@ -15,7 +15,7 @@ def forgot_password():
     if not user:
         return {'usernameInvalid': True, 'usernameError': 'No user with that username'}, 401
     if user.email:
-        send_reset_password_email(user)
+        send_reset_password(user)
     else:
         return {'r': 'No email set for this user'}, 404
     return {'r': 'Check for an email'}
@@ -31,7 +31,7 @@ def reset_password():
     else:
         return ''
 
-@bp.route('/check_reset_password_token')
+@bp.route('/check_reset_password_token', methods=['GET'])
 def check_reset_password_token():
     token = request.headers.get('Authorization')
     if User.check_reset_password_token(token):
@@ -40,7 +40,7 @@ def check_reset_password_token():
         return ''
 
 #returns `False` if username exists
-@bp.route('/check_username/<username>')
+@bp.route('/check_username/<username>', methods=['GET'])
 def check_username(username):
     return {'res': User.query.filter_by(username=username).count()<1}
 
