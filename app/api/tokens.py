@@ -6,6 +6,30 @@ from app import db
 from app.user_model import User
 from app.api import bp
 
+@bp.route('/users/<value>', methods=['GET'])
+def get_user(value):
+    # try:
+    #     token = request.headers.get('Token')
+    #     user = User.query.filter_by(token=token).first()
+    #     if user:
+    #         return user.dict()
+    try:
+        user = User.query.get(int(value))
+    except:
+        user = User.query.filter_by(username=value).first()
+    if not user:
+        return '', 404
+    return user.dict()
+
+@bp.route('/user', methods=['GET'])
+def user():
+    token = request.headers.get('Token')
+    user = User.query.filter_by(token=token).first()
+    if user:
+        return user.dict()
+    else:
+        return '', 401
+
 @bp.route('/tokens', methods=['POST'])
 def get_token():
     q = request.get_json()
@@ -26,12 +50,12 @@ def get_token():
         }
     user.token = create_access_token(identity=username)
     db.session.commit()
-    body = {'user': user.dict()}
+    body = {'token': user.token}
     return make_response(body, headers)
 
 @bp.route('/tokens', methods=['DELETE'])
 def revoke_token():
-    token = request.headers.get('Authorization')
+    token = request.headers.get('Token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401

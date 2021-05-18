@@ -22,7 +22,7 @@ def forgot_password():
 
 @bp.route('/reset_password', methods=['PUT'])
 def reset_password():
-    token = request.headers.get('Authorization')
+    token = request.headers.get('Token')
     password = request.json.get('password')
     user = User.check_reset_password_token(token)
     if user:
@@ -33,7 +33,7 @@ def reset_password():
 
 @bp.route('/check_reset_password_token', methods=['GET'])
 def check_reset_password_token():
-    token = request.headers.get('Authorization')
+    token = request.headers.get('Token')
     if User.check_reset_password_token(token):
         return {'r': True}
     else:
@@ -57,16 +57,6 @@ def users():
         page = 1
     return cdict(User.fuz(tags), page)
 
-@bp.route('/users/<value>', methods=['GET'])
-def user(value):
-    try:
-        user = User.query.get(int(value))
-    except:
-        user = User.query.filter_by(username=value).first()
-    if not user:
-        return '', 404
-    return user.dict()
-
 @bp.route('/users', methods=['POST'])
 def create_user():
     j = request.json.get
@@ -89,11 +79,11 @@ def create_user():
     user = User(username, password, email)
     user.token = create_access_token(identity=username)
     db.session.commit()
-    return {'user': user.dict()}
+    return {'token': user.token}
 
 @bp.route('/users', methods=['PUT'])
 def edit_user():
-    token = request.headers.get('Authorization')
+    token = request.headers.get('Token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401

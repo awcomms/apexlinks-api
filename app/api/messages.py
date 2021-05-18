@@ -24,7 +24,7 @@ def get_messages():
 
 @bp.route('/messages', methods=['POST'])
 def post_message():
-    token = request.headers.get('Authorization')
+    token = request.headers.get('Token')
     user = User.query.filter_by(token=token).first()
     if not user: 
         return '', 401

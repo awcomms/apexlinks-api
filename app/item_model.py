@@ -29,17 +29,21 @@ class Item(db.Model):
             query = query.filter(Item.visible==visible)
         except:
             pass
-        item_tag_score = 0 #TODO optimize
-        user_tag_score = 0
+        tag_list = []
+        for tag in tags:
+            if tag != '' and tag not in tag_list:
+                tag_list.append(tag)
+        if user:
+            for tag in user.tags:
+                if tag != '' and tag not in tag_list:
+                    tag_list.append(tag)
+        tags = tag_list
         for item in query:
             for tag in tags:
-                item_tag_score += process.extractOne(tag, item.tags, scorer=fuzz.partial_ratio)[1]
-            if user:
-                for tag in user.tags:
-                    user_tag_score += process.extractOne(tag, item.user.tags, scorer=fuzz.partial_ratio)[1]
-                item.score = item_tag_score * user_tag_score
-            else:
-                item.score = item_tag_score
+                try:
+                    item.score += process.extractOne(tag, item.tags, scorer=fuzz.partial_ratio)[1]
+                except:
+                    pass
         db.session.commit()
         query = query.order_by(Item.score.desc())
         return query

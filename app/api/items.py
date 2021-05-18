@@ -11,18 +11,27 @@ from flask_jwt_extended import jwt_required
 def items():
     a = request.args.get
     user = None
-    token = request.headers.get('Authorization')
+    token = request.headers.get('Token')
     if token:
-        user = User.query.filter_by(token=token).first()
+        try:
+            user = User.query.filter_by(token=token).first()
+        except:
+            user = None
     id = a('id')
     if id:
+        try:
+            id = int(id)
+        except:
+            return {'error': 'Invalid id type'}, 400
         user = User.query.get(id)
         if not user:
             return '404'
         if not user.visible:
             return '423'
-    page = int(a('page'))
-    print('page ', page)
+    try:        
+        page = int(a('page'))
+    except:
+        page = 1
     visible = a('visible')
     if visible == 'true':
         visible = True
@@ -38,7 +47,7 @@ def items():
 
 @bp.route('/items', methods=['POST'])
 def add_item():
-    token = request.headers.get('Authorization')
+    token = request.headers.get('Token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '401', 401
@@ -70,7 +79,7 @@ def add_item():
 
 @bp.route('/items', methods=['PUT'])
 def edit_item():
-    token = request.headers.get('Authorization')
+    token = request.headers.get('Token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
@@ -107,11 +116,15 @@ def edit_item():
 
 @bp.route('/items/<int:id>', methods=['GET'])
 def item(id):
+    try:
+        id = int(id)
+    except:
+        return {'error': 'Invalid id type'}, 400
     return Item.query.get(id).dict()
 
 @bp.route('/items/<int:id>', methods=['DELETE'])
 def del_item(id):
-    token = request.headers.get('Authorization')
+    token = request.headers.get('Token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
