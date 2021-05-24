@@ -50,8 +50,8 @@ def get_token():
         }
     user.token = create_access_token(identity=username)
     db.session.commit()
-    body = {'token': user.token}
-    return make_response(body, headers)
+    res = {'token': user.token}
+    return make_response(res, headers)
 
 @bp.route('/tokens', methods=['DELETE'])
 def revoke_token():

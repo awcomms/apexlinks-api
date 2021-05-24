@@ -17,17 +17,19 @@ def items():
             user = User.query.filter_by(token=token).first()
         except:
             user = None
-    id = a('id')
+    try:
+        id = int(a('id'))
+    except:
+        id = None
     if id:
         try:
-            id = int(id)
+            user = User.query.get(id)
+            if not user:
+                return {'error': 'User not found'}, 404
+            if not user.visible:
+                return {'error': 'User not visible'}, 423
         except:
             return {'error': 'Invalid id type'}, 400
-        user = User.query.get(id)
-        if not user:
-            return '404'
-        if not user.visible:
-            return '423'
     try:        
         page = int(a('page'))
     except:
@@ -83,19 +85,20 @@ def edit_item():
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
+    
     json = request.json.get
-    print(json('link'))
     id = json('id')
     item = Item.query.get(id)
+    if item and item.user != user:
+        return '', 401
+    
     name = json('name')
     itype = json('itype')
-    price = json('price')
     if name != item.name and Item.query\
         .filter_by(user_id=user.id)\
             .filter_by(name=name).first():
         return {'nameError': 'Author already has item with same name'}, 400
-    if item and item.user != user:
-        return '', 401
+    
     tags = json('tags') or []
     if name and name not in tags: tags.append(name)
     if itype and itype not in tags: tags.append(itype)
@@ -105,9 +108,9 @@ def edit_item():
         'images': json('images'),
         'image': json('image'),
         'link': json('link'),
+        'price': json('price'),
         'redirect': json('redirect'),
         'itype': itype,
-        'price': price,
         'name': name,
         'tags': tags
     }

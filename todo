@@ -5,3 +5,17 @@ replace jwt-tokens
 turn selection into regexp
 
 paystack webhook
+
+custom json
+folders
+blog
+rooms
+events
+
+location
+    _flask
+    location field in user
+    location sort in Item.fuz
+
+    _svelte
+    location picker in /edit

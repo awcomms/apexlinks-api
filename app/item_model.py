@@ -7,8 +7,9 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     visible = db.Column(db.Boolean, default=True)
+    # folder_id = db.Column(db.Integer, db.ForeignKey('folder.id'))
     image = db.Column(db.Unicode)
-    data = db.Column(db.Unicode)
+    data = db.Column(db.JSON)
     images = db.Column(db.JSON)
     link = db.Column(db.Unicode)
     redirect = db.Column(db.Boolean, default=True)
@@ -19,9 +20,10 @@ class Item(db.Model):
 
     @staticmethod
     def fuz(user, id, visible, tags):
+        print(user, id, visible, tags)
         query = Item.query.join(User)
         if not id:
-            query = query.filter(User.paid==True)
+            # query = query.filter(User.paid==True) #TODO deactivate for production
             query = query.filter(User.visible==True)
         elif id:
             query = query.filter(User.id==id)
@@ -29,15 +31,6 @@ class Item(db.Model):
             query = query.filter(Item.visible==visible)
         except:
             pass
-        tag_list = []
-        for tag in tags:
-            if tag != '' and tag not in tag_list:
-                tag_list.append(tag)
-        if user:
-            for tag in user.tags:
-                if tag != '' and tag not in tag_list:
-                    tag_list.append(tag)
-        tags = tag_list
         for item in query:
             for tag in tags:
                 try:

@@ -1,5 +1,7 @@
 import jwt
 from time import time
+
+from sqlalchemy.orm import backref
 from app import db
 from flask import current_app
 from fuzzywuzzy import process
@@ -23,6 +25,7 @@ class User(db.Model):
     address = db.Column(db.Unicode)
     tags = db.Column(db.JSON)
     card = db.Column(db.JSON)
+    # folders = db.relationship('Folder', backref='user', lazy='dynamic')
     image = db.Column(db.Unicode)
     last_paid = db.Column(db.DateTime)
     paid = db.Column(db.Boolean, default=False)
@@ -48,7 +51,6 @@ class User(db.Model):
 
     @staticmethod
     def check_reset_password_token(token):
-        print('t', token)
         try:
             id = jwt.decode(token, current_app.config['SECRET_KEY'],
                 algorithms=['HS256'])['reset_password']
