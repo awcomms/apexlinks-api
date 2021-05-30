@@ -34,6 +34,11 @@ def items():
         page = int(a('page'))
     except:
         page = 1
+    try:
+        fields = json.loads(a('fields'))
+    except Exception as e:
+        print('fields route error:', e)
+        fields = []
     visible = a('visible')
     if visible == 'true':
         visible = True
@@ -43,9 +48,11 @@ def items():
         visible = True
     try:
         tags = json.loads(a('tags'))
-    except:
+    except Exception as e:
+        print('tags route error: ', e)
         tags = []
-    return cdict(Item.fuz(user, id, visible, tags), page)
+    # print(fields)
+    return cdict(Item.fuz(fields, user, id, visible, tags), page)
 
 @bp.route('/items', methods=['POST'])
 def add_item():
@@ -70,6 +77,7 @@ def add_item():
         'visible': json('visible'),
         'redirect': json('redirect'),
         'images': json('images'),
+        'fields': json('fields') or [],
         'image': json('image'),
         'link': json('link'),
         'price': price,
@@ -109,6 +117,7 @@ def edit_item():
         'image': json('image'),
         'link': json('link'),
         'price': json('price'),
+        'fields': json('fields'),
         'redirect': json('redirect'),
         'itype': itype,
         'name': name,

@@ -9,7 +9,8 @@ class Item(db.Model):
     visible = db.Column(db.Boolean, default=True)
     # folder_id = db.Column(db.Integer, db.ForeignKey('folder.id'))
     image = db.Column(db.Unicode)
-    data = db.Column(db.JSON)
+    fields = db.Column(db.JSON)
+    distance = db.Column(db.JSON)
     images = db.Column(db.JSON)
     link = db.Column(db.Unicode)
     redirect = db.Column(db.Boolean, default=True)
@@ -19,24 +20,55 @@ class Item(db.Model):
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(user, id, visible, tags):
-        print(user, id, visible, tags)
+    def fuz(fields, user, id, visible, tags):
+        fields = fields or []
         query = Item.query.join(User)
         if not id:
             # query = query.filter(User.paid==True) #TODO deactivate for production
             query = query.filter(User.visible==True)
+            query = query.filter(Item.visible==True)
         elif id:
             query = query.filter(User.id==id)
-        try:
-            query = query.filter(Item.visible==visible)
-        except:
-            pass
-        for item in query:
-            for tag in tags:
+            if user:
                 try:
-                    item.score += process.extractOne(tag, item.tags, scorer=fuzz.partial_ratio)[1]
+                    query = query.filter(Item.visible==visible)
                 except:
                     pass
+        for item in query:
+            for field in fields:
+                try:
+                    labelCutoff = int(field['labelCutoff'])
+                except:
+                    labelCutoff = 90
+                try:
+                    valueCutoff = int(field['valueCutoff'])
+                except:
+                    valueCutoff = 90
+                item.score = 0
+                itemFieldlabels = []
+                for itemField in item.fields:
+                    itemFieldlabels.append(itemField['label'])
+                result = process.extractOne(field['label'], itemFieldlabels, scorer=fuzz.partial_ratio)
+                if not result:
+                    continue
+                elif result[1] < labelCutoff:
+                    pass
+                    # query = query.filter(Item.id != item.id)
+                else:
+                    if not 'type' in field or field['type'] == 'text':
+                        value = ''
+                        for itemField in item.fields:
+                            if itemField['label'] == result[0]:
+                                value = itemField['value']
+                        score = fuzz.partial_ratio(field['value'], value)
+                        if score >= valueCutoff:
+                            item.score += score
+                if isinstance(item.tags, list) and tags:
+                    for tag in tags:
+                        try:
+                            item.score += process.extractOne(tag, item.tags)[1]
+                        except:
+                            pass
         db.session.commit()
         query = query.order_by(Item.score.desc())
         return query
@@ -51,6 +83,7 @@ class Item(db.Model):
             'itext': self.itext,
             'image': self.image,
             'images': self.images,
+            'fields': self.fields,
             'visible': self.visible,
             'redirect': self.redirect,
             'user': self.user.username

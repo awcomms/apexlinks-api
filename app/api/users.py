@@ -47,6 +47,14 @@ def check_username(username):
 @bp.route('/users', methods=['GET'])
 def users():
     a = request.args.get
+    id = a('id')
+    user = None
+    try:
+        id = int(id)
+    except:
+        id = None
+    if id:
+        user = User.query.get(id)
     try:
         tags = json.loads(a('tags'))
     except:
@@ -55,7 +63,7 @@ def users():
         page = int(a('page'))
     except:
         page = 1
-    return cdict(User.fuz(tags), page)
+    return cdict(User.fuz(user, tags), page)
 
 @bp.route('/users', methods=['POST'])
 def create_user():

@@ -11,11 +11,16 @@ folders
 blog
 rooms
 events
-
 location
     _flask
-    location field in user
+    location field in User -
+    distance field in Item -
+    distance function in app.misc
     location sort in Item.fuz
+        target = user location
+        for item:
+            item.distance = distance(target, item.user.location)
+        sort items by distance
 
     _svelte
     location picker in /edit

@@ -22,6 +22,7 @@ class User(db.Model):
     website = db.Column(db.Unicode)
     email = db.Column(db.Unicode)
     about = db.Column(db.Unicode)
+    location = db.Column(db.JSON)
     address = db.Column(db.Unicode)
     tags = db.Column(db.JSON)
     card = db.Column(db.JSON)
@@ -59,7 +60,7 @@ class User(db.Model):
         return User.query.get(id)
 
     @staticmethod
-    def fuz(tags):
+    def fuz(user, tags):
         query = User.query.filter(User.visible==True)
         query = query.filter(User.paid==True)
         for user in query:
