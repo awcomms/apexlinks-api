@@ -109,9 +109,7 @@ class User(db.Model):
     def dict(self, **kwargs):
         return {
             'id': self.id,
-            'socket_id': self.socket_id,
             'score': self.score,
-            'token': self.token,
             'show_email': self.show_email,
             'visible': self.visible,
             'username': self.username,
