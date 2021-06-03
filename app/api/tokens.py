@@ -42,12 +42,12 @@ def get_token():
         return {
             'usernameInvalid': True,
             'usernameError': 'User does not exist'
-        }
+        }, 400
     if not user.check_password(password):
         return {
             'passwordInvalid': True,
             'passwordError': 'Wrong password'
-        }
+        }, 400
     user.token = create_access_token(identity=username)
     db.session.commit()
     res = {'token': user.token}

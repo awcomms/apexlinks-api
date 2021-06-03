@@ -87,26 +87,24 @@ def add_item():
     i = Item(data)
     return {'id': i.id}
 
-@bp.route('/items', methods=['PUT'])
-def edit_item():
+@bp.route('/items/<int:id>', methods=['PUT'])
+def edit_item(id):
     token = request.headers.get('Token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
-    
     json = request.json.get
-    id = json('id')
     item = Item.query.get(id)
-    if item and item.user != user:
-        return '', 401
-    
+    if not item:
+        return {'error': 'item does not exist'}, 404
+    if item and item.user.id != user.id:
+        return {'error': "item does not belong to user"}, 403
     name = json('name')
     itype = json('itype')
     if name != item.name and Item.query\
         .filter_by(user_id=user.id)\
             .filter_by(name=name).first():
         return {'nameError': 'Author already has item with same name'}, 400
-    
     tags = json('tags') or []
     if name and name not in tags: tags.append(name)
     if itype and itype not in tags: tags.append(itype)

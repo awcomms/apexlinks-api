@@ -35,6 +35,8 @@ class Item(db.Model):
                 except:
                     pass
         for item in query:
+            if not item.fields:
+                continue
             for field in fields:
                 try:
                     labelCutoff = int(field['labelCutoff'])
@@ -63,12 +65,12 @@ class Item(db.Model):
                         score = fuzz.partial_ratio(field['value'], value)
                         if score >= valueCutoff:
                             item.score += score
-                if isinstance(item.tags, list) and tags:
-                    for tag in tags:
-                        try:
-                            item.score += process.extractOne(tag, item.tags)[1]
-                        except:
-                            pass
+            if isinstance(item.tags, list) and tags:
+                for tag in tags:
+                    try:
+                        item.score += process.extractOne(tag, item.tags)[1]
+                    except:
+                        pass
         db.session.commit()
         query = query.order_by(Item.score.desc())
         return query
