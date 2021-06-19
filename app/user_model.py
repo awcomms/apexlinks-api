@@ -1,7 +1,9 @@
 import jwt
 from time import time
 
-from sqlalchemy.orm import backref
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                            as Serializer, BadSignature, SignatureExpired)
+
 from app import db
 from flask import current_app
 from fuzzywuzzy import process
@@ -44,6 +46,21 @@ class User(db.Model):
     messages = db.relationship('Message', backref='user', lazy='dynamic')
     rooms = db.relationship('Room', backref='user', lazy='dynamic')
     subs = db.relationship('Sub', backref='user', lazy='dynamic')
+
+    def set_token(self):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        self.token = s.dumps({'id': self.id})
+        db.session.commit()
+
+    def check_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None
+        except BadSignature:
+            return None
+        return User.query.get(data['id'])
 
     def set_reset_password_token(self, expires_in=600):
         return jwt.encode(

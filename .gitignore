@@ -1,3 +1,4 @@
+/logs
 *.py[cod]
 
 # C extensions
@@ -44,4 +45,3 @@ misc.py
 venv
 app.db
 app.db-journal
-marketlnx.log*

@@ -1,6 +1,5 @@
 from app.email import send_reset_password
 import json
-from flask_jwt_extended import create_access_token
 from flask import request
 from app import db
 from app.api import bp
@@ -22,7 +21,7 @@ def forgot_password():
 
 @bp.route('/reset_password', methods=['PUT'])
 def reset_password():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     password = request.json.get('password')
     user = User.check_reset_password_token(token)
     if user:
@@ -33,7 +32,7 @@ def reset_password():
 
 @bp.route('/check_reset_password_token', methods=['GET'])
 def check_reset_password_token():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     if User.check_reset_password_token(token):
         return {'r': True}
     else:
@@ -85,13 +84,13 @@ def create_user():
             'usernameError': 'Username taken'
         }
     user = User(username, password, email)
-    user.token = create_access_token(identity=username)
+    user.token = ''
     db.session.commit()
     return {'token': user.token}
 
 @bp.route('/users', methods=['PUT'])
 def edit_user():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401

@@ -11,7 +11,7 @@ from flask_jwt_extended import jwt_required
 def items():
     a = request.args.get
     user = None
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     if token:
         try:
             user = User.query.filter_by(token=token).first()
@@ -56,7 +56,7 @@ def items():
 
 @bp.route('/items', methods=['POST'])
 def add_item():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '401', 401
@@ -89,7 +89,7 @@ def add_item():
 
 @bp.route('/items/<int:id>', methods=['PUT'])
 def edit_item(id):
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
@@ -134,7 +134,7 @@ def item(id):
 
 @bp.route('/items/<int:id>', methods=['DELETE'])
 def del_item(id):
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401

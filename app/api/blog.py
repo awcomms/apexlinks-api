@@ -34,7 +34,7 @@ def blogs():
 
 @bp.route('/blogs', methods=['POST'])
 def add_blog():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '401', 401
@@ -70,7 +70,7 @@ def add_blog():
 
 @bp.route('/blogs', methods=['PUT'])
 def edit_blog():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
@@ -113,7 +113,7 @@ def blog(id):
 
 @bp.route('/blogs/<int:id>', methods=['DELETE'])
 def del_blog(id):
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401

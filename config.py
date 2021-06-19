@@ -6,7 +6,7 @@ class Config(object):
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
     SECRET_KEY= os.environ.get('SECRET_KEY') or 'dev'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://edge:edge@localhost:5432/apexlinks'
+        'postgresql://postgres:love@localhost:5432/apexlinks'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_HEADERS = 'Content-Type'
     LANGUAGES = ['en', 'es']

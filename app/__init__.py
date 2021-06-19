@@ -1,5 +1,4 @@
 import os, logging
-from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from flask_sqlalchemy import SQLAlchemy
@@ -9,7 +8,6 @@ from flask import Flask, url_for, request, current_app
 from config import Config
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-jwt = JWTManager()
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
@@ -20,7 +18,6 @@ def create_app():
     CORS(app)    
 
     db.init_app(app)
-    jwt.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
 

@@ -9,7 +9,7 @@ from app.api import bp
 @bp.route('/users/<value>', methods=['GET'])
 def get_user(value):
     # try:
-    #     token = request.headers.get('Token')
+    #     token = request.headers.get('token')
     #     user = User.query.filter_by(token=token).first()
     #     if user:
     #         return user.dict()
@@ -23,7 +23,7 @@ def get_user(value):
 
 @bp.route('/user', methods=['GET'])
 def user():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if user:
         return user.dict()
@@ -55,7 +55,7 @@ def get_token():
 
 @bp.route('/tokens', methods=['DELETE'])
 def revoke_token():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401

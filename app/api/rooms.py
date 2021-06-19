@@ -9,7 +9,7 @@ from app.room_model import Room
 
 @bp.route('/join', methods=['PUT'])
 def join():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
@@ -24,7 +24,7 @@ def join():
 
 @bp.route('/leave', methods=['PUT'])
 def leave():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
@@ -37,7 +37,7 @@ def leave():
 
 @bp.route('/xrooms', methods=['GET'])
 def xrooms():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     args = request.args.get
     if not user:
@@ -52,7 +52,7 @@ def xrooms():
 
 @bp.route('/rooms', methods=['GET'])
 def rooms():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     a = request.args.get
     id = a('id')
@@ -77,7 +77,7 @@ def rooms():
 
 @bp.route('/rooms', methods=['POST'])
 def add_room():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
@@ -105,7 +105,7 @@ def add_room():
 
 @bp.route('/rooms', methods=['PUT'])
 def edit_room():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
@@ -131,7 +131,7 @@ def edit_room():
 
 @bp.route('/rooms/<value>', methods=['GET'])
 def get_room(value):
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
@@ -145,7 +145,7 @@ def get_room(value):
 
 @bp.route('/rooms/<int:id>', methods=['DELETE'])
 def del_room(id):
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401

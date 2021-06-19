@@ -5,7 +5,7 @@ from app.api import bp
 
 @bp.route('/folders', methods=['POST'])
 def add_folder():
-    token = request.headers.get('Token')
+    token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
         return '', 401
