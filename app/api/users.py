@@ -3,6 +3,8 @@ import json
 from flask import request
 from app import db
 from app.api import bp
+from app.auth import auth
+from app.auth import cred
 from app.user_model import User
 from app.misc import cdict
 from app.misc import check_email
@@ -65,7 +67,8 @@ def users():
     return cdict(User.fuz(user, tags), page)
 
 @bp.route('/users', methods=['POST'])
-def create_user():
+@cred
+def create_user(username=None, password=None):
     j = request.json.get
     username = j('username')
     password = j('password')
@@ -89,11 +92,8 @@ def create_user():
     return {'token': user.token}
 
 @bp.route('/users', methods=['PUT'])
-def edit_user():
-    token = request.headers.get('token')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '', 401
+@auth
+def edit_user(user=None):
     request_json = request.json.get
     username = request_json('username')
     if not username or username == '':
@@ -139,12 +139,10 @@ def edit_user():
     return user.dict()
 
 @bp.route('/users/<int:id>', methods=['DELETE'])
-def delete_user(id):
-    user = User.query.get(id)
+@auth
+def delete_user(id, user=None):
     for item in user.items:
         db.session.delete(item)
-    for room in user.rooms:
-        db.session.delete(room)
     db.session.delete(user)
     db.session.commit()
     return {'yes': True}, 202

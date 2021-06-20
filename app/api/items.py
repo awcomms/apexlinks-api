@@ -2,6 +2,7 @@ import json
 from app import db
 from app.api import bp
 from app.misc import cdict
+from app.auth import auth
 from app.user_model import User
 from app.item_model import Item
 from flask import request
@@ -55,11 +56,8 @@ def items():
     return cdict(Item.fuz(fields, user, id, visible, tags), page)
 
 @bp.route('/items', methods=['POST'])
-def add_item():
-    token = request.headers.get('token')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '401', 401
+@auth
+def add_item(user=None):
     json = request.json.get
     name = json('name')
     itype = json('itype')
@@ -88,11 +86,8 @@ def add_item():
     return {'id': i.id}
 
 @bp.route('/items/<int:id>', methods=['PUT'])
-def edit_item(id):
-    token = request.headers.get('token')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '', 401
+@auth
+def edit_item(id, user=None):
     json = request.json.get
     item = Item.query.get(id)
     if not item:
@@ -133,11 +128,8 @@ def item(id):
     return Item.query.get(id).dict()
 
 @bp.route('/items/<int:id>', methods=['DELETE'])
-def del_item(id):
-    token = request.headers.get('token')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '', 401
+@auth
+def del_item(id, user=None):
     item = Item.query.get(id)
     if item.user != user:
         return '', 401

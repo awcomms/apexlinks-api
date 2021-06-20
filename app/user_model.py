@@ -52,6 +52,7 @@ class User(db.Model):
         self.token = s.dumps({'id': self.id})
         db.session.commit()
 
+    @staticmethod
     def check_token(token):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:

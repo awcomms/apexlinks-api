@@ -2,6 +2,8 @@ from flask_jwt_extended import create_access_token
 from werkzeug.datastructures import Headers
 from flask import make_response
 from flask import request
+from app.auth import cred
+from app.auth import auth
 from app import db
 from app.user_model import User
 from app.api import bp
@@ -31,12 +33,11 @@ def user():
         return '', 401
 
 @bp.route('/tokens', methods=['POST'])
-def get_token():
-    q = request.get_json()
+@cred
+def get_token(username=None, password=None):
+    print(username, password)
     headers = Headers()
     headers.add('Access-Control-Allow-Origin', request.headers.get('Origin'))
-    username = q['username']
-    password = q['password']
     user = User.query.filter_by(username=username).first()
     if not user:
         return {
@@ -48,18 +49,14 @@ def get_token():
             'passwordInvalid': True,
             'passwordError': 'Wrong password'
         }, 400
-    user.token = create_access_token(identity=username)
+    user.set_token()
     db.session.commit()
     res = {'token': user.token}
     return make_response(res, headers)
 
 @bp.route('/tokens', methods=['DELETE'])
-def revoke_token():
-    token = request.headers.get('token')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '', 401
-    if user:
-        user.token = None
-        db.session.commit()
+@auth
+def revoke_token(user=None):
+    user.token = None
+    db.session.commit()
     return '', 202
