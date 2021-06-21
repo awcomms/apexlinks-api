@@ -14,23 +14,23 @@ def blogs():
     if id:
         user = User.query.get(id)
         if not user:
-            return '404'
-        if not user.visible:
-            return '423'
+            return '', 404
+        if user.hidden:
+            return '', 423
     page = int(a('page'))
     itype = a('itype')
-    visible = a('visible')
-    if visible == 'true':
-        visible = True
-    elif visible == 'false':
-        visible = False
+    hidden = a('hidden')
+    if hidden == 'true':
+        hidden = True
+    elif hidden == 'false':
+        hidden = False
     else:
-        visible = True
+        hidden = True
     try:
         tags = json.loads(a('tags'))
     except:
         tags = []
-    return cdict(Blog.fuz(id, visible, itype, tags), page)
+    return cdict(Blog.fuz(id, hidden, itype, tags), page)
 
 @bp.route('/blogs', methods=['POST'])
 def add_blog():
@@ -53,7 +53,7 @@ def add_blog():
         'name': name,
         'itype': itype,
         'itext': json('itext'),
-        'visible': json('visible'),
+        'hidden': json('hidden'),
         'images': json('images'),
         'image': json('image'),
         'price': price,
@@ -92,7 +92,7 @@ def edit_blog():
     data = {
         'name': name,
         'itext': json('itext'),
-        'visible': json('visible'),
+        'hidden': json('hidden'),
         'images': json('images'),
         'itype': json('itype'),
         'image': json('image'),

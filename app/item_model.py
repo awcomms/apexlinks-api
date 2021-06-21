@@ -6,7 +6,7 @@ class Item(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    visible = db.Column(db.Boolean, default=True)
+    hidden = db.Column(db.Boolean, default=True)
     # folder_id = db.Column(db.Integer, db.ForeignKey('folder.id'))
     image = db.Column(db.Unicode)
     fields = db.Column(db.JSON)
@@ -20,18 +20,18 @@ class Item(db.Model):
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(fields, user, id, visible, tags):
+    def fuz(fields, user, id, hidden, tags):
         fields = fields or []
         query = Item.query.join(User)
         if not id:
             # query = query.filter(User.paid==True) #TODO deactivate for production
-            query = query.filter(User.visible==True)
-            query = query.filter(Item.visible==True)
+            query = query.filter(User.hidden==False)
+            query = query.filter(Item.hidden==False)
         elif id:
             query = query.filter(User.id==id)
             if user:
                 try:
-                    query = query.filter(Item.visible==visible)
+                    query = query.filter(Item.hidden==hidden)
                 except:
                     pass
         for item in query:
@@ -86,7 +86,7 @@ class Item(db.Model):
             'image': self.image,
             'images': self.images,
             'fields': self.fields,
-            'visible': self.visible,
+            'hidden': self.hidden,
             'redirect': self.redirect,
             'user': self.user.username
         }

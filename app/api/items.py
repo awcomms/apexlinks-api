@@ -27,8 +27,8 @@ def items():
             user = User.query.get(id)
             if not user:
                 return {'error': 'User not found'}, 404
-            if not user.visible:
-                return {'error': 'User not visible'}, 423
+            if user.hidden:
+                return {'error': 'User hidden'}, 423
         except:
             return {'error': 'Invalid id type'}, 400
     try:        
@@ -40,20 +40,20 @@ def items():
     except Exception as e:
         print('fields route error:', e)
         fields = []
-    visible = a('visible')
-    if visible == 'true':
-        visible = True
-    elif visible == 'false':
-        visible = False
+    hidden = a('hidden')
+    if hidden == 'true':
+        hidden = True
+    elif hidden == 'false':
+        hidden = False
     else:
-        visible = True
+        hidden = True
     try:
         tags = json.loads(a('tags'))
     except Exception as e:
         print('tags route error: ', e)
         tags = []
     # print(fields)
-    return cdict(Item.fuz(fields, user, id, visible, tags), page)
+    return cdict(Item.fuz(fields, user, id, hidden, tags), page)
 
 @bp.route('/items', methods=['POST'])
 @auth
@@ -72,7 +72,7 @@ def add_item(user=None):
         'name': name,
         'itype': itype,
         'itext': json('itext'),
-        'visible': json('visible'),
+        'hidden': json('hidden'),
         'redirect': json('redirect'),
         'images': json('images'),
         'fields': json('fields') or [],
@@ -105,7 +105,7 @@ def edit_item(id, user=None):
     if itype and itype not in tags: tags.append(itype)
     data = {
         'itext': json('itext'),
-        'visible': json('visible'),
+        'hidden': json('hidden'),
         'images': json('images'),
         'image': json('image'),
         'link': json('link'),

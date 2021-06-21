@@ -2,26 +2,32 @@ from sqlalchemy.orm import backref
 from app import db
 from fuzzywuzzy import process, fuzz
 from app.user_model import User
+from app.relationship_tables import blogs
 
 class Blog(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    visible = db.Column(db.Boolean, default=True)
+    blogs = db.relationship('Blog', secondary='blogs',
+            primary_join=(blogs.c.parent_id ==id),
+            secondary_join=(blogs.c.child_id ==id),
+            backref=db.backref('blog', lazy='dynamic'), lazy='dynamic')
+    posts = db.relationship
+    hidden = db.Column(db.Boolean, default=True)
     data = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
     post = db.relationship('Post', backref='user', lazy='dynamic')
     score = db.Column(db.Float)
 
     @staticmethod
-    def fuz(id, visible, tags):
+    def fuz(id, hidden, tags):
         query = Blog.query.join(User)
         if not id:
-            query = query.filter(User.visible==True)
+            query = query.filter(User.hidden==False)
         elif id:
             query=query.filter(User.id==id)
         try:
-            query=query.filter(Blog.visible==visible)
+            query=query.filter(Blog.hidden==hidden)
         except:
             pass
         for blog in query:
@@ -41,7 +47,7 @@ class Blog(db.Model):
             'name': self.name,
             'tags': self.tags,
             'body': self.body,
-            'visible': self.visible,
+            'hidden': self.hidden,
             'user': self.user.username
         }
 

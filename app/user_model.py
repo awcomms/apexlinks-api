@@ -38,7 +38,7 @@ class User(db.Model):
     password_hash = db.Column(db.String)
     token = db.Column(db.String, index=True)
     score = db.Column(db.Integer)
-    visible = db.Column(db.Boolean, default=True)
+    hidden = db.Column(db.Boolean, default=True)
     socket_id = db.Column(db.Unicode)
 
     items = db.relationship('Item', backref='user', lazy='dynamic')
@@ -79,7 +79,7 @@ class User(db.Model):
 
     @staticmethod
     def fuz(user, tags):
-        query = User.query.filter(User.visible==True)
+        query = User.query.filter(User.hidden==False)
         query = query.filter(User.paid==True)
         for user in query:
             if isinstance(user.tags, list) and tags:
@@ -129,7 +129,7 @@ class User(db.Model):
             'id': self.id,
             'score': self.score,
             'show_email': self.show_email,
-            'visible': self.visible,
+            'hidden': self.hidden,
             'username': self.username,
             'name': self.name,
             'email': self.email,
