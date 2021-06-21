@@ -1,0 +1,31 @@
+add post
+    _blog_id
+    _title
+    _body
+    check if blog
+    check if user owns blog
+    check if blog with title exists
+    check if post without blog with title exists
+    Create post
+    return post.id
+
+add blog
+    _title
+    _desc
+    check if blog with title exists
+    create blog
+    return blog.id
+
+add blog to blog
+    parent_id
+    child_id
+    get parent
+    get child
+
+add post to blog
+    _post_id
+    _blog_id
+
+remove post from blog
+    _post_id
+    _blog_id
