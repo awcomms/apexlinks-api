@@ -3,21 +3,49 @@ from app import db
 from fuzzywuzzy import process, fuzz
 from app.user_model import User
 from app.relationship_tables import blogs
+from app.relationship_tables import posts
 
 class Blog(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     blogs = db.relationship('Blog', secondary='blogs',
-            primary_join=(blogs.c.parent_id ==id),
-            secondary_join=(blogs.c.child_id ==id),
+            primary_join=(blogs.c.parent_id == id),
+            secondary_join=(blogs.c.child_id == id),
             backref=db.backref('blog', lazy='dynamic'), lazy='dynamic')
-    posts = db.relationship
-    hidden = db.Column(db.Boolean, default=True)
+    posts = db.relationship('Post', secondary='blogposts', backref=db.backref('blog', lazy='dynamic'),
+            lazy='dynamic')
+    hidden = db.Column(db.Boolean, default=False)
     data = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
-    post = db.relationship('Post', backref='user', lazy='dynamic')
+    body = db.Column(db.Unicode)
     score = db.Column(db.Float)
+
+    def post_added(self, post):
+        return self.posts.filter(posts.c.child_id == self.id).count > 0
+
+    def add_post(self, post):
+        if not self.blog_added(post):
+            self.blogs.append(post)
+            db.session.commit()
+
+    def remove_post(self, post):
+        if self.post_added(post):
+            self.posts.remove(post)
+            db.session.commit()
+
+    def blog_added(self, blog):
+        return self.blogs.filter(blogs.c.child_id == self.id).count > 0
+
+    def add_blog(self, blog):
+        if not self.blog_added(blog):
+            self.blogs.append(blog)
+            db.session.commit()
+    
+    def remove_blog(self, blog):
+        if self.blog_added(blog):
+            self.blogs.remove(blog)
+            db.session.commit()
 
     @staticmethod
     def fuz(id, hidden, tags):

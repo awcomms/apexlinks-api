@@ -16,14 +16,21 @@ def cred(f):
         return f(*args, **kwargs, username=username, password=password)
     return wrapper
 
-def auth(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        token = request.headers.get('token')
-        if not token:
-            return '', 401
-        user = User.check_token(token)
-        if not user:
-            return '', 401
-        return f(*args, **kwargs, user=user)
-    return wrapper
+def auth(optional=False):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            token = request.headers.get('token')
+            user = None
+            if not optional and not token:
+                return '', 401
+            try:
+                user = User.check_token(token)
+            except:
+                if not optional:
+                    return {'error': 'invalid token'}, 423
+            if not optional and not user:
+                return '', 401
+            return f(*args, **kwargs, user=user)
+        return wrapper
+    return decorator

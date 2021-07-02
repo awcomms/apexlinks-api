@@ -38,7 +38,7 @@ class User(db.Model):
     password_hash = db.Column(db.String)
     token = db.Column(db.String, index=True)
     score = db.Column(db.Integer)
-    hidden = db.Column(db.Boolean, default=True)
+    hidden = db.Column(db.Boolean, default=False)
     socket_id = db.Column(db.Unicode)
 
     items = db.relationship('Item', backref='user', lazy='dynamic')

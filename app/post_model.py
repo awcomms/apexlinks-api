@@ -2,34 +2,46 @@ from sqlalchemy.orm import backref
 from app import db
 from fuzzywuzzy import process, fuzz
 from app.user_model import User
+from app.blog_model import Blog
 from app.relationship_tables import posts
 
 class Post(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    blog_id = db.Column(db.Integer, db.ForeignKey('blog.id'))
     posts = db.relationship('Post', secondary='posts',
             primary_join=(posts.c.parent_id ==id),
             secondary_join=(posts.c.child_id ==id),
             backref=db.backref('post', lazy='dynamic'), lazy='dynamic')
     posts = db.relationship
-    hidden = db.Column(db.Boolean, default=True)
+    hidden = db.Column(db.Boolean, default=False)
     data = db.Column(db.Unicode)
-    name = db.Column(db.Unicode)
+    title = db.Column(db.Unicode)
     post = db.relationship('Post', backref='user', lazy='dynamic')
     score = db.Column(db.Float)
 
+    def post_added(self, post):
+        return self.posts.filter(posts.c.child_id == post.id).count > 0
+
+    def add_post(self, post):
+        if not self.blog_added(post):
+            self.blogs.append(post)
+            db.session.commit()
+
+    def remove_post(self, post):
+        if self.post_added(post):
+            self.posts.remove(post)
+            db.session.commit()
+
     @staticmethod
-    def fuz(id, hidden, tags):
-        query = Post.query.join(User)
-        if not id:
-            query = query.filter(User.hidden==False)
-        elif id:
-            query=query.filter(User.id==id)
-        try:
-            query=query.filter(Post.hidden==hidden)
-        except:
-            pass
+    def fuz(user_id, blog_id, hidden, tags):
+        query = Post.query.join(Blog).join(User)
+        query=query.filter(Post.hidden==hidden)
+        if user_id:
+            query=query.filter(Blog.user_id==user_id)
+        if blog_id:
+            query=query.filter(Blog.blog_id==blog_id)
         for post in query:
             post.score = 0
             for tag in tags:
