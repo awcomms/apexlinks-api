@@ -8,6 +8,11 @@ from app import db
 from app.user_model import User
 from app.api import bp
 
+@bp.route('/tokens')
+@auth
+def check_token():
+    return {'ok': True}
+
 @bp.route('/users/<value>', methods=['GET'])
 def get_user(value):
     # try:

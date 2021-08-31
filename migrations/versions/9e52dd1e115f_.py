@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 8ef7400fd92a
+Revision ID: 9e52dd1e115f
 Revises: 
-Create Date: 2021-06-19 06:19:14.549588
+Create Date: 2021-08-19 12:29:36.632789
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '8ef7400fd92a'
+revision = '9e52dd1e115f'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -37,7 +37,7 @@ def upgrade():
     sa.Column('password_hash', sa.String(), nullable=True),
     sa.Column('token', sa.String(), nullable=True),
     sa.Column('score', sa.Integer(), nullable=True),
-    sa.Column('visible', sa.Boolean(), nullable=True),
+    sa.Column('hidden', sa.Boolean(), nullable=True),
     sa.Column('socket_id', sa.Unicode(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
@@ -46,7 +46,7 @@ def upgrade():
     sa.Column('tags', sa.JSON(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('visible', sa.Boolean(), nullable=True),
+    sa.Column('hidden', sa.Boolean(), nullable=True),
     sa.Column('image', sa.Unicode(), nullable=True),
     sa.Column('fields', sa.JSON(), nullable=True),
     sa.Column('distance', sa.JSON(), nullable=True),
