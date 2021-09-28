@@ -14,7 +14,11 @@ def forgot_password():
     username = request.json.get('username')
     user = User.query.filter_by(username=username).first()
     if not user:
-        return {'usernameInvalid': True, 'usernameError': 'No user with that username'}, 401
+        return {
+            'error': True,
+            'usernameInvalid': True,
+            'usernameError': 'No user with that username'
+        }, 401
     if user.email:
         send_reset_password(user)
     else:
@@ -30,7 +34,7 @@ def reset_password():
         user.set_password(password)
         return {'r': True}
     else:
-        return ''
+        return {}
 
 @bp.route('/check_reset_password_token', methods=['GET'])
 def check_reset_password_token():
@@ -38,7 +42,7 @@ def check_reset_password_token():
     if User.check_reset_password_token(token):
         return {'r': True}
     else:
-        return ''
+        return {}
 
 #returns `False` if username exists
 @bp.route('/check_username/<username>', methods=['GET'])
@@ -56,6 +60,10 @@ def users():
         id = None
     if id:
         user = User.query.get(id)
+        if user:
+            return user.dict()
+        else:
+            return {'error': f'user with id {id} not found'}
     try:
         tags = json.loads(a('tags'))
     except:
@@ -64,31 +72,31 @@ def users():
         page = int(a('page'))
     except:
         page = 1
-    return cdict(User.fuz(user, tags), page)
+    return cdict(User.fuz(tags), page)
 
 @bp.route('/users', methods=['POST'])
 @cred
 def create_user(username=None, password=None):
     j = request.json.get
-    username = j('username')
-    password = j('password')
+    print('username: ', username)
+    print('password: ', password)
     email = j('email')
+    print('email: ', email)
     if not email or email == '':
-        return {'emailInvalid': True, 'emailError': 'Empty'}
+        return {'error': True, 'emailInvalid': True, 'emailError': 'Empty'}
     if not check_email(email):
-        return {'emailInvalid': True, 'emailError': 'Unaccepted'}
+        return {'error': True, 'emailInvalid': True, 'emailError': 'Unaccepted'}
     if not username or username == '':
-        return {'usernameInvalid': True, 'usernameError': 'Empty'}
+        return {'error': True, 'usernameInvalid': True, 'usernameError': 'Empty'}
     if not password or password == '':
-        return {'passwordInvalid': True, 'passwordError': 'Empty'}
+        return {'error': True, 'passwordInvalid': True, 'passwordError': 'Empty'}
     if User.query.filter_by(username=username).first():
         return {
+            'error': True,
             'usernameInvalid': True,
             'usernameError': 'Username taken'
         }
     user = User(username, password, email)
-    user.token = ''
-    db.session.commit()
     return {'token': user.token}
 
 @bp.route('/users', methods=['PUT'])

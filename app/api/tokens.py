@@ -25,17 +25,18 @@ def get_user(value):
     except:
         user = User.query.filter_by(username=value).first()
     if not user:
-        return '', 404
+        return {}, 404
     return user.dict()
 
 @bp.route('/user', methods=['GET'])
 def user():
     token = request.headers.get('token')
+    print('token', token)
     user = User.query.filter_by(token=token).first()
     if user:
         return user.dict()
     else:
-        return '', 401
+        return {}, 401
 
 @bp.route('/tokens', methods=['POST'])
 @cred
@@ -46,17 +47,22 @@ def get_token(username=None, password=None):
     user = User.query.filter_by(username=username).first()
     if not user:
         return {
+            'error': True,
             'usernameInvalid': True,
             'usernameError': 'User does not exist'
         }, 400
     if not user.check_password(password):
         return {
+            'error': True,
             'passwordInvalid': True,
             'passwordError': 'Wrong password'
         }, 400
     user.set_token()
     db.session.commit()
-    res = {'token': user.token}
+    res = {
+        'user': user.dict(),
+        'token': user.token
+    }
     return make_response(res, headers)
 
 @bp.route('/tokens', methods=['DELETE'])
@@ -64,4 +70,4 @@ def get_token(username=None, password=None):
 def revoke_token(user=None):
     user.token = None
     db.session.commit()
-    return '', 202
+    return {}, 202

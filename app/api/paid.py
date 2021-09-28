@@ -33,7 +33,7 @@ def paid():
     hash = hmac.new(key, request.data, digestmod=hashlib.sha512).hexdigest()
     request_hash = request.headers.get('X-Paystack-Signature')
     if not hmac.compare_digest(hash, request_hash):
-        return ''
+        return {}
     user = User.query.get(data.metadata.id) 
     user.card = data['data']['token']
     print(data['data']['token']['email'])
@@ -41,7 +41,7 @@ def paid():
     user.paid = True
     user.last_paid = datetime.now(timezone.utc)
     db.session.commit()
-    return '', 200
+    return {}, 200
 
 @bp.route('is_paid', methods=['GET'])
 def is_paid():

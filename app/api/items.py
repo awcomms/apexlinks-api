@@ -132,7 +132,7 @@ def item(id):
 def del_item(id, user=None):
     item = Item.query.get(id)
     if item.user != user:
-        return '', 401
+        return {}, 401
     db.session.delete(item)
     db.session.commit()
     return {'yes': True}

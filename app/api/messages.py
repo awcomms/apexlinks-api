@@ -14,7 +14,7 @@ def get_messages():
     try:
         room = Room.query.get(id)
     except:
-        return '', 404
+        return {}, 404
     try:
         page = int(page)
     except:
@@ -27,13 +27,13 @@ def post_message():
     token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user: 
-        return '', 401
+        return {}, 401
     data = request.json.get
     id = data('id')
     room = Room.query.get(id)
     if not room:
-        return '', 404
+        return {}, 404
     value = data('value')
     Message(value, user, room)
     db.session.commit()
-    return '', 200
+    return {}, 200

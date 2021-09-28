@@ -8,7 +8,7 @@ def add_folder():
     token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '', 401
+        return {}, 401
     name = request.json.get('name')
     folder = Folder(name, user)
     return {'id': folder.id}

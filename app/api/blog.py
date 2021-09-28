@@ -14,9 +14,9 @@ def blogs():
     if id:
         user = User.query.get(id)
         if not user:
-            return '', 404
+            return {}, 404
         if user.hidden:
-            return '', 423
+            return {}, 423
     page = int(a('page'))
     itype = a('itype')
     hidden = a('hidden')
@@ -73,7 +73,7 @@ def edit_blog():
     token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '', 401
+        return {}, 401
     json = request.json.get
     id = json('id')
     blog = Blog.query.get(id)
@@ -86,7 +86,7 @@ def edit_blog():
         return {'nameError': 'Another blog owned by same user has that name'}, 400
     tags = json('tags') or []
     if blog and blog.user != user:
-        return '', 401
+        return {}, 401
     tags.append(name)
     tags.append(price)
     data = {
@@ -116,10 +116,10 @@ def del_blog(id):
     token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '', 401
+        return {}, 401
     blog = Blog.query.get(id)
     if blog.user != user:
-        return '', 401
+        return {}, 401
     db.session.delete(blog)
     db.session.commit()
     return {'yes': True}

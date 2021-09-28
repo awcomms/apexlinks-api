@@ -19,7 +19,7 @@ def posts(user=None):
         try:
             req_user = User.query.get(user_id)
             if not req_user:
-                return '', 404
+                return {}, 404
         except:
             return {'error': 'invalid user_id'}, 423
     authed = user == req_user
@@ -30,7 +30,7 @@ def posts(user=None):
         try:
             blog = Blog.query.get(blog_id)
             if not blog:
-                return '', 404
+                return {}, 404
             if blog.hidden and user != blog.user:
                 return {'error': 'blog hidden'}, 403
         except:
@@ -58,10 +58,10 @@ def blog(id):
 def del_post(id, user=None):
     post = Post.query.get(id)
     if post.user != user:
-        return '', 401
+        return {}, 401
     db.session.delete(post)
     db.session.commit()
-    return '', 202
+    return {}, 202
 
 @bp.route('/posts', methods=['POST'])
 @auth
@@ -79,7 +79,7 @@ def add_post(user=None):
         except:
             return {'error': 'invalid id'}, 423
     if blog.user != user:
-        return '', 401
+        return {}, 401
     if Post.query.filter(Post.blog_id == id).filter(Post.title == title):
         return {'titleError': 'A post with that title in that blog already exists'}, 423 #TODO
     if Post.query.filter(Post.blog == None).filter(Post.title == title):
@@ -117,4 +117,4 @@ def edit_post(user=None):
         'body': body,
     }
     post.edit(data)
-    return '', 202
+    return {}, 202

@@ -12,7 +12,7 @@ def join():
     token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '', 401
+        return {}, 401
     data = request.json.get
     id = data('id')
     try:
@@ -20,20 +20,20 @@ def join():
     except:
         room = None
     user.join(room)
-    return '', 202
+    return {}, 202
 
 @bp.route('/leave', methods=['PUT'])
 def leave():
     token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '', 401
+        return {}, 401
     id = request.json.get('id')
     room = Room.query.get(id)
     if not room:
-        return '', 404
+        return {}, 404
     user.leave(room)
-    return '', 202
+    return {}, 202
 
 @bp.route('/xrooms', methods=['GET'])
 def xrooms():
@@ -80,7 +80,7 @@ def add_room():
     token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '', 401
+        return {}, 401
     data = request.json.get
     open = data('open')
     username = data('username')
@@ -108,7 +108,7 @@ def edit_room():
     token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '', 401
+        return {}, 401
     data = request.json.get
     id = data('id')
     room = Room.query.get(id)
@@ -119,7 +119,7 @@ def edit_room():
         return {'nameError': 'Name taken'}, 400
     tags = data('tags') or []
     if room and room.user != user:
-        return '', 401
+        return {}, 401
     tags.append(name)
     data = {
         'name': name,
@@ -134,13 +134,13 @@ def get_room(value):
     token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '', 401
+        return {}, 401
     try:
         room = Room.query.get(int(value))
     except:
         room = Room.query.filter_by(name=value).first()
     if not room:
-        return '', 404
+        return {}, 404
     return room.dict()
 
 @bp.route('/rooms/<int:id>', methods=['DELETE'])
@@ -148,10 +148,10 @@ def del_room(id):
     token = request.headers.get('token')
     user = User.query.filter_by(token=token).first()
     if not user:
-        return '', 401
+        return {}, 401
     room = Room.query.get(id)
     if room.user != user:
-        return '', 401
+        return {}, 401
     db.session.delete(room)
     db.session.commit()
     return {'yes': True}

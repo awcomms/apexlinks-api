@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from flask_mail import Mail
 from flask import Flask, url_for, request, current_app
 from config import Config
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 db = SQLAlchemy()

@@ -78,7 +78,7 @@ class User(db.Model):
         return User.query.get(id)
 
     @staticmethod
-    def fuz(user, tags):
+    def fuz(tags):
         query = User.query.filter(User.hidden==False)
         query = query.filter(User.paid==True)
         for user in query:
@@ -97,7 +97,7 @@ class User(db.Model):
         self.email=email
         self.set_password(password)
         self.username=username
-        self.tags=[username]
+        self.set_token()
         db.session.add(self)
         db.session.commit()
         
