@@ -60,10 +60,10 @@ class User(db.Model):
             data = s.loads(token)
         except SignatureExpired:
             print('SignatureExpired')
-            return None
+            return 'expired'
         except BadSignature:
             print('BadSignature')
-            return None
+            return 'bad'
         except Exception as e:
             print('sle: ', e)
             return None
@@ -86,9 +86,9 @@ class User(db.Model):
         return User.query.get(id)
 
     @staticmethod
-    def fuz(tags):
+    def get(tags):
         query = User.query.filter(User.hidden==False)
-        query = query.filter(User.paid==True)
+        # query = query.filter(User.paid==True)
         for user in query:
             if isinstance(user.tags, list) and tags:
                 user.score = 0

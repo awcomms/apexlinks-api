@@ -9,8 +9,11 @@ from app.api import bp
 
 @bp.route('/tokens')
 @auth
-def check_token(**kwargs):
-    return {'ok': True}
+def check_token(user=None):
+    if user:
+        if isinstance(user, str):
+            return ({'error': user})
+        return user.dict()
 
 @bp.route('/tokens', methods=['POST'])
 @cred

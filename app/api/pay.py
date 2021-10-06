@@ -11,7 +11,7 @@ from app.user_model import User
 from app.api import bp
 from app import db
 
-@bp.route('check', methods=['GET'])
+@bp.route('/check', methods=['GET'])
 def check():
     key = current_app.config.PAYSTACK
     transaction = Transaction(token_key=key)
@@ -26,8 +26,8 @@ def check():
                 send_renewal_failure(user)
     db.session.commit()
 
-@bp.route('paid', methods=['POST'])
-def paid():
+@bp.route('/pay', methods=['POST'])
+def pay():
     key = current_app.config.PAYSTACK
     data = request.get_json()
     hash = hmac.new(key, request.data, digestmod=hashlib.sha512).hexdigest()
@@ -43,7 +43,7 @@ def paid():
     db.session.commit()
     return {}, 200
 
-@bp.route('is_paid', methods=['GET'])
+@bp.route('/is_paid', methods=['GET'])
 def is_paid():
     ref = request.args.get('ref')
     key = current_app.config.PAYSTACK

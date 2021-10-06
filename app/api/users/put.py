@@ -1,13 +1,9 @@
 from app.email import send_reset_password
 import json
 from flask import request
-from app import db
 from app.api import bp
 from app.auth import auth
-from app.auth import cred
 from app.user_model import User
-from app.misc import cdict
-from app.misc import check_email
 
 @bp.route('/forgot_password', methods=['PUT'])
 def forgot_password():
@@ -35,69 +31,6 @@ def reset_password():
         return {'r': True}
     else:
         return {}
-
-@bp.route('/check_reset_password_token', methods=['GET'])
-def check_reset_password_token():
-    token = request.headers.get('token')
-    if User.check_reset_password_token(token):
-        return {'r': True}
-    else:
-        return {}
-
-#returns `False` if username exists
-@bp.route('/check_username/<username>', methods=['GET'])
-def check_username(username):
-    return {'res': User.query.filter_by(username=username).count()<1}
-
-@bp.route('/users', methods=['GET'])
-def users():
-    a = request.args.get
-    id = a('id')
-    user = None
-    try:
-        id = int(id)
-    except:
-        id = None
-    if id:
-        user = User.query.get(id)
-        if user:
-            return user.dict()
-        else:
-            return {'error': f'user with id {id} not found'}
-    try:
-        tags = json.loads(a('tags'))
-    except:
-        tags = []
-    try:
-        page = int(a('page'))
-    except:
-        page = 1
-    return cdict(User.fuz(tags), page)
-
-@bp.route('/users', methods=['POST'])
-@cred
-def create_user(username=None, password=None):
-    j = request.json.get
-    print('username: ', username)
-    print('password: ', password)
-    email = j('email')
-    print('email: ', email)
-    if not email or email == '':
-        return {'error': True, 'emailInvalid': True, 'emailError': 'Empty'}
-    if not check_email(email):
-        return {'error': True, 'emailInvalid': True, 'emailError': 'Unaccepted'}
-    if not username or username == '':
-        return {'error': True, 'usernameInvalid': True, 'usernameError': 'Empty'}
-    if not password or password == '':
-        return {'error': True, 'passwordInvalid': True, 'passwordError': 'Empty'}
-    if User.query.filter_by(username=username).first():
-        return {
-            'error': True,
-            'usernameInvalid': True,
-            'usernameError': 'Username taken'
-        }
-    user = User(username, password, email)
-    return {'token': user.get_token()}
 
 @bp.route('/users', methods=['PUT'])
 @auth
@@ -146,12 +79,3 @@ def edit_user(user=None):
     data['tags'] = tags
     user.edit(data)
     return user.dict()
-
-@bp.route('/users/<int:id>', methods=['DELETE'])
-@auth
-def delete_user(id, user=None):
-    for item in user.items:
-        db.session.delete(item)
-    db.session.delete(user)
-    db.session.commit()
-    return {'yes': True}, 202
