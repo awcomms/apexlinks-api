@@ -47,21 +47,29 @@ class User(db.Model):
     rooms = db.relationship('Room', backref='user', lazy='dynamic')
     subs = db.relationship('Sub', backref='user', lazy='dynamic')
 
-    def set_token(self):
+    def get_token(self):
         s = Serializer(current_app.config['SECRET_KEY'])
-        self.token = s.dumps({'id': self.id})
-        db.session.commit()
+        token = s.dumps({'id': self.id}).decode('utf-8')
+        return token
 
     @staticmethod
     def check_token(token):
+        print('serializer got: ', token)
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
         except SignatureExpired:
+            print('SignatureExpired')
             return None
         except BadSignature:
+            print('BadSignature')
             return None
-        return User.query.get(data['id'])
+        except Exception as e:
+            print('sle: ', e)
+            return None
+        id = data['id']
+        u = User.query.get(id)
+        return u
 
     def set_reset_password_token(self, expires_in=600):
         return jwt.encode(
@@ -97,7 +105,6 @@ class User(db.Model):
         self.email=email
         self.set_password(password)
         self.username=username
-        self.set_token()
         db.session.add(self)
         db.session.commit()
         

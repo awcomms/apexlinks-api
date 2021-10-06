@@ -97,13 +97,14 @@ def create_user(username=None, password=None):
             'usernameError': 'Username taken'
         }
     user = User(username, password, email)
-    return {'token': user.token}
+    return {'token': user.get_token()}
 
 @bp.route('/users', methods=['PUT'])
 @auth
 def edit_user(user=None):
     request_json = request.json.get
     username = request_json('username')
+    print('us', username)
     if not username or username == '':
         return {'usernameInvalid': True, 'usernameError': 'No username'}, 400
     if username and username != user.username and \

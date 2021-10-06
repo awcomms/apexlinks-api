@@ -1,4 +1,4 @@
-import base64
+import base64, os, sys
 from functools import wraps
 from flask import request
 from app.user_model import User
@@ -15,7 +15,12 @@ def cred(f):
             username = s[0]
             password = s[1]
             return f(*args, **kwargs, username=username, password=password)
-        except:
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            tb = e.__traceback__
+            print(tb.tb_lasti)
             return {'error': 'something wrong with your credentials'}
     return wrapper
 
@@ -23,16 +28,13 @@ def auth(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         token = request.headers.get('auth')
-        print('token', token)
         if not token:
             print('no token')
             return {'error': 'No token provided'}, 401
-
         user = User.check_token(token)
-        
-        if not user:
-            print('invalid token')
-            return {'error': 'Invalid token', 'invalid': True}, 401
+        if user:
+            return f(*args, **kwargs, user = User.check_token(token))
         else:
-            return f(*args, **kwargs)
+            print('invalid token: ', token)
+            return {'error': 'Invalid token', 'invalid': True}, 401
     return wrapper
