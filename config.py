@@ -2,7 +2,9 @@ import os
 from dotenv import load_dotenv
 
 class Config(object):
-    PAYSTACK = os.environ.get('PAYSTACK')
+    PAYSTACK_TEST = os.environ.get('PAYSTACK_TEST')
+    PAYSTACK_TEST_KEY = os.environ.get('PAYSTACK_TEST_KEY')
+    PAYSTACK_LIVE_KEY = os.environ.get('PAYSTACK_LIVE_KEY')
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
     SECRET_KEY= os.environ.get('SECRET_KEY') or 'dev'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \

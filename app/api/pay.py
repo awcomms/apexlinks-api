@@ -11,12 +11,15 @@ from app.user_model import User
 from app.api import bp
 from app import db
 
-@bp.route('/check', methods=['GET'])
+@bp.route('/pay/check', methods=['GET'])
 def check():
-    key = current_app.config.PAYSTACK
+    test = current_app.config.PAYSTACK_TEST
+    test_key = current_app.config.PAYSTACK_TEST_KEY
+    live_key = current_app.config.PAYSTACK_LIVE_KEY
+    key = test_key if test else live_key
     transaction = Transaction(token_key=key)
     duration = timedelta(days=30)
-    for user in User:
+    for user in User.query:
         if user.last_paid + duration > datetime.now(timezone.utc):
             user.paid = False
             res = transaction.charge(user.card['email'], auth_code=user.card['token_code'], amount=190233)
@@ -28,7 +31,10 @@ def check():
 
 @bp.route('/pay', methods=['POST'])
 def pay():
-    key = current_app.config.PAYSTACK
+    test = current_app.config.PAYSTACK_TEST
+    test_key = current_app.config.PAYSTACK_TEST_KEY
+    live_key = current_app.config.PAYSTACK_LIVE_KEY
+    key = test_key if test else live_key
     data = request.get_json()
     hash = hmac.new(key, request.data, digestmod=hashlib.sha512).hexdigest()
     request_hash = request.headers.get('X-Paystack-Signature')
@@ -43,10 +49,13 @@ def pay():
     db.session.commit()
     return {}, 200
 
-@bp.route('/is_paid', methods=['GET'])
+@bp.route('/pay/is_paid', methods=['GET'])
 def is_paid():
+    test = current_app.config.PAYSTACK_TEST
+    test_key = current_app.config.PAYSTACK_TEST_KEY
+    live_key = current_app.config.PAYSTACK_LIVE_KEY
+    key = test_key if test else live_key
     ref = request.args.get('ref')
-    key = current_app.config.PAYSTACK
     transaction = Transaction(token_key=key)
     res = transaction.verify(ref)
     if res[3]['status'] == 'success':
