@@ -35,36 +35,35 @@ class Item(db.Model):
                 except:
                     pass
         for item in query:
-            if not item.fields:
-                continue
-            for field in fields:
-                try:
-                    labelCutoff = int(field['labelCutoff'])
-                except:
-                    labelCutoff = 90
-                try:
-                    valueCutoff = int(field['valueCutoff'])
-                except:
-                    valueCutoff = 90
-                item.score = 0
-                itemFieldlabels = []
-                for itemField in item.fields:
-                    itemFieldlabels.append(itemField['label'])
-                result = process.extractOne(field['label'], itemFieldlabels, scorer=fuzz.partial_ratio)
-                if not result:
-                    continue
-                elif result[1] < labelCutoff:
-                    pass
-                    # query = query.filter(Item.id != item.id)
-                else:
-                    if not 'type' in field or field['type'] == 'text':
-                        value = ''
-                        for itemField in item.fields:
-                            if itemField['label'] == result[0]:
-                                value = itemField['value']
-                        score = fuzz.partial_ratio(field['value'], value)
-                        if score >= valueCutoff:
-                            item.score += score
+            if item.fields:
+                for field in fields:
+                    try:
+                        labelCutoff = int(field['labelCutoff'])
+                    except:
+                        labelCutoff = 90
+                    try:
+                        valueCutoff = int(field['valueCutoff'])
+                    except:
+                        valueCutoff = 90
+                    item.score = 0
+                    itemFieldlabels = []
+                    for itemField in item.fields:
+                        itemFieldlabels.append(itemField['label'])
+                    result = process.extractOne(field['label'], itemFieldlabels, scorer=fuzz.partial_ratio)
+                    if not result:
+                        continue
+                    elif result[1] < labelCutoff:
+                        pass
+                        # query = query.filter(Item.id != item.id)
+                    else:
+                        if not 'type' in field or field['type'] == 'text':
+                            value = ''
+                            for itemField in item.fields:
+                                if itemField['label'] == result[0]:
+                                    value = itemField['value']
+                            score = fuzz.partial_ratio(field['value'], value)
+                            if score >= valueCutoff:
+                                item.score += score
             if isinstance(item.tags, list) and tags:
                 for tag in tags:
                     try:

@@ -37,6 +37,8 @@ def items():
         page = 1
     try:
         fields = json.loads(a('fields'))
+        if not isinstance(fields, list):
+            return {'error': 'let fields arg be of a list type'}
     except Exception as e:
         print('fields route error:', e)
         fields = []

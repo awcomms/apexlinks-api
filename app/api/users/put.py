@@ -1,3 +1,4 @@
+from app.misc.fields.check_and_clean import check_and_clean
 from app.email import send_reset_password
 import json
 from flask import request
@@ -43,17 +44,35 @@ def edit_user(user=None):
     if username and username != user.username and \
         User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}, 400
+    
+    fields = request_json('fields')
+    if fields:
+        if not isinstance(fields, list):
+            return {'error': 'let fields body param be of a list type'}
+        for idx, field in enumerate(fields):
+            res = check_and_clean(field)
+            if isinstance(res, str):
+                return {'error': res}
+            fields[idx] = res
+    
     tags = request_json('tags') or []
     if type(tags) != list:
         try:
             tags = json.loads(tags)
+            if not isinstance(tags, list):
+                return {'error': f'let tags body parameter be of a list type'}
+            for tag in tags:
+                if not isinstance(tag, str):
+                    return {'error': f'let tag {tag} be of a string type'}
         except SyntaxError or TypeError:
             tags = tags.split(',')
         except SyntaxError or TypeError:
             tags = tags.split(';')
         except SyntaxError or TypeError:
             return 'Unsupported tags format', 415
+    
     data = {
+        'fields': fields,
         'username': username,
         'address': request_json('address'),
         'website': request_json('website'),
@@ -61,16 +80,6 @@ def edit_user(user=None):
         'email': request_json('email'),
         'name': request_json('name'),
     }
-    # for field in data:
-    #     for tag in tags:
-    #         #use regex to check for colon definition #TODO
-    #         pass
-    #     value = data[field]
-    #     if value:
-    #         # tag = f'{field}: {value}'
-    #         tags.append(value)
-    # tags.append(username)
-    # tags.append(data['name'])
     data['show_email'] = request_json('show_email')
     data['about'] = request_json('about')
     data['hidden'] = request_json('hidden')

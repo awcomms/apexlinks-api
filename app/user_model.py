@@ -3,10 +3,11 @@ from time import time
 
 from itsdangerous import (TimedJSONWebSignatureSerializer
                             as Serializer, BadSignature, SignatureExpired)
+from app.misc.fields.clean import clean
 
 from app import db
 from flask import current_app
-from fuzzywuzzy import process
+from fuzzywuzzy import fuzz, process
 from datetime import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -25,7 +26,8 @@ class User(db.Model):
     email = db.Column(db.Unicode)
     about = db.Column(db.Unicode)
     location = db.Column(db.JSON)
-    address = db.Column(db.Unicode)
+    fields = db.Column(db.JSON)
+    address = db.Column(db.JSON)
     tags = db.Column(db.JSON)
     card = db.Column(db.JSON)
     # folders = db.relationship('Folder', backref='user', lazy='dynamic')
@@ -92,11 +94,36 @@ class User(db.Model):
         for user in query:
             if isinstance(user.tags, list) and tags:
                 user.score = 0
+                fields = []
                 for tag in tags:
+                    try:
+                        fieldList = tag.split(':')
+                        field = {
+                            'label': fieldList[0],
+                            'value': fieldList[1]
+                        }
+                        fields.append(field)
+                        continue
+                    except:
+                        pass
                     try:
                         user.score += process.extractOne(tag, user.tags)[1]
                     except:
                         pass
+                for idx, field in enumerate(fields):
+                    res = clean(field)
+                    if isinstance(res, str):
+                        return {'error': res}
+                    fields[idx] = res
+                for field in fields:
+                    max = 0
+                    for user_field in user.fields:
+                        label_score = fuzz.ratio(field['label'], user_field['label'])
+                        value_score = fuzz.ratio(field['value'], user_field['value'])
+                        score = label_score + value_score
+                        if score > max:
+                            max = score
+                    user.score += max
         db.session.commit()
         query = query.order_by(User.score.desc())
         return query
@@ -132,6 +159,7 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def dict(self, **kwargs):
+        print('self.fields: ', self.fields)
         return {
             'id': self.id,
             'score': self.score,
@@ -141,6 +169,7 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'paid': self.paid,
+            'fields': self.fields,
             'phone': self.phone,
             'image': self.image,
             'website': self.website,

@@ -2,7 +2,7 @@ import json
 from flask import request
 from app.api import bp
 from app.user_model import User
-from app.misc import cdict
+from app.misc.cdict import cdict
 
 @bp.route('/users', methods=['GET'])
 def users():
