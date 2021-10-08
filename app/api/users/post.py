@@ -2,7 +2,7 @@ from flask import request
 from app.api import bp
 from app.auth import cred
 from app.user_model import User
-from app.misc import check_email
+from app.misc.check_email import check_email
 
 @bp.route('/users', methods=['POST'])
 @cred
