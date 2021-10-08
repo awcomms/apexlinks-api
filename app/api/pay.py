@@ -31,6 +31,7 @@ def check():
 
 @bp.route('/pay', methods=['POST'])
 def pay():
+    print('/pay')
     test = current_app.config.PAYSTACK_TEST
     test_key = current_app.config.PAYSTACK_TEST_KEY
     live_key = current_app.config.PAYSTACK_LIVE_KEY
