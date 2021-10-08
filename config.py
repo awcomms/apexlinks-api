@@ -7,7 +7,9 @@ class Config(object):
     PAYSTACK_LIVE_KEY = os.environ.get('PAYSTACK_LIVE_KEY')
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
     SECRET_KEY= os.environ.get('SECRET_KEY') or 'dev'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL').replace(
+        'postgres://', 'postgresql://'
+    ) or \
         'postgresql://postgres:love@localhost:5432/apexlinks'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_HEADERS = 'Content-Type'
