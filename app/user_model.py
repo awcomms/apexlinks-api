@@ -57,7 +57,7 @@ class User(db.Model):
         db.session.commit()
 
     def get_token(self):
-        s = Serializer(current_app.config['SECRET_KEY'])
+        s = Serializer(current_app.config['SECRET_KEY'], expires_in = 31536000)
         token = s.dumps({'id': self.id}).decode('utf-8')
         return token
 
