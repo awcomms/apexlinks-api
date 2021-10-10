@@ -49,6 +49,12 @@ class User(db.Model):
     rooms = db.relationship('Room', backref='user', lazy='dynamic')
     subs = db.relationship('Sub', backref='user', lazy='dynamic')
 
+    @staticmethod
+    def activate(id):
+        user = User.query.get(id)
+        user.paid = True
+        db.session.commit()
+
     def get_token(self):
         s = Serializer(current_app.config['SECRET_KEY'])
         token = s.dumps({'id': self.id}).decode('utf-8')

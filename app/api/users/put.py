@@ -6,6 +6,13 @@ from app.api import bp
 from app.auth import auth
 from app.user_model import User
 
+@bp.route('/users/activate')
+@auth
+def activate_user():
+    id = request.json.get('id')
+    User.activate(id)
+    return '', 200
+
 @bp.route('/forgot_password', methods=['PUT'])
 def forgot_password():
     username = request.json.get('username')
