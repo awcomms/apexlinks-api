@@ -42,6 +42,7 @@ class User(db.Model):
     score = db.Column(db.Integer)
     hidden = db.Column(db.Boolean, default=False)
     socket_id = db.Column(db.Unicode)
+    no_password = db.Column(db.Boolean)
 
     items = db.relationship('Item', backref='user', lazy='dynamic')
     xrooms = db.relationship('Room', secondary=xrooms, backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
@@ -136,6 +137,8 @@ class User(db.Model):
 
     def __init__(self, username, password, email=None):
         self.email=email
+        if not password:
+            self.no_password = True
         self.set_password(password)
         self.username=username
         db.session.add(self)

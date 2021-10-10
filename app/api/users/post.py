@@ -18,8 +18,9 @@ def create_user(username=None, password=None):
         return {'error': True, 'emailInvalid': True, 'emailError': 'Unaccepted'}
     if not username or username == '':
         return {'error': True, 'usernameInvalid': True, 'usernameError': 'Empty'}
-    if not password or password == '':
-        return {'error': True, 'passwordInvalid': True, 'passwordError': 'Empty'}
+    # warn api users that account will be created without password
+    # if (not password or password == '') and not allowEmptyPassword:
+    #     return {'error': True, 'passwordInvalid': True, 'passwordError': 'Empty'}
     if User.query.filter_by(username=username).first():
         return {
             'error': True,
@@ -27,4 +28,7 @@ def create_user(username=None, password=None):
             'usernameError': 'Username taken'
         }
     user = User(username, password, email)
-    return {'token': user.get_token()}
+    return {
+        'user': user.dict(),
+        'token': user.get_token()
+        }
