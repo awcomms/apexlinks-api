@@ -1,0 +1,1 @@
+schema_dot_org = 'https://raw.githubusercontent.com/schemaorg/schemaorg/main/data/releases/13.0/schemaorg-all-https.jsonld'

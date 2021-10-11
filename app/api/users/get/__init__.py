@@ -1,1 +1,1 @@
-from . import check_no_password, check_reset_password_token, check_username, users, user
+from . import get_schema, check_no_password, check_reset_password_token, check_username, users, user

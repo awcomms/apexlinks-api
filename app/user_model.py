@@ -117,6 +117,7 @@ class User(db.Model):
                         user.score += process.extractOne(tag, user.tags)[1]
                     except:
                         pass
+                print('user get fields: ', fields)
                 for idx, field in enumerate(fields):
                     res = clean(field)
                     if isinstance(res, str):
