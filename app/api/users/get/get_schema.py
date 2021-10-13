@@ -1,7 +1,6 @@
 import os, json, sys
 import requests
 from app.api import bp
-from app.misc.text_to_num import text_to_num
 from app.resources import schemaorg
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -33,7 +32,6 @@ classType = 'rdfs:Class'
 
 @bp.route('/users/schema', methods=['GET'])
 def get_schema():
-    id = 1
     resSchemas = []
     try:
         all = requests.get(schemaorg).json()
@@ -77,6 +75,4 @@ def get_schema():
                         schema['id'] = idx #text_to_num(schema['@id'])
                         if schema not in resSchemas:
                             resSchemas.append(schema)
-    for s in resSchemas:
-        print('resSchema: ', s['id'])
     return {'schema': resSchemas}
