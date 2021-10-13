@@ -1,58 +1,82 @@
+import os, json, sys
 import requests
 from app.api import bp
-from app.resources import schema_dot_org
+from app.misc.text_to_num import text_to_num
+from app.resources import schemaorg
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+schemaorgPath= os.path.join(basedir, 'files', 'schemaorg.jsonld')
 
 domainIncludes = 'schema:domainIncludes'
-localBusiness = 'schema:LocalBusiness'
 organization = 'schema:Organization'
-subClassOf = 'rdfs:subClassOf'
+subParents = [
+    'schema:Airline',
+    'schema:Consortium',
+    'schema:Corporation',
+    'schema:EducationalOrganization',
+    'schema:FundingScheme',
+    'schema:GovernmentOrganization',
+    'schema:LibrarySystem',
+    'schema:LocalBusiness',
+    'schema:MedicalOrganization',
+    'schema:NGO',
+    'schema:NewsMediaOrganization',
+    'schema:PerformingGroup',
+    'schema:Project',
+    'schema:ResearchOrganization',
+    'schema:SportsOrganization',
+    'schema:WorkersUnion'
+]
 
-@bp.route('/schema/organization', methods=['GET'])
+subClassOf = 'rdfs:subClassOf'
+classType = 'rdfs:Class'
+
+@bp.route('/users/schema', methods=['GET'])
 def get_schema():
     id = 1
-    subClasses = []
-    localBusinessSchemas = []
-    all = requests.get(schema_dot_org).json()
+    resSchemas = []
+    try:
+        all = requests.get(schemaorg).json()
+    except:
+        all = json.load(open(schemaorgPath, encoding='utf8'))
     graph = all['@graph']
     
-    def get_sub_classes():
-        _subClasses = [organization]
+    parentClasses = [organization] + subParents
+    def get_sub_classes(_subClasses):
         _newSubClasses = []
         for schema in graph:
-            if schema['@type'] == 'rdf:Class':
+            if schema['@type'] == classType and subClassOf in schema:
                 for subClass in schema[subClassOf]:
                     if isinstance(subClass, dict):
                         sub_class_id = subClass['@id']
-                        if sub_class_id in _subClasses:
-                            if sub_class_id not in _newSubClasses:
+                        if sub_class_id in _subClasses and sub_class_id not in _newSubClasses:
                                 _newSubClasses.append(sub_class_id)
                     elif subClass == '@id':
                         sub_class_id = schema[subClassOf][subClass]
-                        if sub_class_id in _subClasses:
-                            if sub_class_id not in _newSubClasses:
+                        if sub_class_id in _subClasses and sub_class_id not in _newSubClasses:
                                 _newSubClasses.append(sub_class_id)
                 if len(_newSubClasses):
                     for s in _newSubClasses:
-                        if s not in _subClasses:
-                            _subClasses.append(s)
-                    get_sub_classes()
-    subClasses = get_sub_classes()
+                        if s not in parentClasses:
+                            parentClasses.append(s)
+                        # else:
+                        #     _newSubClasses.remove(s)
+                    get_sub_classes(_newSubClasses)
+    
+    # get_sub_classes(start)
+    # print('parentClasses', start)
 
-    for schema in graph:
+    for idx, schema in enumerate(graph):
         if schema['@type'] == 'rdf:Property' and domainIncludes in schema:
-            for domain in schema[domainIncludes]:
-                if isinstance(domain, dict):
-                    if domain['@id'] in subClasses:
+            domainIncludesField = schema[domainIncludes]
+            for domain in domainIncludesField:
+                if (isinstance(domain, dict) and '@id' in domain and domain['@id'] in parentClasses) or \
+                    (domain == '@id' and domainIncludesField[domain] in parentClasses):
                         schema['text'] = schema['rdfs:label']
-                        print('schema text', schema['text'])
-                        schema['id'] = id
-                        id += 1
-                        localBusinessSchemas.append(schema)
-                elif domain == '@id':
-                    if schema[domainIncludes][domain] in subClasses:
-                        schema['text'] = schema['rdfs:label']
-                        print('schema text', schema['text'])
-                        schema['id'] = id
-                        id += 1
-                        localBusinessSchemas.append(schema)
-    return {'schemas': localBusinessSchemas}
+                        schema['label'] = schema['rdfs:label']
+                        schema['id'] = idx #text_to_num(schema['@id'])
+                        if schema not in resSchemas:
+                            resSchemas.append(schema)
+    for s in resSchemas:
+        print('resSchema: ', s['id'])
+    return {'schema': resSchemas}

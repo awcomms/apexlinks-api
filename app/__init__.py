@@ -15,6 +15,7 @@ mail = Mail()
 
 def create_app():
     app = Flask(__name__)
+    app.static_folder = 'app/static'
     app.config.from_object(Config)
     CORS(app)    
 

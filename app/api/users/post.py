@@ -13,9 +13,9 @@ def create_user(username=None, password=None):
     email = j('email')
     print('email: ', email)
     if not email or email == '':
-        return {'error': True, 'emailInvalid': True, 'emailError': 'Empty'}
+        return {'error': True, 'emailError': 'Empty'}
     if not check_email(email):
-        return {'error': True, 'emailInvalid': True, 'emailError': 'Unaccepted'}
+        return {'error': True, 'emailError': 'Unaccepted'}
     if not username or username == '':
         return {'error': True, 'usernameInvalid': True, 'usernameError': 'Empty'}
     # warn api users that account will be created without password

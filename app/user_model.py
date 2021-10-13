@@ -18,7 +18,6 @@ xrooms = db.Table('xrooms',
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
     username = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
     phone = db.Column(db.Unicode)
