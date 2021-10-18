@@ -1,14 +1,14 @@
-import io, sys, gzip
+import sys
+import gzip
 import xml.etree.ElementTree as ET
 
-from zipfile import ZipFile
-
+from app.misc.datetime_period import datetime_period
 from sqlalchemy.ext.hybrid import hybrid_method
-from sqlalchemy.orm import backref
 from app import db
 from app.vars import api_host, sitemapindex_attribs, sitemap_entry_limit, sitemap_byte_limit
 from datetime import datetime, timezone
-from app.models.sitemap import Sitemap
+from app.models.mod import Mod
+
 
 class SitemapIndex(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,23 +24,52 @@ class SitemapIndex(db.Model):
         db.session.commit()
 
     def url(self):
-        return f'{api_host}/{self.id}'
+        return f'{api_host}/sitemap_index/{self.id}'
+
+    def changefreq(self):
+        differences = []
+        query = self.mods.order_by(Mod.datetime.asc())
+        previous_mod = None
+        for mod in query:
+            if not previous_mod:
+                previous_mod = mod
+                continue
+            differences.append(mod-previous_mod.total_seconds())
+            previous_mod = mod
+        average = sum(differences) / len(differences)
+        return datetime_period(average)
 
     @staticmethod
     def add_user(user):
-        sitemap = Sitemap.query.filter(Sitemap.willbefull(user) == False).first()
+        sitemap = Sitemap.willnotbefull(user)
         if not sitemap:
             sitemap = SitemapIndex.create_sitemap()
         sitemap.add_user(user)
 
     @staticmethod
-    def create_sitemap():
-        sitemap = Sitemap()
-        index = SitemapIndex.query.filter(SitemapIndex.willbefull(sitemap) == False).first()
+    def create_sitemap(type='user'):
+        sitemap = Sitemap(type)
+        index = SitemapIndex.willnotbefull(sitemap)
         if not index:
             index = SitemapIndex()
         index.add_sitemap(sitemap)
         return sitemap
+
+    @staticmethod
+    def willnotbefull(sitemap):
+        for si in SitemapIndex.query:
+            if not si.maps.count() < sitemap_entry_limit:
+                continue
+            xml = si.xml()
+            ET.SubElement(xml, sitemap.xml())
+            
+            string = ET.tostring(xml, 'utf-8')
+            bytes = bytes(string)
+            zip = gzip.compress(bytes, 'utf-8')
+            zip_size = sys.getsizeof(zip)
+            if not zip_size < sitemap_byte_limit:
+                continue
+            return si
 
     @hybrid_method
     def willbefull(self, sitemap):
@@ -52,15 +81,15 @@ class SitemapIndex(db.Model):
             return True
         xml = self.xml()
         ET.SubElement(xml, sitemap.xml())
-        return not sys.getsizeof(gzip.compress(bytes(ET.tostring(xml, encoding='utf-8'), 'utf-8'))) < sitemap_byte_limit
+        return 
 
     def new_mod(self):
         mod = Mod()
         self.mods.append(mod)
         db.session.commit()
-    
+
     def sitemap_added(self, sitemap):
-        return self.sitemaps.filter_by(id=sitemap.id).count()>0
+        return self.sitemaps.filter_by(id=sitemap.id).count() > 0
 
     def add_sitemap(self, sitemap):
         if not self.sitemap_added():
@@ -81,23 +110,19 @@ class SitemapIndex(db.Model):
 
             loc = ET.Element('loc')
             loc.text = sitemap.url()
-            ET.SubElement(entry, loc)
+            entry.append(loc)
 
             lastmod = ET.Element('lastmod')
             lastmod.text = sitemap.lastmod()
-            ET.SubElement(entry, lastmod)
+            entry.append(lastmod)
 
-            ET.SubElement(index, entry)
+            index.append(entry)
         return index
 
     def xml_string(self):
         return ET.tostring(self.xml(), encoding='utf-8')
 
-    def file(self):
-        return io.StringIO(self.xml_string())
+    def gzip(self):
+        return gzip.compress(bytes(self.xml_string), 'utf-8')
 
-    def zip(self):
-        return ZipFile(self.file(), force_zip64=True)
-
-    def zip_size(self):
-        return sum([zinfo.compress_size for zinfo in self.zip().infolist()])
+from app.models.sitemap import Sitemap

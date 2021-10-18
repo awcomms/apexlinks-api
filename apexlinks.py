@@ -5,6 +5,7 @@ from app.room_model import Room
 
 app = create_app()
 app.static_folder = 'static'
+print(app.static_folder)
 
 @app.shell_context_processor
 def make_shell_context():

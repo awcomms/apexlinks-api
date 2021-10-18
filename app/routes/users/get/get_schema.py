@@ -1,6 +1,6 @@
-import json
+import os, json
 import requests
-from flask import url_for
+from flask import current_app
 from app.routes import bp
 from app.vars import schemaorg
 
@@ -32,7 +32,7 @@ classType = 'rdfs:Class'
 
 @bp.route('/users/schema', methods=['GET'])
 def get_schema():
-    schemaorgPath = url_for('static', filename='schemaorg.jsonld')
+    schemaorgPath = os.path.join(current_app.static_folder, 'schemaorg.jsonld')
     resSchemas = []
     try:
         all = requests.get(schemaorg).json()

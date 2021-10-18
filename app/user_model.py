@@ -1,12 +1,12 @@
 import jwt
 from time import time
 from app.vars import host
-from app.models.mod import Mod
-from app.models.sitemap_index import SitemapIndex
+import xml.etree.ElementTree as ET
 
 from itsdangerous import (TimedJSONWebSignatureSerializer
-                            as Serializer, BadSignature, SignatureExpired)
+                          as Serializer, BadSignature, SignatureExpired)
 from app.misc.fields.clean import clean
+from app.misc.datetime_period import datetime_period
 
 from app import db
 from flask import current_app
@@ -18,9 +18,10 @@ search_attributes = [
 ]
 
 xrooms = db.Table('xrooms',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('room_id', db.Integer, db.ForeignKey('room.id')),
-    db.Column('seen', db.Boolean))
+                  db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                  db.Column('room_id', db.Integer, db.ForeignKey('room.id')),
+                  db.Column('seen', db.Boolean))
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -44,6 +45,8 @@ class User(db.Model):
 
     show_email = db.Column(db.Boolean, default=True)
 
+    sitemap_id = db.Column(db.Integer, db.ForeignKey('sitemap.id'))
+
     password_hash = db.Column(db.String)
     token = db.Column(db.String, index=True)
     score = db.Column(db.Integer)
@@ -52,23 +55,60 @@ class User(db.Model):
     no_password = db.Column(db.Boolean)
 
     items = db.relationship('Item', backref='user', lazy='dynamic')
-    xrooms = db.relationship('Room', secondary=xrooms, backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
+    xrooms = db.relationship('Room', secondary=xrooms, backref=db.backref(
+        'users', lazy='dynamic'), lazy='dynamic')
     messages = db.relationship('Message', backref='user', lazy='dynamic')
     rooms = db.relationship('Room', backref='user', lazy='dynamic')
     subs = db.relationship('Sub', backref='user', lazy='dynamic')
 
-    def last_mod(self):
-        # returns most recent of self.mods
-        return self.mods.order_by(Mod.date.desc()).first()
+    def xml(self):
+        entry = ET.Element('url')
+
+        loc = ET.Element('loc')
+        loc.text = self.url()
+        entry.append(loc)
+
+        lastmod = ET.Element('lastmod')
+        lastmod_date = self.lastmod
+        lastmod_str = str(lastmod_date)
+        lastmod.text = lastmod_str
+        entry.append(lastmod)
+
+        changefreq = ET.Element('changefreq')
+        changefreq.text = self.changefreq()
+        entry.append(changefreq)
+
+        priority = ET.Element('priority')
+        priority.text = self.priority
+        entry.append(priority)
+
+        return entry
+
+    def lastmod(self):
+        return self.mods.order_by(Mod.datetime.desc()).first()
 
     def new_mod(self):
         mod = Mod()
         self.mods.append(mod)
         db.session.commit()
 
-    def changefreq():
-        # method to calculate recent change frequency based on past change frequency methods
-        return 'always' or 'hourly' or 'daily' or 'weekly' or 'monthly' or 'yearly' or 'never'
+    def changefreq(self):
+        differences = []
+        query = self.mods.order_by(Mod.datetime.asc())
+        previous_mod = None
+        for mod in query:
+            if not previous_mod:
+                previous_mod = mod
+                continue
+            differences.append(mod-previous_mod.total_seconds())
+            previous_mod = mod
+        if len(differences):
+            average = sum(differences) / len(differences)
+            period = datetime_period(average)
+            print('dp', period)
+            return period
+        else:
+            return 'always'
 
     def url(self):
         return f'{host}/{self.username}'
@@ -80,7 +120,7 @@ class User(db.Model):
         db.session.commit()
 
     def get_token(self):
-        s = Serializer(current_app.config['SECRET_KEY'], expires_in = 31536000)
+        s = Serializer(current_app.config['SECRET_KEY'], expires_in=31536000)
         token = s.dumps({'id': self.id}).decode('utf-8')
         return token
 
@@ -112,14 +152,14 @@ class User(db.Model):
     def check_reset_password_token(token):
         try:
             id = jwt.decode(token, current_app.config['SECRET_KEY'],
-                algorithms=['HS256'])['reset_password']
+                            algorithms=['HS256'])['reset_password']
         except:
             return
         return User.query.get(id)
 
     @staticmethod
     def get(tags):
-        query = User.query.filter(User.hidden==False)
+        query = User.query.filter(User.hidden == False)
         # query = query.filter(User.paid==True)
         fields = []
         for tag in tags:
@@ -146,14 +186,17 @@ class User(db.Model):
             if isinstance(user.tags, list) and tags:
                 for tag in tags:
                     try:
-                        user.score += process.extractOne(tag, user.tags + user.attr_tags())[1]
+                        user.score += process.extractOne(
+                            tag, user.tags + user.attr_tags())[1]
                     except:
                         pass
             for field in fields:
                 max = 0
                 for user_field in user.fields:
-                    label_score = fuzz.ratio(field['label'], user_field['label'])
-                    value_score = fuzz.ratio(field['value'], user_field['value'])
+                    label_score = fuzz.ratio(
+                        field['label'], user_field['label'])
+                    value_score = fuzz.ratio(
+                        field['value'], user_field['value'])
                     score = label_score + value_score
                     if score > max:
                         max = score
@@ -168,21 +211,23 @@ class User(db.Model):
             res.append(self.attr)
 
     def __init__(self, username, password, email=None):
-        self.email=email
+        self.email = email
         if not password:
             self.no_password = True
-        self.set_password(password)
-        self.username=username
+        else:
+            self.set_password(password)
+        self.priority = '0.7'
+        self.username = username
         db.session.add(self)
         db.session.commit()
         SitemapIndex.add_user(self)
         db.session.commit()
-    
+
     def __repr__(self):
         return 'username: {}'.format(self.username)
 
     def in_room(self, room):
-        return self.xrooms.filter_by(id=room.id).count()>0
+        return self.xrooms.filter_by(id=room.id).count() > 0
 
     def join(self, room):
         if not self.in_room(room):
@@ -228,3 +273,6 @@ class User(db.Model):
         db.session.commit()
         self.new_mod()
         db.session.commit()
+
+from app.models.sitemap_index import SitemapIndex
+from app.models.mod import Mod

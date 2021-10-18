@@ -1,5 +1,6 @@
 from app import db
-from datetime import datetime, timezone
+from app.models.mod import Mod
+from app.misc.datetime_period import datetime_period
 
 disallow = [
     'add_item',
@@ -8,31 +9,41 @@ disallow = [
     'reset_password'
 ]
 
+
 class SitePage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode)
-    lastmod = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    sitemap_id = db.Column(db.Integer, db.ForeignKey('sitemap.id'))
     mods = db.relationship('Mod', backref='site_page', lazy='dynamic')
-    changefreq = db.Column(db.Unicode)
     disallow = db.Column(db.Boolean)
 
-    def changefreq(self):
-        
+    def last_mod(self):
+        return self.mods.order_by(Mod.datetime.desc()).first()
 
-    def __init__(self):
+    def new_mod(self):
+        mod = Mod()
+        self.mods.append(mod)
+        db.session.commit()
+
+    def changefreq(self):
+        differences = []
+        query = self.mods.order_by(Mod.datetime.asc())
+        previous_mod = None
+        for mod in query:
+            if not previous_mod:
+                previous_mod = mod
+                continue
+            differences.append(mod-previous_mod.total_seconds())
+            previous_mod = mod
+        average = sum(differences) / len(differences)
+        return datetime_period(average)
+
+    def __init__(self, name):
+        if name == 'login':
+            self.priority = 1
+        else:
+            self.priority = 0.7
         if self.name in disallow:
             self.disallow = True
         db.session.add(self)
         db.session.commit()
-
-    def edit_last_mod(date):
-        """
-            TODO function to edit last mod on frontend push
-        """
-        pass
-
-    def edit_changefreq():
-        """
-            TODO function to calculate average changefreq from all lastmods
-        """
-        pass

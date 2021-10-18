@@ -3,8 +3,9 @@ from datetime import datetime, timezone
 
 class Mod(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    datetime = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    site_page_id = db.Column(db.Integer, db.ForeignKey('site_page.id'))
     sitemap_id = db.Column(db.Integer, db.ForeignKey('sitemap.id'))
     sitemap_index_id = db.Column(db.Integer, db.ForeignKey('sitemap_index.id'))
 
