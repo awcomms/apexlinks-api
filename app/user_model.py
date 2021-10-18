@@ -1,6 +1,6 @@
 import jwt
 from time import time
-from app.vars import host
+from app.vars import host, global_priority
 import xml.etree.ElementTree as ET
 
 from itsdangerous import (TimedJSONWebSignatureSerializer
@@ -80,7 +80,7 @@ class User(db.Model):
         entry.append(changefreq)
 
         priority = ET.Element('priority')
-        priority.text = self.priority
+        priority.text = global_priority
         entry.append(priority)
 
         return entry
@@ -217,7 +217,6 @@ class User(db.Model):
             self.no_password = True
         else:
             self.set_password(password)
-        self.priority = '0.7'
         self.username = username
         db.session.add(self)
         db.session.commit()

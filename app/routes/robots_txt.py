@@ -9,10 +9,15 @@ from app.models.sitemap_index import SitemapIndex
 @bp.route('/robots.txt', methods=['GET'])
 def get_robots_txt():
     f = io.BytesIO()
+
     newline_write(f, 'User-Agent: *')
+
     for page in SitePage.query.filter_by(disallow=True):
         newline_write(f'Disallow: /{page.name}')
+
     for sitemap_index in SitemapIndex.query:
-        print(sitemap_index)
-        newline_write(f, f'Sitemap: {sitemap_index.url()}',)
+        f = newline_write(f, f'Sitemap: {sitemap_index.url()}')
+
+    f.seek(0)
+    
     return send_file(f, mimetype='application/txt')

@@ -1,15 +1,12 @@
-from datetime import datetime, timezone
 import sys
 import gzip
 import xml.etree.ElementTree as ET
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from app import db
-from app.vars import api_host, sitemap_attribs, sitemap_entry_limit, sitemap_byte_limit
+from app.vars import global_priority, api_host, sitemap_attribs, sitemap_entry_limit, sitemap_byte_limit
 from app.misc.datetime_period import datetime_period
 from app.models.mod import Mod
-
-from datetime import datetime, timezone
 
 class Sitemap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -72,7 +69,7 @@ class Sitemap(db.Model):
             xml.append(instance_xml)
 
             string = ET.tostring(xml, encoding='utf-8')
-            _bytes = bytes(string, encoding='utf-8')
+            _bytes = bytes(string)
             zip = gzip.compress(_bytes)
             zip_size = sys.getsizeof(zip)
 
@@ -145,7 +142,7 @@ class Sitemap(db.Model):
             entry.append(changefreq)
 
             priority = ET.Element('priority')
-            priority.text = page.priority
+            priority.text = global_priority
             entry.append(priority)
 
             map.append(entry)
@@ -165,7 +162,7 @@ class Sitemap(db.Model):
             entry.append(changefreq)
 
             priority = ET.Element('priority')
-            priority.text = user.priority
+            priority.text = global_priority
             entry.append(priority)
 
             map.append(entry)

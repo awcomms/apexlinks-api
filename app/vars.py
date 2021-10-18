@@ -7,6 +7,8 @@ sitemap_index_entry_limit = 50000
 sitemap_index_byte_limit = 52428800
 sitemap_byte_limit = 52428800
 
+global_priority = '1'
+
 sitemap_namespace = 'http://www.sitemaps.org/schemas/sitemap/0.9'
 user_change_freq = 'always'
 
