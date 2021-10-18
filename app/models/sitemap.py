@@ -75,7 +75,7 @@ class Sitemap(db.Model):
             _bytes = bytes(string)
             zip = gzip.compress(_bytes)
             zip_size = sys.getsizeof(zip)
-            
+
             if not zip_size < sitemap_byte_limit:
                 continue
             return sitemap
@@ -111,13 +111,13 @@ class Sitemap(db.Model):
         return self.users.filter_by(id=user.id).count() > 0
 
     def add_user(self, user):
-        if not self.user_added():
+        if not self.user_added(user):
             self.users.append(user)
             self.new_mod()
             db.session.commit()
 
     def remove_user(self, user):
-        if not self.user_added():
+        if not self.user_added(user):
             self.users.remove(user)
             self.new_mod()
             db.session.commit()

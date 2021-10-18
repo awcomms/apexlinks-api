@@ -92,13 +92,13 @@ class SitemapIndex(db.Model):
         return self.sitemaps.filter_by(id=sitemap.id).count() > 0
 
     def add_sitemap(self, sitemap):
-        if not self.sitemap_added():
+        if not self.sitemap_added(sitemap):
             self.sitemaps.append(sitemap)
             self.new_mod()
             db.session.commit()
 
     def remove_sitemap(self, sitemap):
-        if not self.sitemap_added():
+        if not self.sitemap_added(sitemap):
             self.sitemaps.remove(sitemap)
             self.new_mod()
             db.session.commit()
