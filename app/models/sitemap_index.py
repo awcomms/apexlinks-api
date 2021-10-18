@@ -61,11 +61,11 @@ class SitemapIndex(db.Model):
             if not si.maps.count() < sitemap_entry_limit:
                 continue
             xml = si.xml()
-            ET.SubElement(xml, sitemap.xml())
+            xml.append(sitemap.xml())
             
-            string = ET.tostring(xml, 'utf-8')
-            bytes = bytes(string)
-            zip = gzip.compress(bytes, 'utf-8')
+            string = ET.tostring(xml, encoding='utf-8')
+            bytes = bytes(string, 'utf-8')
+            zip = gzip.compress(bytes)
             zip_size = sys.getsizeof(zip)
             if not zip_size < sitemap_byte_limit:
                 continue

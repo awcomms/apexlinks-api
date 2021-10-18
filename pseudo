@@ -1,9 +1,0 @@
-fuz
-    cutoff = 99
-
-    for each item
-        for each query_field
-            if best_fuzz(query_field, item.fields.dict) < cutoff:
-                remove item from query
-            else:
-                as            

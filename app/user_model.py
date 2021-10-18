@@ -32,6 +32,7 @@ class User(db.Model):
     email = db.Column(db.Unicode)
     about = db.Column(db.Unicode)
     location = db.Column(db.JSON)
+    priority = db.Column(db.Integer)
     fields = db.Column(db.JSON)
     address = db.Column(db.JSON)
     tags = db.Column(db.JSON)

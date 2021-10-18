@@ -72,7 +72,7 @@ class Sitemap(db.Model):
             xml.append(instance_xml)
 
             string = ET.tostring(xml, encoding='utf-8')
-            _bytes = bytes(string)
+            _bytes = bytes(string, encoding='utf-8')
             zip = gzip.compress(_bytes)
             zip_size = sys.getsizeof(zip)
 
