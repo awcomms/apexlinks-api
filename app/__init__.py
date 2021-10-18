@@ -1,10 +1,11 @@
-import os, logging
+import os
+import logging
+from flask import Flask
 from flask_cors import CORS
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_mail import Mail
-from flask import Flask, url_for, request, current_app
 from config import Config
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -17,13 +18,13 @@ def create_app():
     app = Flask(__name__)
     app.static_folder = 'app/static'
     app.config.from_object(Config)
-    CORS(app)    
+    CORS(app)
 
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
 
-    from app.api import bp
+    from app.routes import bp
     app.register_blueprint(bp)
 
     if not app.debug and not app.testing:
@@ -50,7 +51,7 @@ def create_app():
             if not os.path.exists('logs'):
                 os.mkdir('logs')
             file_handler = RotatingFileHandler('logs/marketlnx.log', maxBytes=1024,
-                                                backupCount=10)
+                                               backupCount=10)
             file_handler.setFormatter(logging.Formatter(
                 '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
             file_handler.setLevel(logging.INFO)

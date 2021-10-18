@@ -1,5 +1,8 @@
 import jwt
 from time import time
+from app.vars import host
+from app.models.mod import Mod
+from app.models.sitemap_index import SitemapIndex
 
 from itsdangerous import (TimedJSONWebSignatureSerializer
                             as Serializer, BadSignature, SignatureExpired)
@@ -8,8 +11,11 @@ from app.misc.fields.clean import clean
 from app import db
 from flask import current_app
 from fuzzywuzzy import fuzz, process
-from datetime import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
+
+search_attributes = [
+    'username'
+]
 
 xrooms = db.Table('xrooms',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
@@ -34,6 +40,8 @@ class User(db.Model):
     last_paid = db.Column(db.DateTime)
     paid = db.Column(db.Boolean, default=False)
 
+    mods = db.relationship('Mod', backref='user', lazy='dynamic')
+
     show_email = db.Column(db.Boolean, default=True)
 
     password_hash = db.Column(db.String)
@@ -48,6 +56,22 @@ class User(db.Model):
     messages = db.relationship('Message', backref='user', lazy='dynamic')
     rooms = db.relationship('Room', backref='user', lazy='dynamic')
     subs = db.relationship('Sub', backref='user', lazy='dynamic')
+
+    def last_mod(self):
+        # returns most recent of self.mods
+        return self.mods.order_by(Mod.date.desc()).first()
+
+    def new_mod(self):
+        mod = Mod()
+        self.mods.append(mod)
+        db.session.commit()
+
+    def changefreq():
+        # method to calculate recent change frequency based on past change frequency methods
+        return 'always' or 'hourly' or 'daily' or 'weekly' or 'monthly' or 'yearly' or 'never'
+
+    def url(self):
+        return f'{host}/{self.username}'
 
     @staticmethod
     def activate(id):
@@ -97,43 +121,51 @@ class User(db.Model):
     def get(tags):
         query = User.query.filter(User.hidden==False)
         # query = query.filter(User.paid==True)
+        fields = []
+        for tag in tags:
+            try:
+                fieldList = tag.split(':')
+                field = {
+                    'label': fieldList[0],
+                    'value': fieldList[1]
+                }
+                fields.append(field)
+                tags.remove(tag)
+                continue
+            except:
+                pass
+        for idx, field in enumerate(fields):
+            res = clean(field)
+            if isinstance(res, str):
+                print('clean field error: ', res)
+                continue
+                # return {'error': res}
+            fields[idx] = res
         for user in query:
+            user.score = 0
             if isinstance(user.tags, list) and tags:
-                user.score = 0
-                fields = []
                 for tag in tags:
                     try:
-                        fieldList = tag.split(':')
-                        field = {
-                            'label': fieldList[0],
-                            'value': fieldList[1]
-                        }
-                        fields.append(field)
-                        continue
+                        user.score += process.extractOne(tag, user.tags + user.attr_tags())[1]
                     except:
                         pass
-                    try:
-                        user.score += process.extractOne(tag, user.tags)[1]
-                    except:
-                        pass
-                print('user get fields: ', fields)
-                for idx, field in enumerate(fields):
-                    res = clean(field)
-                    if isinstance(res, str):
-                        return {'error': res}
-                    fields[idx] = res
-                for field in fields:
-                    max = 0
-                    for user_field in user.fields:
-                        label_score = fuzz.ratio(field['label'], user_field['label'])
-                        value_score = fuzz.ratio(field['value'], user_field['value'])
-                        score = label_score + value_score
-                        if score > max:
-                            max = score
-                    user.score += max
+            for field in fields:
+                max = 0
+                for user_field in user.fields:
+                    label_score = fuzz.ratio(field['label'], user_field['label'])
+                    value_score = fuzz.ratio(field['value'], user_field['value'])
+                    score = label_score + value_score
+                    if score > max:
+                        max = score
+                user.score += max
         db.session.commit()
         query = query.order_by(User.score.desc())
         return query
+
+    def attr_tags(self):
+        res = []
+        for attr in search_attributes:
+            res.append(self.attr)
 
     def __init__(self, username, password, email=None):
         self.email=email
@@ -143,7 +175,9 @@ class User(db.Model):
         self.username=username
         db.session.add(self)
         db.session.commit()
-        
+        SitemapIndex.add_user(self)
+        db.session.commit()
+    
     def __repr__(self):
         return 'username: {}'.format(self.username)
 
@@ -191,4 +225,6 @@ class User(db.Model):
         for field in data:
             if hasattr(self, field):
                 setattr(self, field, data[field])
+        db.session.commit()
+        self.new_mod()
         db.session.commit()

@@ -1,0 +1,7 @@
+User-agent: *
+
+Disallow: /edit
+Disallow: /add_room
+Disallow: /edit_room
+
+sitemap: 
