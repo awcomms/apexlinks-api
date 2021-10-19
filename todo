@@ -1,11 +1,18 @@
 location search
+
+check client
+    svelte slots - named
+
 check
     mimetype of sitemap zip response
     how to zip sitemap
 gzip .read()
 
 client
+    dev: prettier, eslint
+    stores - localStorage
     Fields
+        named slot for buttons
         fixed container height
         scroll to one that already exists
             or edit..?
