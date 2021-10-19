@@ -17,8 +17,11 @@ class SitePage(db.Model):
     mods = db.relationship('Mod', backref='site_page', lazy='dynamic')
     disallow = db.Column(db.Boolean)
 
-    def last_mod(self):
+    def last_modification(self):
         return self.mods.order_by(Mod.datetime.desc()).first()
+
+    def lastmod(self):
+        str(self.last_modification())
 
     def new_mod(self):
         mod = Mod()

@@ -85,6 +85,12 @@ class SitemapIndex(db.Model):
         ET.SubElement(xml, sitemap.xml())
         return 
 
+    def last_modification(self):
+        return self.mods.order_by(Mod.datetime.desc()).first()
+
+    def lastmod(self):
+        str(self.last_modification())
+
     def new_mod(self):
         mod = Mod()
         self.mods.append(mod)
@@ -125,6 +131,9 @@ class SitemapIndex(db.Model):
         return ET.tostring(self.xml(), encoding='utf-8')
 
     def gzip(self):
-        return gzip.compress(bytes(self.xml_string), 'utf-8')
+        xml_string = self.xml_string()
+        _bytes = bytes(xml_string)
+        zip = gzip.compress(_bytes)
+        return zip
 
 from app.models.sitemap import Sitemap

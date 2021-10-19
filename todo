@@ -1,3 +1,20 @@
+location search
+check
+    mimetype of sitemap zip response
+    how to zip sitemap
+gzip .read()
+
+client
+    Fields
+        fixed container height
+        scroll to one that already exists
+            or edit..?
+    map
+    search field input?
+    $newUser default to false
+    /index focus:searchbox on:enter search()
+    /login something wrong with form focus after error
+
 use regex to check for colon definition in api.edit_user
 
 forgot password

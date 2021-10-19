@@ -37,9 +37,11 @@ class Sitemap(db.Model):
             sitemap = SitemapIndex.create_sitemap('page')
         sitemap.add_page(page)
 
-    def lastmod(self):
-        # return most recent of self.mods
+    def last_modification(self):
         return self.mods.order_by(Mod.datetime.desc()).first()
+
+    def lastmod(self):
+        str(self.last_modification())
 
     def __init__(self, type='user'):
         self.type = type
@@ -134,7 +136,7 @@ class Sitemap(db.Model):
             entry.append(loc)
 
             lastmod = ET.Element('lastmod')
-            lastmod.text = str(page.lastmod())
+            lastmod.text = page.lastmod()
             entry.append(lastmod)
 
             changefreq = ET.Element('changefreq')
@@ -154,7 +156,7 @@ class Sitemap(db.Model):
             entry.append(loc)
 
             lastmod = ET.Element('lastmod')
-            lastmod.text = str(user.lastmod())
+            lastmod.text = user.lastmod()
             entry.append(lastmod)
 
             changefreq = ET.Element('changefreq')

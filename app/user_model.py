@@ -84,9 +84,12 @@ class User(db.Model):
         entry.append(priority)
 
         return entry
+    
+    def last_modification(self):
+        return self.mods.order_by(Mod.datetime.desc()).first()
 
     def lastmod(self):
-        return self.mods.order_by(Mod.datetime.desc()).first()
+        str(self.last_modification())
 
     def new_mod(self):
         mod = Mod()
@@ -159,29 +162,29 @@ class User(db.Model):
         return User.query.get(id)
 
     @staticmethod
-    def get(tags):
+    def get(tags, fields):
         query = User.query.filter(User.hidden == False)
-        # query = query.filter(User.paid==True)
-        fields = []
-        for tag in tags:
-            try:
-                fieldList = tag.split(':')
-                field = {
-                    'label': fieldList[0],
-                    'value': fieldList[1]
-                }
-                fields.append(field)
-                tags.remove(tag)
-                continue
-            except:
-                pass
-        for idx, field in enumerate(fields):
-            res = clean(field)
-            if isinstance(res, str):
-                print('clean field error: ', res)
-                continue
-                # return {'error': res}
-            fields[idx] = res
+        ## query = query.filter(User.paid==True)
+        # fields = []
+        # for tag in tags:
+        #     try:
+        #         fieldList = tag.split(':')
+        #         field = {
+        #             'label': fieldList[0],
+        #             'value': fieldList[1]
+        #         }
+        #         fields.append(field)
+        #         tags.remove(tag)
+        #         continue
+        #     except:
+                # pass
+        # for idx, field in enumerate(fields):
+        #     res = clean(field)
+        #     if isinstance(res, str):
+        #         print('clean field error: ', res)
+        #         continue
+        #         # return {'error': res}
+        #     fields[idx] = res
         for user in query:
             user.score = 0
             if isinstance(user.tags, list) and tags:
@@ -191,17 +194,18 @@ class User(db.Model):
                             tag, user.tags + user.attr_tags())[1]
                     except:
                         pass
-            for field in fields:
-                max = 0
-                for user_field in user.fields:
-                    label_score = fuzz.ratio(
-                        field['label'], user_field['label'])
-                    value_score = fuzz.ratio(
-                        field['value'], user_field['value'])
-                    score = label_score + value_score
-                    if score > max:
-                        max = score
-                user.score += max
+            if user.fields:
+                for field in fields:
+                    max = 0
+                    for user_field in user.fields:
+                        label_score = fuzz.ratio(
+                            field['label'], user_field['label'])
+                        value_score = fuzz.ratio(
+                            field['value'], user_field['value'])
+                        score = label_score + value_score
+                        if score > max:
+                            max = score
+                    user.score += max
         db.session.commit()
         query = query.order_by(User.score.desc())
         return query
@@ -247,7 +251,6 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def dict(self, **kwargs):
-        print('self.fields: ', self.fields)
         return {
             'id': self.id,
             'score': self.score,

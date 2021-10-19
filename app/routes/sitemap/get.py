@@ -1,3 +1,4 @@
+import io
 from flask import send_file
 from app.models.sitemap import Sitemap
 from app.routes import bp
@@ -7,4 +8,6 @@ def get_sitemap(id):
     sitemap = Sitemap.query.get(id)
     if not sitemap:
         return '', 404
-    return send_file(sitemap.gzip())
+    f = io.BytesIO(sitemap.gzip())
+    f.seek(0)
+    return send_file(f, mimetype='application/txt')
