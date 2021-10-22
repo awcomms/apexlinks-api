@@ -48,12 +48,18 @@ class SitemapIndex(db.Model):
         sitemap.add_user(user)
 
     @staticmethod
+    def add_item(item):
+        sitemap = Sitemap.willnotbefull(item)
+        if not sitemap:
+            sitemap = SitemapIndex.create_sitemap(type='item')
+        sitemap.add_user(item)
+
+    @staticmethod
     def create_sitemap(type='user'):
         sitemap = Sitemap(type)
         index = SitemapIndex.willnotbefull(sitemap)
         if not index:
             index = SitemapIndex()
-        print('i', index)
         index.add_sitemap(sitemap)
         return sitemap
 

@@ -38,7 +38,6 @@ Jinja2
 jmespath
 keyring
 lazy-object-proxy
-lxml
 Mako
 MarkupSafe
 maxminddb

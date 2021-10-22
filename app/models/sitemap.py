@@ -53,11 +53,11 @@ class Sitemap(db.Model):
 
     @staticmethod
     def willnotbefull(instance, type='user'):
-        if type != 'page' or type != 'user':
+        if type != ('page' or 'user' or 'item'):
             type = 'user'
         query = Sitemap.query.filter_by(type=type)
         for sitemap in query:
-            if type=='user':
+            if type == ('user' or 'item'):
                 count = sitemap.users.count()
             elif type=='page':
                 count = sitemap.pages.count()
@@ -161,6 +161,26 @@ class Sitemap(db.Model):
 
             changefreq = ET.Element('changefreq')
             changefreq.text = user.changefreq()
+            entry.append(changefreq)
+
+            priority = ET.Element('priority')
+            priority.text = global_priority
+            entry.append(priority)
+
+            map.append(entry)
+        for item in self.items:
+            entry = ET.Element('url')
+
+            loc = ET.Element('loc')
+            loc.text = item.url()
+            entry.append(loc)
+
+            lastmod = ET.Element('lastmod')
+            lastmod.text = item.lastmod()
+            entry.append(lastmod)
+
+            changefreq = ET.Element('changefreq')
+            changefreq.text = item.changefreq()
             entry.append(changefreq)
 
             priority = ET.Element('priority')

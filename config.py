@@ -1,6 +1,9 @@
 import os
 from dotenv import load_dotenv
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, '.env'))
+
 db_uri = os.environ.get('DATABASE_URL') or 'postgresql://postgres:love@localhost:5432/apexlinks'
 
 class Config(object):

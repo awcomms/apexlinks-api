@@ -1,5 +1,8 @@
 from app import db
 from fuzzywuzzy import process, fuzz
+from app.vars import host, global_priority
+from app.misc.datetime_period import datetime_period
+import xml.etree.ElementTree as ET
 from app.user_model import User
 
 class Item(db.Model):
@@ -19,12 +22,70 @@ class Item(db.Model):
     itext = db.Column(db.Unicode)
     score = db.Column(db.Float)
 
+    mods = db.relationship('Mod', backref='user', lazy='dynamic')
+    sitemap_id = db.Column(db.Integer, db.ForeignKey('sitemap.id'))
+
+    def xml(self):
+        entry = ET.Element('url')
+
+        loc = ET.Element('loc')
+        loc.text = self.url()
+        entry.append(loc)
+
+        lastmod = ET.Element('lastmod')
+        lastmod_date = self.lastmod
+        lastmod_str = str(lastmod_date)
+        lastmod.text = lastmod_str
+        entry.append(lastmod)
+
+        changefreq = ET.Element('changefreq')
+        changefreq.text = self.changefreq()
+        entry.append(changefreq)
+
+        priority = ET.Element('priority')
+        priority.text = global_priority
+        entry.append(priority)
+
+        return entry
+    
+    def last_modification(self):
+        return self.mods.order_by(Mod.datetime.desc()).first()
+
+    def lastmod(self):
+        str(self.last_modification())
+
+    def new_mod(self):
+        mod = Mod()
+        self.mods.append(mod)
+        db.session.commit()
+
+    def changefreq(self):
+        differences = []
+        query = self.mods.order_by(Mod.datetime.asc())
+        previous_mod = None
+        for mod in query:
+            if not previous_mod:
+                previous_mod = mod
+                continue
+            differences.append(mod-previous_mod.total_seconds())
+            previous_mod = mod
+        if len(differences):
+            average = sum(differences) / len(differences)
+            period = datetime_period(average)
+            print('dp', period)
+            return period
+        else:
+            return 'always'
+
+    def url(self):
+        return f'{host}/{self.username}'
+
+
     @staticmethod
     def fuz(fields, user, id, hidden, tags):
         fields = fields or []
         query = Item.query.join(User)
         if not id:
-            # query = query.filter(User.paid==True) #TODO deactivate for production
             query = query.filter(User.hidden==False)
             query = query.filter(Item.hidden==False)
         elif id:
@@ -35,41 +96,26 @@ class Item(db.Model):
                 except:
                     pass
         for item in query:
-            if item.fields:
-                for field in fields:
-                    try:
-                        labelCutoff = int(field['labelCutoff'])
-                    except:
-                        labelCutoff = 90
-                    try:
-                        valueCutoff = int(field['valueCutoff'])
-                    except:
-                        valueCutoff = 90
-                    item.score = 0
-                    itemFieldlabels = []
-                    for itemField in item.fields:
-                        itemFieldlabels.append(itemField['label'])
-                    result = process.extractOne(field['label'], itemFieldlabels, scorer=fuzz.partial_ratio)
-                    if not result:
-                        continue
-                    elif result[1] < labelCutoff:
-                        pass
-                        # query = query.filter(Item.id != item.id)
-                    else:
-                        if not 'type' in field or field['type'] == 'text':
-                            value = ''
-                            for itemField in item.fields:
-                                if itemField['label'] == result[0]:
-                                    value = itemField['value']
-                            score = fuzz.partial_ratio(field['value'], value)
-                            if score >= valueCutoff:
-                                item.score += score
+            item.score = 0
             if isinstance(item.tags, list) and tags:
                 for tag in tags:
                     try:
-                        item.score += process.extractOne(tag, item.tags)[1]
+                        item.score += process.extractOne(
+                            tag, item.tags + item.attr_tags())[1]
                     except:
                         pass
+            if item.fields:
+                for field in fields:
+                    max = 0
+                    for item_field in item.fields:
+                        label_score = fuzz.ratio(
+                            field['label'], item_field['label'])
+                        value_score = fuzz.ratio(
+                            field['value'], item_field['value'])
+                        score = label_score + value_score
+                        if score > max:
+                            max = score
+                    item.score += max
         db.session.commit()
         query = query.order_by(Item.score.desc())
         return query
@@ -96,9 +142,14 @@ class Item(db.Model):
                 setattr(self, field, data[field])
         db.session.add(self)
         db.session.commit()
+        self.new_mod()
+        SitemapIndex.add_item(self)
 
     def edit(self, data):
         for field in data:
             if hasattr(self, field):
                 setattr(self, field, data[field])
         db.session.commit()
+
+from app.models.sitemap_index import SitemapIndex
+from app.models.mod import Mod

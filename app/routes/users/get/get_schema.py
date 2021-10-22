@@ -41,6 +41,7 @@ def get_schema():
     graph = all['@graph']
 
     parentClasses = [organization] + subParents
+    x = []
 
     def get_sub_classes(_subClasses):
         _newSubClasses = []
@@ -50,18 +51,19 @@ def get_schema():
                     if isinstance(subClass, dict):
                         sub_class_id = subClass['@id']
                         if sub_class_id in _subClasses and sub_class_id not in _newSubClasses:
-                            _newSubClasses.append(sub_class_id)
+                            x.append(sub_class_id)
                     elif subClass == '@id':
                         sub_class_id = schema[subClassOf][subClass]
                         if sub_class_id in _subClasses and sub_class_id not in _newSubClasses:
-                            _newSubClasses.append(sub_class_id)
-                if len(_newSubClasses):
-                    for s in _newSubClasses:
+                            x.append(sub_class_id)
+                if len(x):
+                    for s in x:
                         if s not in parentClasses:
                             parentClasses.append(s)
                         # else:
                         #     _newSubClasses.remove(s)
-                    get_sub_classes(_newSubClasses)
+
+                    get_sub_classes(x)
 
     # get_sub_classes(start)
     # print('parentClasses', start)

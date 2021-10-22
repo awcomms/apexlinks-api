@@ -1,12 +1,11 @@
 import jwt
 from time import time
 from app.vars import host, global_priority
+from app.misc.datetime_period import datetime_period
 import xml.etree.ElementTree as ET
 
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
-from app.misc.fields.clean import clean
-from app.misc.datetime_period import datetime_period
 
 from app import db
 from flask import current_app
@@ -22,7 +21,6 @@ xrooms = db.Table('xrooms',
                   db.Column('room_id', db.Integer, db.ForeignKey('room.id')),
                   db.Column('seen', db.Boolean))
 
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.Unicode)
@@ -32,7 +30,6 @@ class User(db.Model):
     email = db.Column(db.Unicode)
     about = db.Column(db.Unicode)
     location = db.Column(db.JSON)
-    priority = db.Column(db.Integer)
     fields = db.Column(db.JSON)
     address = db.Column(db.JSON)
     tags = db.Column(db.JSON)
@@ -42,10 +39,9 @@ class User(db.Model):
     last_paid = db.Column(db.DateTime)
     paid = db.Column(db.Boolean, default=False)
 
-    mods = db.relationship('Mod', backref='user', lazy='dynamic')
-
     show_email = db.Column(db.Boolean, default=True)
 
+    mods = db.relationship('Mod', backref='user', lazy='dynamic')
     sitemap_id = db.Column(db.Integer, db.ForeignKey('sitemap.id'))
 
     password_hash = db.Column(db.String)
@@ -163,28 +159,7 @@ class User(db.Model):
 
     @staticmethod
     def get(tags, fields):
-        query = User.query.filter(User.hidden == False)
-        ## query = query.filter(User.paid==True)
-        # fields = []
-        # for tag in tags:
-        #     try:
-        #         fieldList = tag.split(':')
-        #         field = {
-        #             'label': fieldList[0],
-        #             'value': fieldList[1]
-        #         }
-        #         fields.append(field)
-        #         tags.remove(tag)
-        #         continue
-        #     except:
-                # pass
-        # for idx, field in enumerate(fields):
-        #     res = clean(field)
-        #     if isinstance(res, str):
-        #         print('clean field error: ', res)
-        #         continue
-        #         # return {'error': res}
-        #     fields[idx] = res
+        query = User.query
         for user in query:
             user.score = 0
             if isinstance(user.tags, list) and tags:
@@ -210,11 +185,6 @@ class User(db.Model):
         query = query.order_by(User.score.desc())
         return query
 
-    def attr_tags(self):
-        res = []
-        for attr in search_attributes:
-            res.append(self.attr)
-
     def __init__(self, username, password, email=None):
         self.email = email
         if not password:
@@ -224,8 +194,8 @@ class User(db.Model):
         self.username = username
         db.session.add(self)
         db.session.commit()
+        self.new_mod()
         SitemapIndex.add_user(self)
-        db.session.commit()
 
     def __repr__(self):
         return 'username: {}'.format(self.username)
