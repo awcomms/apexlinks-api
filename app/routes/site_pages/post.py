@@ -9,4 +9,4 @@ def github_website_edit():
                 Sitemap.add_new_page(page)
             page.new_mod()
     """
-    pass
+    return ''

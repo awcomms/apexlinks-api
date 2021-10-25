@@ -6,7 +6,6 @@ from app.auth import auth
 from app.user_model import User
 from app.item_model import Item
 from flask import request
-from flask_jwt_extended import jwt_required
 
 
 @bp.route('/items', methods=['GET'])

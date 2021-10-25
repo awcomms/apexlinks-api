@@ -1,20 +1,16 @@
 from flask import request
-from app.routes import bp
 from app.auth import cred
+from app.routes import bp
 from app.user_model import User
 from app.misc.check_email import check_email
 
-
 @bp.route('/users', methods=['POST'])
-# @cred
-def create_user():
-# def create_user(username=None, password=None):
+@cred
+def create_user(username=None, password=None):
     j = request.json.get
-    # print('username: ', username)
-    # print('password: ', password)
+    print('username: ', username)
+    print('password: ', password)
     email = j('email')
-    username = j('username')
-    password = j('password')
     print('email: ', email)
     if not email or email == '':
         return {'error': True, 'emailError': 'Empty'}
@@ -32,6 +28,7 @@ def create_user():
             'usernameError': 'Username taken'
         }
     user = User(username, password, email)
+    print('good user', user)
     return {
         'user': user.dict(),
         'token': user.get_token()

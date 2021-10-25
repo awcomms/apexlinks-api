@@ -22,7 +22,7 @@ class Item(db.Model):
     itext = db.Column(db.Unicode)
     score = db.Column(db.Float)
 
-    mods = db.relationship('Mod', backref='user', lazy='dynamic')
+    mods = db.relationship('Mod', backref='item', lazy='dynamic')
     sitemap_id = db.Column(db.Integer, db.ForeignKey('sitemap.id'))
 
     def xml(self):

@@ -5,7 +5,6 @@ from app.misc import cdict
 from app.user_model import User
 from app.blog_model import Blog
 from flask import request
-from flask_jwt_extended import jwt_required
 
 
 @bp.route('/blogs', methods=['GET'])

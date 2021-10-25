@@ -2,12 +2,11 @@ from flask import request
 from app.routes import bp
 from app import db
 from app.misc import cdict
-from app.user_model import User
+from app.user_model import User, xrooms
 from app.room_model import Room
 from app.message_model import Message
 
-
-@bp.route('/messages', methods=['GET'])
+@bp.route('/messages')
 def get_messages():
     args = request.args.get
     id = args('id')
@@ -15,7 +14,7 @@ def get_messages():
     try:
         room = Room.query.get(id)
     except:
-        return {}, 404
+        return '', 404
     try:
         page = int(page)
     except:
@@ -23,19 +22,19 @@ def get_messages():
     messages = room.messages.order_by(Message.timestamp.asc())
     return cdict(messages, page, 100)
 
-
-@bp.route('/messages', methods=['POST'])
+@bp.route('/messages', methods=['PUT'])
 def post_message():
-    token = request.headers.get('token')
+    token = request.headers.get('Authorization')
     user = User.query.filter_by(token=token).first()
-    if not user:
-        return {}, 401
+    if not user: 
+        return '', 401
     data = request.json.get
     id = data('id')
     room = Room.query.get(id)
     if not room:
-        return {}, 404
+        return '', 404
     value = data('value')
     Message(value, user, room)
+    db.engine.execute(xrooms.update().where(xrooms.c.room_id==room.id).values(seen=False))
     db.session.commit()
-    return {}, 200
+    return '', 200
