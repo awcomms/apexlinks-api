@@ -23,3 +23,15 @@ sitemapindex_attribs = {
 sitemap_attribs = {
     'xmlns': sitemap_namespace
 }
+
+default_user_fields = [
+    'name',
+    'latitude',
+    'longitude',
+    'country',
+    'state',
+    'city',
+    'town',
+    'email',
+    'telephone',
+]

@@ -12,6 +12,7 @@ class Sitemap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sitemap_index_id = db.Column(db.Integer, db.ForeignKey('sitemap_index.id'))
     pages = db.relationship('SitePage', backref='sitemap', lazy='dynamic')
+    items = db.relationship('Item', backref='sitemap', lazy='dynamic')
     users = db.relationship('User', backref='sitemap', lazy='dynamic')
     mods = db.relationship('Mod', backref='sitemap', lazy='dynamic')
     type = db.Column(db.Unicode)

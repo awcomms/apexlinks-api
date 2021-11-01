@@ -22,7 +22,7 @@ def cred(f):
             print(exc_type, fname, exc_tb.tb_lineno)
             tb = e.__traceback__
             print(tb.tb_lasti)
-            return {'error': 'something wrong with your credentials'}
+            return 'Internal error', 500
     return wrapper
 
 def auth(f):

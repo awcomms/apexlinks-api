@@ -1,6 +1,6 @@
 import jwt
 from time import time
-from app.vars import host, global_priority
+from app.vars import host, global_priority, default_user_fields
 from app.misc.datetime_period import datetime_period
 import xml.etree.ElementTree as ET
 
@@ -158,8 +158,15 @@ class User(db.Model):
         return User.query.get(id)
 
     @staticmethod
-    def get(tags, fields):
+    def get(extraFields, tags, fields):
         query = User.query
+        # for extraField in extraFields:
+        #     if extraField['label'] == 'id' and extraField['value']:
+        #         query = query.filter_by(id=extraField['value'])
+        #         break
+        #     if extraField['label'] == 'username' and extraField['value']:
+        #         query = query.filter_by(username=extraField['value'])
+        #         break
         for user in query:
             user.score = 0
             if isinstance(user.tags, list) and tags:
@@ -186,6 +193,13 @@ class User(db.Model):
         return query
 
     def __init__(self, username, password, email=None):
+        fields = []
+        for default_field in default_user_fields:
+            fields.append({
+                'label': default_field,
+                'value': ''
+            })
+        self.fields = fields
         self.email = email
         if not password:
             self.no_password = True
