@@ -1,3 +1,4 @@
+requests
 psycopg2
 jwt
 geopy
@@ -10,6 +11,5 @@ flask_sqlalchemy
 flask_migrate
 flask_mail
 flask_cors
-requests
 gunicorn
 eventlet

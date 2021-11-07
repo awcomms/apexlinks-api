@@ -39,7 +39,9 @@ class User(db.Model):
     last_paid = db.Column(db.DateTime)
     paid = db.Column(db.Boolean, default=False)
 
+    notes = db.relationship('Note', backref='author', lazy='dynamic')
     show_email = db.Column(db.Boolean, default=True)
+    author = db.Column(db.JSON, default={})
 
     mods = db.relationship('Mod', backref='user', lazy='dynamic')
     sitemap_id = db.Column(db.Integer, db.ForeignKey('sitemap.id'))
@@ -247,6 +249,7 @@ class User(db.Model):
             'fields': self.fields,
             'phone': self.phone,
             'image': self.image,
+            'author': self.author,
             'website': self.website,
             'about': self.about,
             'address': self.address,
