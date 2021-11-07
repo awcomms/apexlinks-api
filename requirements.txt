@@ -1,10 +1,8 @@
-requests
 psycopg2
 jwt
 geopy
 flask-socketio
 flask
-pypaystack
 fuzzywuzzy
 python-dotenv
 flask_sqlalchemy
