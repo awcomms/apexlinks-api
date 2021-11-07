@@ -1,10 +1,10 @@
 from app import db
-from app.models.learn.note import Note
 
 class Level(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode)
     notes = db.relationship('Note', backref='level', lazy='dynamic')
+    users = db.relationship('User', backref='level', lazy='dynamic')
 
     def dict(self):
         return {

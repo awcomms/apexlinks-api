@@ -1,6 +1,6 @@
 from app import db
 from fuzzywuzzy import process
-from app.user_model import User
+from app.models.user import User
 from app.blog_model import Blog
 from app.relationship_tables import posts
 

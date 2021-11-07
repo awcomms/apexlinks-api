@@ -3,6 +3,7 @@ from time import time
 from app.vars import host, global_priority, default_user_fields
 from app.misc.datetime_period import datetime_period
 import xml.etree.ElementTree as ET
+from app.models.learn.result import Result
 
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
@@ -45,6 +46,9 @@ class User(db.Model):
 
     mods = db.relationship('Mod', backref='user', lazy='dynamic')
     sitemap_id = db.Column(db.Integer, db.ForeignKey('sitemap.id'))
+
+    level_id = db.Column(db.Integer, db.ForeignKey('level.id'))
+    results = db.relationship(Result, backref='user', lazy='dynamic')
 
     password_hash = db.Column(db.String)
     token = db.Column(db.String, index=True)

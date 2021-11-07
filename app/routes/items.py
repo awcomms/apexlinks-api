@@ -3,7 +3,7 @@ from app import db
 from app.routes import bp
 from app.misc import cdict
 from app.auth import auth
-from app.user_model import User
+from app.models.user import User
 from app.item_model import Item
 from flask import request
 

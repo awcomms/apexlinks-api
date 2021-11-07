@@ -1,6 +1,6 @@
 from flask import request
 from app.routes import bp
-from app.user_model import User
+from app.models.user import User
 
 
 @bp.route('/check_reset_password_token', methods=['GET'])

@@ -2,7 +2,7 @@ from flask import request, current_app
 from app.routes import bp
 from app.sub_model import Sub
 from app.room_model import Room
-from app.user_model import User, xrooms
+from app.models.user import User, xrooms
 
 @bp.route('/subs', methods=['POST'])
 def post_sub():

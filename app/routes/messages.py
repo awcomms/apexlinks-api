@@ -2,7 +2,7 @@ from flask import request
 from app.routes import bp
 from app import db
 from app.misc import cdict
-from app.user_model import User, xrooms
+from app.models.user import User, xrooms
 from app.room_model import Room
 from app.message_model import Message
 

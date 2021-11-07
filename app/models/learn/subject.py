@@ -4,6 +4,7 @@ class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode)
     notes = db.relationship('Note', backref='subject', lazy='dynamic')
+    results = db.relationship('Result', backref='subject', lazy='dynamic')
 
     def dict(self):
         return {

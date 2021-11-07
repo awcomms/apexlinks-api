@@ -2,7 +2,7 @@ import json
 from app import db
 from app.routes import bp
 from app.misc import cdict
-from app.user_model import User
+from app.models.user import User
 from app.blog_model import Blog
 from flask import request
 

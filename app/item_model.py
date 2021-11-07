@@ -3,7 +3,7 @@ from fuzzywuzzy import process, fuzz
 from app.vars import host, global_priority
 from app.misc.datetime_period import datetime_period
 import xml.etree.ElementTree as ET
-from app.user_model import User
+from app.models.user import User
 
 class Item(db.Model):
     tags = db.Column(db.JSON)

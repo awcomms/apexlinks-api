@@ -7,7 +7,7 @@ from app.misc import cdict
 from app.relationship_tables import blogposts
 from app.blog_model import Blog
 from app.post_model import Post
-from app.user_model import User
+from app.models.user import User
 
 
 @bp.route('/posts', methods=['GET'])

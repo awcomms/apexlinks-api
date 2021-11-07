@@ -4,7 +4,7 @@ import json
 from flask import request
 from app.routes import bp
 from app.auth import auth
-from app.user_model import User
+from app.models.user import User
 
 
 @bp.route('/users/activate')

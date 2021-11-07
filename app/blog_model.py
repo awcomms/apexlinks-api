@@ -1,7 +1,7 @@
 from sqlalchemy.orm import backref
 from app import db
 from fuzzywuzzy import process, fuzz
-from app.user_model import User
+from app.models.user import User
 from app.relationship_tables import blogs
 from app.relationship_tables import posts
 
