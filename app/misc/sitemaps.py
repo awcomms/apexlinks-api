@@ -1,7 +1,7 @@
 import sys
 import xml.etree.ElementTree as ET
 from gzip import compress
-from app.vars import sitemap_byte_limit
+from app.vars.q import sitemap_byte_limit
 
 def xml_string(instance):
     return ET.tostring(instance.xml(), encoding='utf-8')

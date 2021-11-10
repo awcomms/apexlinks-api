@@ -1,7 +1,8 @@
 import jwt
 from time import time
-from app.vars import host, global_priority, default_user_fields
+from app.vars.q import host, global_priority, default_user_fields
 from app.misc.datetime_period import datetime_period
+from app.misc.fields.score import field_score
 import xml.etree.ElementTree as ET
 
 from itsdangerous import (TimedJSONWebSignatureSerializer
@@ -9,7 +10,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 
 from app import db
 from flask import current_app
-from fuzzywuzzy import fuzz, process
+from fuzzywuzzy import process
 from werkzeug.security import check_password_hash, generate_password_hash
 
 search_attributes = [
@@ -29,6 +30,7 @@ class User(db.Model):
     website = db.Column(db.Unicode)
     email = db.Column(db.Unicode)
     about = db.Column(db.Unicode)
+    market_id = db.Column(db.Integer, db.ForeignKey('market.id'))
     location = db.Column(db.JSON)
     fields = db.Column(db.JSON)
     address = db.Column(db.JSON)
@@ -158,8 +160,9 @@ class User(db.Model):
         return User.query.get(id)
 
     @staticmethod
-    def get(extraFields, tags, fields):
-        query = User.query
+    def get(market_id, extraFields, tags, fields):
+        if market_id:
+            query = User.query.market_id = market_id
         # for extraField in extraFields:
         #     if extraField['label'] == 'id' and extraField['value']:
         #         query = query.filter_by(id=extraField['value'])
@@ -177,17 +180,7 @@ class User(db.Model):
                     except:
                         pass
             if user.fields:
-                for field in fields:
-                    max = 0
-                    for user_field in user.fields:
-                        label_score = fuzz.ratio(
-                            field['label'], user_field['label'])
-                        value_score = fuzz.ratio(
-                            field['value'], user_field['value'])
-                        score = label_score + value_score
-                        if score > max:
-                            max = score
-                    user.score += max
+                user.score += field_score(user.fields, fields)
         db.session.commit()
         query = query.order_by(User.score.desc())
         return query

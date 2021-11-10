@@ -3,8 +3,8 @@ from app import db
 from app.routes import bp
 from app.misc import cdict
 from app.auth import auth
-from app.user_model import User
-from app.item_model import Item
+from app.models.user import User
+from app.models.item import Item
 from flask import request
 
 
@@ -13,6 +13,9 @@ def items():
     a = request.args.get
     user = None
     token = request.headers.get('token')
+    market_id = a('market_id')
+    if market_id:
+        market_id = int(market_id) #TODO #error_check
     if token:
         try:
             user = User.query.filter_by(token=token).first()
@@ -55,7 +58,7 @@ def items():
         print('tags route error: ', e)
         tags = []
     # print(fields)
-    return cdict(Item.fuz(fields, user, id, hidden, tags), page)
+    return cdict(Item.fuz(market_id, fields, user, id, hidden, tags), page)
 
 
 @bp.route('/items', methods=['POST'])

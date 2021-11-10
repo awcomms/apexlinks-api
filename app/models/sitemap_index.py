@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from app.misc.datetime_period import datetime_period
 from sqlalchemy.ext.hybrid import hybrid_method
 from app import db
-from app.vars import api_host, sitemapindex_attribs, sitemap_entry_limit, sitemap_byte_limit
+from app.vars.q import api_host, sitemapindex_attribs, sitemap_entry_limit, sitemap_byte_limit
 from datetime import datetime, timezone
 from app.models.mod import Mod
 

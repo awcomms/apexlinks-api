@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from app import db
-from app.vars import global_priority, api_host, sitemap_attribs, sitemap_entry_limit, sitemap_byte_limit
+from app.vars.q import global_priority, api_host, sitemap_attribs, sitemap_entry_limit, sitemap_byte_limit
 from app.misc.datetime_period import datetime_period
 from app.models.mod import Mod
 
@@ -197,5 +197,5 @@ class Sitemap(db.Model):
     def gzip(self):
         return gzip.compress(bytes(self.xml_string), 'utf-8')
 
-from app.user_model import User
+from app.models.user import User
 from app.models.sitemap_index import SitemapIndex

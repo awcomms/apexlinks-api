@@ -1,7 +1,7 @@
 import json
 from flask import request
 from app.routes import bp
-from app.user_model import User
+from app.models.user import User
 from app.misc.cdict import cdict
 
 
@@ -9,6 +9,9 @@ from app.misc.cdict import cdict
 def users():
     a = request.args.get
     extraFields = a('extraFields')
+    market_id = a('market_id')
+    if market_id:
+        market_id = int(market_id) #TODO #error_check
     try:
         extraFields = json.loads(extraFields)
         if not isinstance(extraFields, list):
@@ -45,4 +48,4 @@ def users():
         page = int(a('page'))
     except:
         page = 1
-    return cdict(User.get(extraFields, tags, fields), page)
+    return cdict(User.get(market_id, extraFields, tags, fields), page)

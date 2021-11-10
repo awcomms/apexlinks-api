@@ -1,9 +1,10 @@
 from app import db
 from fuzzywuzzy import process, fuzz
-from app.vars import host, global_priority
+from app.vars.q import host, global_priority
+from app.misc.fields.score import field_score
 from app.misc.datetime_period import datetime_period
 import xml.etree.ElementTree as ET
-from app.user_model import User
+from app.models.user import User
 
 class Item(db.Model):
     tags = db.Column(db.JSON)
@@ -82,9 +83,11 @@ class Item(db.Model):
 
 
     @staticmethod
-    def fuz(fields, user, id, hidden, tags):
+    def fuz(market_id, fields, user, id, hidden, tags):
         fields = fields or []
         query = Item.query.join(User)
+        if market_id:
+            query = query.filter(User.market_id == market_id)
         if not id:
             query = query.filter(User.hidden==False)
             query = query.filter(Item.hidden==False)
@@ -105,17 +108,7 @@ class Item(db.Model):
                     except:
                         pass
             if item.fields:
-                for field in fields:
-                    max = 0
-                    for item_field in item.fields:
-                        label_score = fuzz.ratio(
-                            field['label'], item_field['label'])
-                        value_score = fuzz.ratio(
-                            field['value'], item_field['value'])
-                        score = label_score + value_score
-                        if score > max:
-                            max = score
-                    item.score += max
+                item.score += field_score(item.fields, fields)
         db.session.commit()
         query = query.order_by(Item.score.desc())
         return query

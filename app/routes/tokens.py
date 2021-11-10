@@ -4,7 +4,7 @@ from flask import request
 from app.auth import cred
 from app.auth import auth
 from app import db
-from app.user_model import User
+from app.models.user import User
 from app.routes import bp
 
 

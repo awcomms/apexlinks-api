@@ -1,5 +1,5 @@
 from flask import request
-from app.user_model import User
+from app.models.user import User
 from app.folder_model import Folder
 from app.routes import bp
 

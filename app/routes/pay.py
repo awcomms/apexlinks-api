@@ -7,7 +7,7 @@ from datetime import timedelta
 from flask import request
 from flask import current_app
 from pypaystack import Transaction
-from app.user_model import User
+from app.models.user import User
 from app.routes import bp
 from app import db
 

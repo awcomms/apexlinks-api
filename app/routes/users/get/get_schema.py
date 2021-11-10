@@ -2,7 +2,7 @@ import os, json
 import requests
 from flask import current_app
 from app.routes import bp
-from app.vars import schemaorg
+from app.vars.q import schemaorg
 
 
 domainIncludes = 'schema:domainIncludes'

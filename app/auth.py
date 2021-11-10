@@ -1,7 +1,7 @@
 import base64, os, sys
 from functools import wraps
 from flask import request
-from app.user_model import User
+from app.models.user import User
 
 def cred(f):
     @wraps(f)

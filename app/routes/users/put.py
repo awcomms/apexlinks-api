@@ -4,7 +4,8 @@ import json
 from flask import request
 from app.routes import bp
 from app.auth import auth
-from app.user_model import User
+from app.models.user import User
+from app.models.market import Market
 
 
 @bp.route('/users/activate')
@@ -56,6 +57,15 @@ def edit_user(user=None):
             User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}, 400
 
+    market_id = request_json('market_id')
+    try:
+        market_id = int(market_id)
+        market = Market.query.get(market_id)
+        if not market:
+            return {'error': f'market with id {market_id} not found'}
+    except:
+        return {'error': 'market_id should be an int'}
+
     fields = request_json('fields')
     if fields:
         if not isinstance(fields, list):
@@ -84,6 +94,7 @@ def edit_user(user=None):
 
     data = {
         'fields': fields,
+        'market': market,
         'username': username,
         'address': request_json('address'),
         'website': request_json('website'),

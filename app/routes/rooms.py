@@ -3,8 +3,8 @@ from flask import request, jsonify
 from app import db
 from app.routes import bp
 from app.misc import cdict
-from app.user_model import User, xrooms
-from app.room_model import Room
+from app.models.user import User, xrooms
+from app.models.room import Room
 
 @bp.route('/seen', methods=['PUT'])
 def seen():
