@@ -9,6 +9,7 @@ class Subject(db.Model):
     def dict(self):
         return {
             'id': self.id,
+            'text': self.name,
             'name': self.name
         }
 

@@ -1,1 +1,1 @@
-from . import levels, notes
+from . import subjects, terms, levels, notes

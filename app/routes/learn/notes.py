@@ -11,34 +11,51 @@ from app.misc.cdict import cdict
 @bp.route('/note', methods=['PUT'])
 def edit_note():
     _data = request.json.get
-    print(request.get_json())
     id = _data('id')
-    print('g id: ', id)
     id = try_int(id)
     if not id:
         print('bad id: ', id)
         return {'error': "body param 'id' should be a number"}, 400
+    
     note = Note.query.get(id)
     if not note:
         return {'error': f'note {id} not found'}, 400
+    
     edit_data = {
         'name': _data('name'),
         'body': _data('body'),
     }
+
+    # edit_data = {}
+    # name = _data('name')
+    # if name:
+    #     edit_data['name'] = name
+
+    # body = _data('body')
+    # if body:
+    #     edit_data['body'] = body
+    
     level = _data('level')
-    level = Level.query.get(level)
-    if not level:
-        return {'error': f'level {id} not found'}
+    if level:
+        level = Level.query.get(level)
+        if not level:
+            return {'error': f'level {id} not found'}
+        edit_data['level'] = level
 
     subject = _data('subject')
-    subject = Subject.query.get(subject)
-    if not subject:
-        return {'error': f'subject {id} not found'}
+    if subject:
+        subject = Subject.query.get(subject)
+        if not subject:
+            return {'error': f'subject {id} not found'}
+        edit_data['subject'] = subject
 
     term = _data('term')
-    term = Term.query.get(term)
-    if not term:
-        return {'error': f'term {id} not found'}
+    if term:
+        term = Term.query.get(term)
+        if not term:
+            return {'error': f'term {id} not found'}
+        edit_data['term'] = term
+    
     note.edit(edit_data)
     return note.dict()
 
@@ -57,24 +74,26 @@ def get_note(id):
 @bp.route('/note', methods=['GET'])
 def get_notes():
     args = request.args.get
+
     level = args('level')
-    if level:
+    if level and level != 'null':
         level = try_int(level)
         if not level:
-            return {'error': f"body param 'level' should be a number"}
+            return {'error': f"body param 'level' should be a number"}, 400
     subject = args('subject')
-    if subject:
+    if subject and level != 'null':
         subject = try_int(subject)
         if not subject:
-            return {'error': f"body param 'subject' should be a number"}
+            return {'error': f"body param 'subject' should be a number"}, 400
     term = args('term')
-    if term:
+    if term and level != 'null':
         term = try_int(term)
         if not term:
-            return {'error': f"body param 'term' should be a number"}
+            return {'error': f"body param 'term' should be a number"}, 400
+    print(level, subject, term)
     notes = Note.query.filter(Note.level_id==level)
-    notes = Note.query.filter(Note.subject_id==subject)
-    notes = Note.query.filter(Note.term_id==term)
+    notes = notes.filter(Note.subject_id==subject)
+    notes = notes.filter(Note.term_id==term)
     notes = notes.order_by(Note.time.desc())
     return cdict(notes)
 
@@ -97,6 +116,7 @@ def add_note():
     term = Term.query.get(term)
     if not term:
         return {'error': f'term {id} not found'}
+    
     add_data = {
         'level': level,
         'subject': subject,

@@ -2,6 +2,8 @@ from app import create_app, db
 from app.models.user import User
 from app.models.learn.note import Note
 from app.models.learn.level import Level
+from app.models.learn.subject import Subject
+from app.models.learn.term import Term
 
 app = create_app()
 app.static_folder = 'static'
@@ -12,5 +14,7 @@ def make_shell_context():
         'db': db,
         'User': User,
         'Note': Note,
-        'Level': Level
+        'Level': Level,
+        'Subject': Subject,
+        'Term': Term
     }
