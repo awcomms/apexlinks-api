@@ -40,7 +40,7 @@ def get_token(username=None, password=None):
         'user': user.dict(),
         'token': user.get_token()
     }
-    print('tr _be')
+    print('success')
     return make_response(res, headers)
 
 

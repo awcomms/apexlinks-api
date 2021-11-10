@@ -15,3 +15,4 @@ from . import \
     messages,\
     world,\
     markets
+from . import c, world, learn, sitemap, sitemap_index, robots_txt, pay, subs, items, rooms, users, tokens, messages

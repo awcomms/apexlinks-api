@@ -4,6 +4,7 @@ from app.vars.q import host, global_priority, default_user_fields
 from app.misc.datetime_period import datetime_period
 from app.misc.fields.score import field_score
 import xml.etree.ElementTree as ET
+from app.models.learn.result import Result
 
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
@@ -41,10 +42,15 @@ class User(db.Model):
     last_paid = db.Column(db.DateTime)
     paid = db.Column(db.Boolean, default=False)
 
+    notes = db.relationship('Note', backref='author', lazy='dynamic')
     show_email = db.Column(db.Boolean, default=True)
+    author = db.Column(db.JSON, default={})
 
     mods = db.relationship('Mod', backref='user', lazy='dynamic')
     sitemap_id = db.Column(db.Integer, db.ForeignKey('sitemap.id'))
+
+    level_id = db.Column(db.Integer, db.ForeignKey('level.id'))
+    results = db.relationship(Result, backref='user', lazy='dynamic')
 
     password_hash = db.Column(db.String)
     token = db.Column(db.String, index=True)
@@ -240,6 +246,7 @@ class User(db.Model):
             'fields': self.fields,
             'phone': self.phone,
             'image': self.image,
+            'author': self.author,
             'website': self.website,
             'about': self.about,
             'address': self.address,

@@ -3,13 +3,11 @@ jwt
 geopy
 flask-socketio
 flask
-pypaystack
 fuzzywuzzy
 python-dotenv
 flask_sqlalchemy
 flask_migrate
 flask_mail
 flask_cors
-requests
 gunicorn
 eventlet

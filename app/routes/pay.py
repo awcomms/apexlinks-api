@@ -30,6 +30,7 @@ def check():
             else:
                 send_renewal_failure(user)
     db.session.commit()
+    return '', 200
 
 
 @bp.route('/pay', methods=['POST'])
@@ -53,7 +54,7 @@ def pay():
     user.paid = True
     user.last_paid = datetime.now(timezone.utc)
     db.session.commit()
-    return {}, 200
+    return '', 200
 
 
 @bp.route('/pay/is_paid', methods=['GET'])
