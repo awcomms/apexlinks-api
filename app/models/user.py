@@ -1,6 +1,6 @@
 import jwt
 from time import time
-from app.vars.q import host, global_priority, contact_fields
+from app.vars.q import host, global_priority, default_user_fields
 from app.misc.datetime_period import datetime_period
 from app.misc.fields.score import field_score
 import xml.etree.ElementTree as ET
@@ -193,7 +193,7 @@ class User(db.Model):
 
     def __init__(self, username, password, email=None):
         fields = []
-        for default_field in contact_fields:
+        for default_field in default_user_fields:
             fields.append({
                 'label': default_field,
                 'value': ''

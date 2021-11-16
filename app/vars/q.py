@@ -24,9 +24,13 @@ sitemap_attribs = {
     'xmlns': sitemap_namespace
 }
 
-contact_fields = ['phone', 'email']
-
 default_user_fields = [
+    'name',
+    'email',
+    'telephone',
+]
+
+_default_user_fields = [
     'name',
     'latitude',
     'longitude',
