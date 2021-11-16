@@ -1,16 +1,11 @@
-import requests
 from flask import request
 from app.routes import bp
-from app.vars.world_api import endpoint
+from app.misc.world.get import cities
 
 @bp.route('/cities', methods=['GET'])
 def get_cities():
     a = request.args.get
     country = a('country')
     state = a('state')
-    data = {
-        'country': country,
-        'state': state
-    }
-    cities = requests.post(f'/{endpoint}/countries/state/cities', data=data).json()['data']
-    return {'res': [{'id': cities.index(c), 'text': c['name']} for c in cities]}
+    _cities = cities(country, state)
+    return {'items': _cities}

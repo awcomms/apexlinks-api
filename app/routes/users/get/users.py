@@ -48,4 +48,4 @@ def users():
         page = int(a('page'))
     except:
         page = 1
-    return cdict(User.get(market_id, extraFields, tags, fields), page)
+    return cdict(User.get(tags, fields), page)

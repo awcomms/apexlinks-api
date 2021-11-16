@@ -1,5 +1,5 @@
 from app import db
-from app.misc.countries.get import countries
+from app.misc.world.get import countries
 
 class C(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,8 +25,3 @@ class C(db.Model):
         db.session.commit()
         self.new_mod()
         db.session.commit()
-
-for _c in countries():
-    name = _c['name']
-    if not C.query.filter_by(name=name).first():
-        C(name)

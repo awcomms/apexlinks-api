@@ -49,22 +49,30 @@ def reset_password():
 @auth
 def edit_user(user=None):
     request_json = request.json.get
+    data = {
+        'address': request_json('address'),
+        'website': request_json('website'),
+        'phone': request_json('phone'),
+        'email': request_json('email'),
+        'name': request_json('name'),
+    }
     username = request_json('username')
-    print('us', username)
     if not username or username == '':
         return {'usernameInvalid': True, 'usernameError': 'No username'}, 400
     if username and username != user.username and \
             User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}, 400
-
+    data['username'] = username
     market_id = request_json('market_id')
-    try:
-        market_id = int(market_id)
-        market = Market.query.get(market_id)
-        if not market:
-            return {'error': f'market with id {market_id} not found'}
-    except:
-        return {'error': 'market_id should be an int'}
+    if market_id:
+        try:
+            market_id = int(market_id)
+            market = Market.query.get(market_id)
+            if not market:
+                return {'error': f'market with id {market_id} not found'}
+        except:
+            return {'error': 'market_id should be an int'}
+        data['market'] = market
 
     fields = request_json('fields')
     if fields:
@@ -75,6 +83,7 @@ def edit_user(user=None):
             if isinstance(res, str):
                 return {'error': res}
             fields[idx] = res
+        data['fields'] = fields
 
     tags = request_json('tags') or []
     if type(tags) != list:
@@ -92,16 +101,6 @@ def edit_user(user=None):
         except SyntaxError or TypeError:
             return 'Unsupported tags format', 415
 
-    data = {
-        'fields': fields,
-        'market': market,
-        'username': username,
-        'address': request_json('address'),
-        'website': request_json('website'),
-        'phone': request_json('phone'),
-        'email': request_json('email'),
-        'name': request_json('name'),
-    }
     data['show_email'] = request_json('show_email')
     data['about'] = request_json('about')
     data['hidden'] = request_json('hidden')

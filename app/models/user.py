@@ -1,6 +1,6 @@
 import jwt
 from time import time
-from app.vars.q import host, global_priority, default_user_fields
+from app.vars.q import host, global_priority, contact_fields
 from app.misc.datetime_period import datetime_period
 from app.misc.fields.score import field_score
 import xml.etree.ElementTree as ET
@@ -166,34 +166,34 @@ class User(db.Model):
         return User.query.get(id)
 
     @staticmethod
-    def get(market_id, extraFields, tags, fields):
-        if market_id:
-            query = User.query.market_id = market_id
-        # for extraField in extraFields:
-        #     if extraField['label'] == 'id' and extraField['value']:
-        #         query = query.filter_by(id=extraField['value'])
-        #         break
-        #     if extraField['label'] == 'username' and extraField['value']:
-        #         query = query.filter_by(username=extraField['value'])
-        #         break
+    def get(tags, fields):
+        tag_fields = [
+            'name'
+        ]
+        tags_from_fields = []
+        query = User.query
         for user in query:
+            if user.fields:
+                for field in user.fields:
+                    if field['label'] in tag_fields:
+                        tags_from_fields.append(field['value'])
             user.score = 0
             if isinstance(user.tags, list) and tags:
                 for tag in tags:
                     try:
                         user.score += process.extractOne(
-                            tag, user.tags + user.attr_tags())[1]
+                            tag, user.tags)[1]
                     except:
                         pass
-            if user.fields:
-                user.score += field_score(user.fields, fields)
+            # if fields and user.fields:
+            #     user.score += field_score(user.fields, fields)
         db.session.commit()
         query = query.order_by(User.score.desc())
         return query
 
     def __init__(self, username, password, email=None):
         fields = []
-        for default_field in default_user_fields:
+        for default_field in contact_fields:
             fields.append({
                 'label': default_field,
                 'value': ''

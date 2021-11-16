@@ -23,13 +23,14 @@ def allCities():
         for state in country['states']:
             for city in state['cities']:
                 cities.append({
-                    'id': city['id'],
+                    'id': str(state['id']) + '' + str(city['id']),
                     'name': city['name'],
                 })
-    return states
+    return cities
 
 def states(country):
     if country:
+        print('is country')
         for entry in data:
             if entry['iso3'] == country:
                 states = entry['states']
@@ -41,7 +42,7 @@ def states(country):
         'id': s['id'],
         'text': s['name'],
         'name': s['name']
-    } for s in country['states']]
+    } for s in states]
 
 def cities(country_iso3, state_id):
     if country_iso3 and state_id:
