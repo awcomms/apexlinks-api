@@ -108,7 +108,7 @@ class User(db.Model):
             if not previous_mod:
                 previous_mod = mod
                 continue
-            differences.append(mod-previous_mod.total_seconds())
+            differences.append((mod.datetime-previous_mod.datetime).seconds)
             previous_mod = mod
         if len(differences):
             average = sum(differences) / len(differences)
@@ -172,6 +172,7 @@ class User(db.Model):
         ]
         tags_from_fields = []
         query = User.query
+        query = query.filter_by(hidden=False) 
         for user in query:
             if user.fields:
                 for field in user.fields:
