@@ -6,7 +6,6 @@ from . import \
     sitemap,\
     sitemap_index,\
     robots_txt,\
-    pay,\
     subs,\
     items,\
     rooms,\

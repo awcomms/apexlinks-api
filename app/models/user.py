@@ -201,7 +201,9 @@ class User(db.Model):
             })
         self.fields = fields
         self.email = email
+        print('p', password)
         if not password:
+            print('np')
             self.no_password = True
         else:
             self.set_password(password)

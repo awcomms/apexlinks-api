@@ -30,12 +30,27 @@ def get_token(username=None, password=None):
             'usernameInvalid': True,
             'usernameError': 'User does not exist'
         }, 400
-    if not user.check_password(password):
-        return {
-            'error': True,
-            'passwordInvalid': True,
-            'passwordError': 'Wrong password'
-        }, 400
+
+    if password:
+        if user.no_password:
+            return {
+                'error': True,
+                'passwordInvalid': True,
+                'passwordError': 'Wrong'
+            }, 401
+        if not user.check_password(password):
+            return {
+                'error': True,
+                'passwordInvalid': True,
+                'passwordError': 'Wrong password'
+            }, 401
+    else:
+        if not user.no_password:
+            return {
+                'error': True,
+                'passwordInvalid': True,
+                'passwordError': 'Empty'
+            }, 401
     res = {
         'user': user.dict(),
         'token': user.get_token()
