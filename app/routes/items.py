@@ -58,6 +58,8 @@ def items():
         print('tags route error: ', e)
         tags = []
     # print(fields)
+    market_id = None
+    fields = None
     return cdict(Item.fuz(market_id, fields, user, id, hidden, tags), page)
 
 

@@ -1,5 +1,6 @@
 import jwt
 from time import time
+from app.misc.distance import distance
 from app.vars.q import host, global_priority, default_user_fields
 from app.misc.datetime_period import datetime_period
 from app.misc.fields.score import field_score
@@ -52,9 +53,10 @@ class User(db.Model):
     level_id = db.Column(db.Integer, db.ForeignKey('level.id'))
     results = db.relationship(Result, backref='user', lazy='dynamic')
 
+    distance = db.Column(db.Float)
     password_hash = db.Column(db.String)
     token = db.Column(db.String, index=True)
-    score = db.Column(db.Integer)
+    score = db.Column(db.Float)
     hidden = db.Column(db.Boolean, default=False)
     socket_id = db.Column(db.Unicode)
     no_password = db.Column(db.Boolean)
@@ -65,6 +67,21 @@ class User(db.Model):
     messages = db.relationship('Message', backref='user', lazy='dynamic')
     rooms = db.relationship('Room', backref='user', lazy='dynamic')
     subs = db.relationship('Sub', backref='user', lazy='dynamic')
+
+    @staticmethod
+    def location_sort(query, loc):
+        print('loc', loc)
+        for user in query:
+            print('l', user.username, user.location)
+            if not user.location or 'lat' not in user.location or 'lon' not in user.location:
+                continue
+            user_location = (user.location['lat'], user.location['lon'])
+            loc = (loc['lat'], loc['lon'])
+            # user.distance = distance(user_location, loc).kilometers
+            d = distance(user_location, loc).kilometers
+            user.distance = d
+        db.session.commit()
+        return query.order_by(User.distance.asc())
 
     def xml(self):
         entry = ET.Element('url')
@@ -166,7 +183,7 @@ class User(db.Model):
         return User.query.get(id)
 
     @staticmethod
-    def get(tags, fields):
+    def get(tags, loc):
         tag_fields = [
             'name'
         ]
@@ -190,6 +207,10 @@ class User(db.Model):
             #     user.score += field_score(user.fields, fields)
         db.session.commit()
         query = query.order_by(User.score.desc())
+        query = User.location_sort(query, loc)
+        # for q in query:
+        #     print(q.distance)
+        # query = query.limit(50)
         return query
 
     def __init__(self, username, password, email=None):

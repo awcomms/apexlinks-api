@@ -10,6 +10,30 @@ def users():
     a = request.args.get
     extraFields = a('extraFields')
     market_id = a('market_id')
+
+    loc = a('loc')
+    if loc:
+        try:
+            loc = json.loads(loc)
+            if not isinstance(loc, dict):
+                return {'error': 'loc query arg should be an object'}, 400
+        except:
+            return {'error': 'loc query arg should be a stringified JSON object'}, 400
+        if not 'lon' in loc:
+            return {'error': "not 'lat' in loc"}, 400
+        if not 'lon' in loc:
+            return {'error': "not 'lon' in loc"}, 400
+        try:
+            loc['lat'] = float(loc['lat'])
+        except:
+            return {'error': 'lat property in loc query arg should be a float'}, 400
+        try:
+            loc['lon'] = float(loc['lon'])
+        except:
+            return {'error': 'lon property in loc query arg should be a float'}, 400
+    print('tl', type(loc))
+    print('tt', type(loc['lat']))
+    print('tn', type(loc['lon']))
     if market_id:
         market_id = int(market_id) #TODO #error_check
     try:
@@ -48,4 +72,4 @@ def users():
         page = int(a('page'))
     except:
         page = 1
-    return cdict(User.get(tags, fields), page)
+    return cdict(User.get(tags, loc), page)

@@ -107,8 +107,8 @@ class Item(db.Model):
                             tag, item.tags + item.attr_tags())[1]
                     except:
                         pass
-            if item.fields:
-                item.score += field_score(item.fields, fields)
+            # if item.fields:
+            #     item.score += field_score(item.fields, fields)
         db.session.commit()
         query = query.order_by(Item.score.desc())
         return query

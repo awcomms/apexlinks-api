@@ -29,15 +29,3 @@ default_user_fields = [
     'email',
     'telephone',
 ]
-
-_default_user_fields = [
-    'name',
-    'latitude',
-    'longitude',
-    'country',
-    'state',
-    'city',
-    'town',
-    'email',
-    'telephone',
-]

@@ -53,6 +53,7 @@ def edit_user(user=None):
         'address': request_json('address'),
         'website': request_json('website'),
         'phone': request_json('phone'),
+        'location': request_json('location'),
         'email': request_json('email'),
         'name': request_json('name'),
     }
@@ -104,6 +105,7 @@ def edit_user(user=None):
     data['show_email'] = request_json('show_email')
     data['about'] = request_json('about')
     data['hidden'] = request_json('hidden')
+    data['location'] = request_json('location')
     data['images'] = request_json('images')
     data['image'] = request_json('image')
     data['tags'] = tags

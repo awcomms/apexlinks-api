@@ -11,6 +11,7 @@ def create_user(username=None, password=None):
     print('username: ', username)
     print('password: ', password)
     email = j('email')
+    location = j('location')
     print('email: ', email)
     if not email or email == '':
         return {'error': True, 'emailError': 'Empty'}
@@ -28,6 +29,8 @@ def create_user(username=None, password=None):
             'usernameError': 'Username taken'
         }
     user = User(username, password, email)
+    # user.location = location
+    # db.session.commit()
     print('good user', user)
     return {
         'user': user.dict(),
