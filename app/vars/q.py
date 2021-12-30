@@ -24,6 +24,12 @@ sitemap_attribs = {
     'xmlns': sitemap_namespace
 }
 
+search_fields = [
+    'name',
+    'email',
+    'telephone',
+]
+
 default_user_fields = [
     'name',
     'email',

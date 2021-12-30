@@ -2,6 +2,8 @@ import json
 from app.vars.q import default_user_fields
 from flask import request
 from app.routes import bp
+from app.vars.q import search_fields
+from app.misc.sort.distance_sort import distance_sort
 from app.misc.sort.tag_sort import tag_sort
 from app.models.user import User
 from app.misc.cdict import cdict
@@ -74,5 +76,17 @@ def users():
         page = int(a('page'))
     except:
         page = 1
-    run = lambda items: tag_sort(default_fields, items, tags)
-    return cdict(User.get(sort, tags, loc), page, run)
+    run_tags = lambda items: tag_sort(search_fields, items, tags)
+    run_distance = lambda items: distance_sort(items, loc)
+    if sort == 'tag': run = run_tags 
+    elif sort == 'distance': run = run_distance
+    query = User.get(sort, tags, loc)
+    if sort == 'tag':
+        search_attr = 'score'
+    else:
+        search_attr = 'distance'
+    extra = lambda items: {
+        "min":  min(items, key=lambda item: item[search_attr])['score'],
+        "max": max(items, key=lambda item: item[search_attr])['score']
+    }
+    return cdict(query, page, run=run, extra=extra)

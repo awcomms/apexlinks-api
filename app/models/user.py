@@ -179,11 +179,6 @@ class User(db.Model):
 
     @staticmethod
     def get(sort, tags, loc):
-        tag_fields = [
-            'name',
-            'email'
-            'telephone',
-        ]
         query = User.query
         query = query.filter_by(hidden=False)
         db.session.commit()

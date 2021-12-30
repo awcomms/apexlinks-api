@@ -2,7 +2,7 @@ import json
 from flask import request, jsonify
 from app import db
 from app.routes import bp
-from app.misc import cdict
+from app.misc.cdict import cdict
 from app.models.user import User, xrooms
 from app.models.room import Room
 

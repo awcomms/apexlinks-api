@@ -81,7 +81,6 @@ class Item(db.Model):
     def url(self):
         return f'{host}/{self.username}'
 
-
     @staticmethod
     def fuz(market_id, fields, user, id, hidden, tags):
         fields = fields or []

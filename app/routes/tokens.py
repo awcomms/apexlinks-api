@@ -19,7 +19,7 @@ def check_token(user=None):
 
 @bp.route('/tokens', methods=['POST'])
 @cred
-def get_token(username=None, password=None):
+def create_token(username=None, password=None):
     print('tr', username, password)
     headers = Headers()
     headers.add('Access-Control-Allow-Origin', request.headers.get('Origin'))
@@ -57,7 +57,6 @@ def get_token(username=None, password=None):
     }
     print('success')
     return make_response(res, headers)
-
 
 @bp.route('/tokens', methods=['DELETE'])
 @auth
