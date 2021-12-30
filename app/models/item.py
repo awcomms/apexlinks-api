@@ -125,6 +125,7 @@ class Item(db.Model):
             'images': self.images,
             'fields': self.fields,
             'hidden': self.hidden,
+            'user': self.user.dict(),
             'redirect': self.redirect,
             'user': self.user.username
         }

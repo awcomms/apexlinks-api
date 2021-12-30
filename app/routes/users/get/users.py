@@ -1,16 +1,21 @@
 import json
+from app.vars.q import default_user_fields
 from flask import request
 from app.routes import bp
+from app.misc.sort.tag_sort import tag_sort
 from app.models.user import User
 from app.misc.cdict import cdict
-
 
 @bp.route('/users', methods=['GET'])
 def users():
     a = request.args.get
     extraFields = a('extraFields')
     market_id = a('market_id')
-
+    sort = a('sort')
+    print('sort', sort)
+    if sort:
+        if sort != ('tag' or 'distance'):
+            return {'error': "sort query arg should be 'tag' or 'distance'"}
     loc = a('loc')
     if loc:
         try:
@@ -31,9 +36,6 @@ def users():
             loc['lon'] = float(loc['lon'])
         except:
             return {'error': 'lon property in loc query arg should be a float'}, 400
-    print('tl', type(loc))
-    print('tt', type(loc['lat']))
-    print('tn', type(loc['lon']))
     if market_id:
         market_id = int(market_id) #TODO #error_check
     try:
@@ -72,4 +74,5 @@ def users():
         page = int(a('page'))
     except:
         page = 1
-    return cdict(User.get(tags, loc), page)
+    run = lambda items: tag_sort(default_fields, items, tags)
+    return cdict(User.get(sort, tags, loc), page, run)

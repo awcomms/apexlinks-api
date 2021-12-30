@@ -12,7 +12,6 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 
 from app import db
 from flask import current_app
-from fuzzywuzzy import process
 from werkzeug.security import check_password_hash, generate_password_hash
 
 search_attributes = [
@@ -70,16 +69,12 @@ class User(db.Model):
 
     @staticmethod
     def location_sort(query, loc):
-        print('loc', loc)
         for user in query:
-            print('l', user.username, user.location)
             if not user.location or 'lat' not in user.location or 'lon' not in user.location:
                 continue
             user_location = (user.location['lat'], user.location['lon'])
             loc = (loc['lat'], loc['lon'])
-            # user.distance = distance(user_location, loc).kilometers
-            d = distance(user_location, loc).kilometers
-            user.distance = d
+            user.distance = distance(user_location, loc).kilometers
         db.session.commit()
         return query.order_by(User.distance.asc())
 
@@ -183,34 +178,18 @@ class User(db.Model):
         return User.query.get(id)
 
     @staticmethod
-    def get(tags, loc):
+    def get(sort, tags, loc):
         tag_fields = [
-            'name'
+            'name',
+            'email'
+            'telephone',
         ]
-        tags_from_fields = []
         query = User.query
-        query = query.filter_by(hidden=False) 
-        for user in query:
-            if user.fields:
-                for field in user.fields:
-                    if field['label'] in tag_fields:
-                        tags_from_fields.append(field['value'])
-            user.score = 0
-            if isinstance(user.tags, list) and tags:
-                for tag in tags:
-                    try:
-                        user.score += process.extractOne(
-                            tag, user.tags)[1]
-                    except:
-                        pass
-            # if fields and user.fields:
-            #     user.score += field_score(user.fields, fields)
+        query = query.filter_by(hidden=False)
         db.session.commit()
         query = query.order_by(User.score.desc())
-        query = User.location_sort(query, loc)
-        # for q in query:
-        #     print(q.distance)
-        # query = query.limit(50)
+        if sort == 'distance':
+            query = User.location_sort(query, loc)
         return query
 
     def __init__(self, username, password, email=None):
