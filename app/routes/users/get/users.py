@@ -13,6 +13,11 @@ def users():
     a = request.args.get
     extraFields = a('extraFields')
     market_id = a('market_id')
+    limit = a('limit')
+    try:
+        limit = int(limit)
+    except:
+        return {'error': "'limit' query arg should be a number"}
     sort = a('sort')
     print('sort', sort)
     if sort:
@@ -76,10 +81,22 @@ def users():
         page = int(a('page'))
     except:
         page = 1
-    run_tags = lambda items: tag_sort(search_fields, items, tags)
-    run_distance = lambda items: distance_sort(items, loc)
-    if sort == 'tag': run = run_tags 
-    elif sort == 'distance': run = run_distance
+    tag_score = lambda items: tag_sort(search_fields, items, tags)
+    distance_score = lambda items: distance_sort(items, loc)
+    if sort == 'tag': _sort = tag_score 
+    else: _sort = distance_score
+    
+    def filter(items):
+        for item in items:
+            if item['score'] < limit:
+                items.remove(item)
+        return items
+
+    def run(items):
+        _items = _sort(items)
+        _items = filter(_items)
+        return _items
+
     query = User.get(sort, tags, loc)
     if sort == 'tag':
         search_attr = 'score'
