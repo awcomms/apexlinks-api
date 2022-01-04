@@ -21,7 +21,7 @@ def users():
     sort = a('sort')
     print('sort', sort)
     if sort:
-        if sort != ('tag' or 'distance'):
+        if sort != 'tag' and sort != 'distance':
             return {'error': "sort query arg should be 'tag' or 'distance'"}
     loc = a('loc')
     if loc:
@@ -87,23 +87,30 @@ def users():
     else: _sort = distance_score
     
     def filter(items):
-        for item in items:
+        print('l', limit)
+        print(len(items))
+        for idx, item in enumerate(items):
             if item['score'] < limit:
-                items.remove(item)
+                print(item['username'], item['score'])
+                items.pop(idx)
+        print(len(items))
         return items
 
     def run(items):
+        print(len(items))
         _items = _sort(items)
         _items = filter(_items)
+        print(len(_items))
         return _items
 
     query = User.get(sort, tags, loc)
+    
     if sort == 'tag':
         search_attr = 'score'
     else:
         search_attr = 'distance'
     extra = lambda items: {
-        "min":  min(items, key=lambda item: item[search_attr])['score'],
-        "max": max(items, key=lambda item: item[search_attr])['score']
+        "min":  min(items, key=lambda item: item['score'])['score'],
+        "max": max(items, key=lambda item: item['score'])['score']
     }
     return cdict(query, page, run=run, extra=extra)

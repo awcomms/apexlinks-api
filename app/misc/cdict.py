@@ -6,8 +6,8 @@ def cdict(query, page=1, per_page=37, **kwargs):
         items = run(items)
     res =  {
         'items': items,
-        'pages': resources.pages,
-        'total': resources.total
+        # 'pages': resources.pages, TODO
+        'total': len(items)
     }
     res.update(kwargs['extra'](items))
     return res
