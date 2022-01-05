@@ -14,10 +14,13 @@ def users():
     extraFields = a('extraFields')
     market_id = a('market_id')
     limit = a('limit')
-    try:
-        limit = int(limit)
-    except:
-        return {'error': "'limit' query arg should be a number"}
+    if limit:
+        try:
+            limit = int(limit)
+        except:
+            return {'error': "'limit' query arg should be a number"}
+    else:
+        limit = 0
     sort = a('sort')
     print('sort', sort)
     if sort:
@@ -99,7 +102,8 @@ def users():
     def run(items):
         print(len(items))
         _items = _sort(items)
-        _items = filter(_items)
+        if limit:
+            _items = filter(_items)
         print(len(_items))
         return _items
 
