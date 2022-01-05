@@ -3,7 +3,7 @@ from flask import request
 from app import db
 from app.routes import bp
 from app.auth import auth
-from app.misc import cdict
+from app.misc.cdict import cdict
 from app.relationship_tables import blogposts
 from app.model.blog import Blog
 from app.models.post import Post

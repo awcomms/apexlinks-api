@@ -1,6 +1,6 @@
 from app.routes import bp
 from flask import request
-from app.misc import cdict
+from app.misc.cdict import cdict
 from app.newsletter_model import Newsletter
 
 

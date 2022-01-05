@@ -1,7 +1,7 @@
 import json
 from app import db
 from app.routes import bp
-from app.misc import cdict
+from app.misc.cdict import cdict
 from app.auth import auth
 from app.models.user import User
 from app.models.item import Item
