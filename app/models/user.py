@@ -149,8 +149,7 @@ class User(db.Model):
             print('static method really invalid token: ', e)
             return {'user': None, 'res': ''}
         if 'id' in data:
-            id = data['id']
-            u = User.query.get(id)
+            u = User.query.get(data['id'])
             return {'user': u, 'res': ''}
         else:
             return {'user': None, 'res': ''}

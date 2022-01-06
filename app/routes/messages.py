@@ -9,19 +9,42 @@ from app.models.message import Message
 
 @bp.route('/messages')
 def get_messages():
+    messages = Message.query
     args = request.args.get
-    id = args('id')
+    model = args('model')
+    mode = args('mode')
     page = args('page')
-    try:
-        room = Room.query.get(id)
-    except:
-        return '', 404
-    try:
-        page = int(page)
-    except:
+    id = args('id')
+    #TODO-error
+
+    if id:
+        try:
+            id = int(id)
+        except:
+            return {'error': 'id should have a type of number'}
+    else:
+        pass #TODO-error
+
+    if page:
+        try:
+            page = int(page)
+        except:
+            return {'error': 'page should have a type of number'}
+    else:
         page = 1
-    messages = room.messages.order_by(Message.timestamp.asc())
-    return cdict(messages, page, 100)
+
+
+    if model == 'message':
+        if mode == 'replies':
+            messages = Message.query.get(args('message')).replies
+        if mode == 'messages':
+            messages = Message.query.get(args('message')).messages
+    elif model == 'room':
+        messages = Room.query.get(args('room')).messages
+    
+    messages = messages.order_by(Message.timestamp.desc())
+    #TODO-search
+    return cdict(messages, page)
 
 @bp.route('/messages', methods=['PUT'])
 @auth

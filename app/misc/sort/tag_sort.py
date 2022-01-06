@@ -9,9 +9,9 @@ def tag_sort(default_fields, items, tags):
         item_tags = item['tags']
         if 'user' in item:
             item_tags += item['user']['tags']
-        if item['username']:
+        if 'username' in item:
             item_tags.append(item['username'])
-        if item['fields']:
+        if 'fields' in item:
             for field in item['fields']:
                 if field['label'] in default_fields:
                     item_tags.append(field['value'])

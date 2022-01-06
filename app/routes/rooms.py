@@ -112,7 +112,7 @@ def rooms(user=None):
         page = 1
 
     run = Room.get(tags, limit)
-    return cdict(query, page, run=run)
+    return cdict(query, page, run=run, user=user)
 
 @bp.route('/rooms', methods=['POST'])
 @auth
@@ -127,7 +127,7 @@ def add_room(user=None):
     data = {
         'name': name,
         'user': user,
-        'open': open,
+        # 'open': open,
         'tags': tags
     }
     room = Room(data)

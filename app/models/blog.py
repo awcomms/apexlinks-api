@@ -76,7 +76,7 @@ class Blog(db.Model):
             'tags': self.tags,
             'body': self.body,
             'hidden': self.hidden,
-            'user': self.user.username
+            'user': self.user.dict()
         }
 
     def __init__(self, data):

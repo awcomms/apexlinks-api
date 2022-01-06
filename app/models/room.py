@@ -38,7 +38,7 @@ class Room(db.Model):
     def dict(self, **kwargs):
         uid = None
         seen = None
-        if kwargs['user']:
+        if 'user' in kwargs:
             uid = kwargs['user'].id
         row = db.engine.execute(xrooms.select().where(xrooms.c.user_id == uid)
                                 .where(xrooms.c.room_id == self.id)).first()
@@ -49,7 +49,7 @@ class Room(db.Model):
             'name': self.name,
             'tags': self.tags,
             'open': self.open,
-            'user': self.user.username
+            'user': self.user.dict()
         }
         if seen is False:
             data['unseen'] = True

@@ -129,7 +129,6 @@ class Item(db.Model):
             'hidden': self.hidden,
             'user': self.user.dict(),
             'redirect': self.redirect,
-            'user': self.user.username
         }
 
     def __init__(self, data):

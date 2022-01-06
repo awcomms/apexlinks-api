@@ -32,14 +32,13 @@ def auth(f):
         if not token:
             print('no token')
             return {'error': 'No token provided'}, 401
-        user = User.check_token(token)
-        if user:
-            if user == 'expired':
-                return {'error': 'expired token'}
-            elif user == 'bad':
-                return {'error': 'invalid token'}
-            return f(*args, **kwargs, user = user)
-        else:
-            print('really invalid token: ', token)
-            return {'error': 'invalid token'}, 401
+        user = User.check_token(token)['user']
+        res = User.check_token(token)['res']
+        if res == 'expired':
+            return {'error': 'expired token'}
+        elif res == 'bad':
+            return {'error': 'invalid token'}
+        elif not user:
+            return {'error': 'invalid token'}
+        return f(*args, **kwargs, user = user)
     return wrapper

@@ -1,5 +1,11 @@
 from datetime import datetime
+
+from sqlalchemy.orm import backref
 from app import db
+
+message_replies = db.Table("message_replies",
+    db.Column('message', db.Integer, db.ForeignKey('message.id')),
+    db.Column('reply', db.Integer, db.ForeignKey('message.id')))
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -7,6 +13,12 @@ class Message(db.Model):
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
     value = db.Column(db.Unicode)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow())
+    replies = db.relationship(
+        'Message',
+        secondary=message_replies,
+        primaryjoin=id==message_replies.c.message,
+        secondaryjoin=id==message_replies.c.reply,
+        backref='messages')
 
     def __init__(self, value, user, room):
         self.value=value
@@ -17,7 +29,21 @@ class Message(db.Model):
 
     def dict(self, **kwargs):
         return {
-            'user': self.user.username,
+            'user': self.user.dict(),
             'room': self.room.id,
             'value': self.value
         }
+
+    @staticmethod
+    def get_replies(id):
+        return Message.query.get(id).replies
+
+    def replied(self, message):
+        return self.messages.filter(
+            message_replies.c.message == message.id
+        ).count() > 0
+
+    def reply(self, message):
+        if not self.replied(message):
+            self.messages.append(message)
+            db.session.commit()
