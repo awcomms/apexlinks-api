@@ -190,9 +190,12 @@ class User(db.Model):
     def __init__(self, username, password, email=None):
         fields = []
         for default_field in default_user_fields:
+            value = ''
+            if default_field == 'email':
+                value = email
             fields.append({
                 'label': default_field,
-                'value': ''
+                'value': value
             })
         self.fields = fields
         self.email = email
