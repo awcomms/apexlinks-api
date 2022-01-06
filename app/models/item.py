@@ -79,7 +79,10 @@ class Item(db.Model):
             return 'always'
 
     def url(self):
-        return f'{host}/{self.username}'
+        if hasattr(self, 'username'):
+            return f'{host}/u/{self.username}'
+        else:
+            return f'{host}/i/{self.id}'
 
     @staticmethod
     def fuz(market_id, fields, user, id, hidden, tags):

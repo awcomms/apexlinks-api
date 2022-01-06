@@ -68,12 +68,13 @@ def items():
 def add_item(user=None):
     json = request.json.get
     name = json('name')
+    print(json('itype'))
     itype = json('itype')
     price = json('price')
-    if Item.query.filter_by(itype=itype)\
-        .filter_by(user_id=user.id)\
-            .filter_by(name=name).first():
-        return {'nameError': 'Another item owned by same user has that name'}
+    # if Item.query.filter_by(itype=itype)\
+    #     .filter_by(user_id=user.id)\
+    #         .filter_by(name=name).first():
+    #     return {'nameError': 'Another item owned by same user has that name'}
     tags = json('tags') or []
     if name and name not in tags:
         tags.append(name)

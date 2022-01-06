@@ -122,6 +122,22 @@ class Sitemap(db.Model):
             self.new_mod()
             db.session.commit()
 
+    def item_added(self, item):
+        return self.items.filter_by(id=item.id).count() > 0
+
+    def add_item(self, item):
+        if not self.item_added(item):
+            self.items.append(item)
+            self.new_mod()
+            db.session.commit()
+
+    def remove_item(self, item):
+        if not self.item_added(item):
+            self.items.remove(item)
+            self.new_mod()
+            db.session.commit()
+
+
     def new_mod(self):
         mod = Mod()
         self.mods.append(mod)

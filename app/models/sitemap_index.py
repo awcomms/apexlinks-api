@@ -52,7 +52,7 @@ class SitemapIndex(db.Model):
         sitemap = Sitemap.willnotbefull(item)
         if not sitemap:
             sitemap = SitemapIndex.create_sitemap(type='item')
-        sitemap.add_user(item)
+        sitemap.add_item(item)
 
     @staticmethod
     def create_sitemap(type='user'):
