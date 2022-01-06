@@ -7,4 +7,4 @@ def _user(username):
     if user:
         return user.dict()
     else:
-        return {'error': f'user {username} was not found'}
+        return {'error': f'user {username} was not found'}, 404

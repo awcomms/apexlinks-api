@@ -8,10 +8,10 @@ from app.models.item import Item
 from flask import request
 
 
-@bp.route('/items', methods=['GET'])
-def items():
+@bp.route('/items', methods=['GET'], endpoint='items')
+def items(user=None):
     a = request.args.get
-    user = None
+    user = User.check_token(request.headers.get('token'))['user']
     token = request.headers.get('token')
     market_id = a('market_id')
     if market_id:
@@ -27,10 +27,10 @@ def items():
         id = None
     if id:
         try:
-            user = User.query.get(id)
-            if not user:
+            _user = User.query.get(id)
+            if not _user:
                 return {'error': 'User not found'}, 404
-            if user.hidden:
+            if _user.hidden:
                 return {'error': 'User hidden'}, 423
         except:
             return {'error': 'Invalid id type'}, 400

@@ -90,16 +90,16 @@ class Item(db.Model):
         query = Item.query.join(User)
         if market_id:
             query = query.filter(User.market_id == market_id)
-        if not id:
+        if id:
+            query = query.filter(User.id==id)
+        if user and user.id == id:
+            try:
+                query = query.filter(Item.hidden==hidden)
+            except:
+                pass #TODO-error
+        else:
             query = query.filter(User.hidden==False)
             query = query.filter(Item.hidden==False)
-        elif id:
-            query = query.filter(User.id==id)
-            if user:
-                try:
-                    query = query.filter(Item.hidden==hidden)
-                except:
-                    pass
         for item in query:
             item.score = 0
             if isinstance(item.tags, list) and tags:

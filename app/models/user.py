@@ -152,16 +152,19 @@ class User(db.Model):
             data = s.loads(token)
         except SignatureExpired:
             print('SignatureExpired')
-            return 'expired'
+            return {'user': None, 'res': 'expired'}
         except BadSignature:
             print('BadSignature')
-            return 'bad'
+            return {'user': None, 'res': 'bad'}
         except Exception as e:
-            print('sle: ', e)
-            return None
-        id = data['id']
-        u = User.query.get(id)
-        return u
+            print('static method really invalid token: ', e)
+            return {'user': None, 'res': ''}
+        if 'id' in data:
+            id = data['id']
+            u = User.query.get(id)
+            return {'user': u, 'res': ''}
+        else:
+            return {'user': None, 'res': ''}
 
     def set_reset_password_token(self, expires_in=600):
         return jwt.encode(
