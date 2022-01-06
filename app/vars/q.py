@@ -30,6 +30,9 @@ search_fields = [
     'telephone',
 ]
 
+room_search_fields = [
+]
+
 default_user_fields = [
     'name',
     'email',

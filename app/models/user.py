@@ -169,12 +169,6 @@ class User(db.Model):
             return
         return User.query.get(id)
 
-    @staticmethod
-    def get():
-        query = User.query
-        query = query.filter_by(hidden=False)
-        return query
-
     def __init__(self, username, password, email=None):
         fields = []
         for default_field in default_user_fields:

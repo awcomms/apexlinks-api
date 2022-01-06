@@ -6,6 +6,5 @@
     ],
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
-    "files.autoSaveDelay": 1200,
     "python.formatting.provider": "autopep8"
 }

@@ -3,6 +3,8 @@ from flask import request, jsonify
 from app import db
 from app.auth import auth
 from app.routes import bp
+from app.vars.q import room_search_fields
+from app.misc.sort.tag_sort import tag_sort
 from app.misc.cdict import cdict
 from app.models.user import User, xrooms
 from app.models.room import Room
@@ -47,37 +49,70 @@ def leave(user=None):
 @bp.route('/xrooms', methods=['GET'])
 @auth
 def get_xrooms(user=None):
+    query = Room.query
     args = request.args.get
+
+    id = args('id')
+    if id:
+        try:
+            id = int(id)
+        except:
+            return {'error': f'id should have a type of number'}
+        user = User.query.get(id)
+        if not user:
+            return {'error': f'user with id {id} was not found'}
+        
+        query = query.join(xrooms).filter(xrooms.c.user_id == id)
+    
     try:
         tags = json.loads(args('tags'))
-        page = int(args('page'))
     except:
         tags = []
+
+    try:
+        page = int(args('page'))
+    except:
         page = 1
-    query = Room.xfuz(user.id, tags)
-    return cdict(query, page, 100, user=user)
+
+    run = Room.get(tags)
+    return cdict(query, page, run=run)
 
 @bp.route('/rooms', methods=['GET'])
 @auth
 def rooms(user=None):
+    query = Room.query.join(User)
     a = request.args.get
     id = a('id')
-    try:
-        id = int(id)
-    except:
-        id = None
     if id:
+        try:
+            id = int(id)
+        except:
+            return {'error': f'id should have a type of number'}
         user = User.query.get(id)
         if not user:
-            id=None
+            return {'error': f'user with id {id} was not found'}
+        query = query.filter(User.id == id)
+
+    limit = a('limit')
+    if limit:
+        try:
+            limit = int(limit)
+        except:
+            return {'error': "'limit' query arg should be a number"}
+    else:
+        limit = 0
+
     try:
         tags = json.loads(a('tags'))
-        page = int(a('page'))
     except:
         tags = []
+    try:
+        page = int(a('page'))
+    except:
         page = 1
-    query = Room.fuz(id, tags)
-    return cdict(query, page, user=user)
+
+    run = Room.get(tags, limit)
+    return cdict(query, page, run=run)
 
 @bp.route('/rooms', methods=['POST'])
 @auth

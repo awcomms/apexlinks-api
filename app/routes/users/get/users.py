@@ -109,10 +109,6 @@ def users():
 
     query = User.query.filter_by(hidden=False)
     
-    if sort == 'tag':
-        search_attr = 'score'
-    else:
-        search_attr = 'distance'
     extra = lambda items: {
         "min":  min(items, key=lambda item: item['score'])['score'],
         "max": max(items, key=lambda item: item['score'])['score']

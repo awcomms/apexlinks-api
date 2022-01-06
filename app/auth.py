@@ -41,5 +41,5 @@ def auth(f):
             return f(*args, **kwargs, user = user)
         else:
             print('really invalid token: ', token)
-            return {'error': 'invalid token', 'invalid': True}, 401
+            return {'error': 'invalid token'}, 401
     return wrapper

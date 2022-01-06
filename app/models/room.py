@@ -1,6 +1,9 @@
 from app import db
 from fuzzywuzzy import process
 from app.models.user import User, xrooms
+from app.vars.q import room_search_fields
+from app.misc.sort.tag_sort import tag_sort
+
 
 class Room(db.Model):
     tags = db.Column(db.JSON)
@@ -12,48 +15,33 @@ class Room(db.Model):
     name = db.Column(db.Unicode)
     unseen = db.Column(db.Boolean, default=False)
 
-    def xfuz(id, tags):
-        query = Room.query
-        if not id:
-            query = query.filter(Room.open==True)
-        else:
-            query=query.join(xrooms).filter(xrooms.c.user_id == id)
-        for room in query:
-            room.score = 0
-            for tag in tags:
-                try:
-                    room.score += process.extractOne(tag, room.tags)[1]
-                except:
-                    pass
-        db.session.commit()
-        query=query.order_by(Room.score.desc())
-        return query
-
     @staticmethod
-    def fuz(id, tags):
-        query = Room.query.join(User)
-        if not id:
-            query=query.filter(Room.open==True)
-        else:
-            query=query.filter(User.id==id)
-        for room in query:
-            room.score = 0
-            for tag in tags:
-                try:
-                    room.score += process.extractOne(tag, room.tags)[1]
-                except:
-                    pass
-        db.session.commit()
-        query=query.order_by(Room.score.desc())
-        return query
+    def get(tags, limit=0):
+        def tag_score(items): return tag_sort(room_search_fields, items, tags)
+        _sort = tag_score
+        
+        def filter(items):
+            for idx, item in enumerate(items):
+                if item['score'] < limit:
+                    items.pop(idx)
+            print(len(items))
+            return items
+
+        def run(items):
+            _items = _sort(items)
+            if limit:
+                _items = filter(_items)
+            return _items
+
+        return run
 
     def dict(self, **kwargs):
         uid = None
         seen = None
         if kwargs['user']:
             uid = kwargs['user'].id
-        row = db.engine.execute(xrooms.select().where(xrooms.c.user_id==uid)\
-            .where(xrooms.c.room_id==self.id)).first()
+        row = db.engine.execute(xrooms.select().where(xrooms.c.user_id == uid)
+                                .where(xrooms.c.room_id == self.id)).first()
         if row:
             seen = row['seen']
         data = {
