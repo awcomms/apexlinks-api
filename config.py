@@ -1,3 +1,4 @@
+from logging import DEBUG
 import os
 from dotenv import load_dotenv
 
@@ -7,6 +8,7 @@ load_dotenv(os.path.join(basedir, '.env'))
 db_uri = os.environ.get('DATABASE_URL') or 'postgresql://postgres:love@localhost:5432/apexlinks'
 
 class Config(object):
+    DEBUG = os.environ.get('DEBUG')
     PAYSTACK_TEST = os.environ.get('PAYSTACK_TEST')
     PAYSTACK_TEST_KEY = os.environ.get('PAYSTACK_TEST_KEY')
     PAYSTACK_LIVE_KEY = os.environ.get('PAYSTACK_LIVE_KEY')

@@ -67,17 +67,6 @@ class User(db.Model):
     rooms = db.relationship('Room', backref='user', lazy='dynamic')
     subs = db.relationship('Sub', backref='user', lazy='dynamic')
 
-    @staticmethod
-    def location_sort(query, loc):
-        for user in query:
-            if not user.location or 'lat' not in user.location or 'lon' not in user.location:
-                continue
-            user_location = (user.location['lat'], user.location['lon'])
-            loc = (loc['lat'], loc['lon'])
-            user.distance = distance(user_location, loc).kilometers
-        db.session.commit()
-        return query.order_by(User.distance.asc())
-
     def xml(self):
         entry = ET.Element('url')
 
@@ -181,13 +170,9 @@ class User(db.Model):
         return User.query.get(id)
 
     @staticmethod
-    def get(sort, tags, loc):
+    def get():
         query = User.query
         query = query.filter_by(hidden=False)
-        db.session.commit()
-        query = query.order_by(User.score.desc())
-        if sort == 'distance':
-            query = User.location_sort(query, loc)
         return query
 
     def __init__(self, username, password, email=None):

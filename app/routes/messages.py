@@ -1,6 +1,7 @@
 from flask import request
 from app.routes import bp
 from app import db
+from app.auth import auth
 from app.misc.cdict import cdict
 from app.models.user import User, xrooms
 from app.models.room import Room
@@ -23,11 +24,8 @@ def get_messages():
     return cdict(messages, page, 100)
 
 @bp.route('/messages', methods=['PUT'])
-def post_message():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user: 
-        return '', 401
+@auth
+def post_message(user=None):
     data = request.json.get
     id = data('id')
     room = Room.query.get(id)

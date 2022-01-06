@@ -5,11 +5,8 @@ from app.models.user import User
 from app.models.learn.result import Result
 
 @bp.route('/results', methods=['GET'])
-def user_result():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '401', 401
+@auth
+def user_result(user=None):
     headers = [
             {'key': 'subject', 'value': 'Subject'},
             {'key': 'score', 'value': 'Score'}

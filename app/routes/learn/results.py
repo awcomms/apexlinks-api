@@ -2,6 +2,7 @@ import os
 from docx import Document
 from docx.table import _Cell
 
+from app.auth import auth
 from app.api import bp
 from flask import request
 from flask import current_app
@@ -53,11 +54,8 @@ def copy():
     return '202'  
 
 @bp.route('/results', methods=['GET'])
-def user_result():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '401', 401
+@auth
+def user_result(user=None):
     headers = [
             {'key': 'subject', 'value': 'Subject'},
             {'key': 'score', 'value': 'Score'}

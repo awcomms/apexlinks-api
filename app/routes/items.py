@@ -16,11 +16,7 @@ def items(user=None):
     market_id = a('market_id')
     if market_id:
         market_id = int(market_id) #TODO #error_check
-    if token:
-        try:
-            user = User.query.filter_by(token=token).first()
-        except:
-            user = None
+    user = User.check_token(token)
     try:
         id = int(a('id'))
     except:

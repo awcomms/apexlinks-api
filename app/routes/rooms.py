@@ -1,17 +1,15 @@
 import json
 from flask import request, jsonify
 from app import db
+from app.auth import auth
 from app.routes import bp
 from app.misc.cdict import cdict
 from app.models.user import User, xrooms
 from app.models.room import Room
 
 @bp.route('/seen', methods=['PUT'])
-def seen():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '401', 401
+@auth
+def seen(user=None):
     id = request.args.get('id')
     room = Room.query.get(id)
     if not room:
@@ -21,11 +19,8 @@ def seen():
     return '202', 202
 
 @bp.route('/join', methods=['PUT'])
-def join():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '', 401
+@auth
+def join(user=None):
     data = request.json.get
     id = data('id')
     try:
@@ -36,11 +31,9 @@ def join():
     return '', 202
 
 @bp.route('/leave', methods=['PUT'])
-def leave():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '', 401
+@auth
+def leave(user=None):
+    token = request.headers.get('auth')
     id = request.json.get('id')
     room = Room.query.get(id)
     if not room:
@@ -52,12 +45,9 @@ def leave():
     return '', 202
 
 @bp.route('/xrooms', methods=['GET'])
-def get_xrooms():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
+@auth
+def get_xrooms(user=None):
     args = request.args.get
-    if not user:
-        return '401', 401
     try:
         tags = json.loads(args('tags'))
         page = int(args('page'))
@@ -68,9 +58,8 @@ def get_xrooms():
     return cdict(query, page, 100, user=user)
 
 @bp.route('/rooms', methods=['GET'])
-def rooms():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
+@auth
+def rooms(user=None):
     a = request.args.get
     id = a('id')
     try:
@@ -91,17 +80,10 @@ def rooms():
     return cdict(query, page, user=user)
 
 @bp.route('/rooms', methods=['POST'])
-def add_room():
-    token = request.headers.get('Authorization')
-    try:
-        user = User.query.filter_by(token=token).first()
-    except:
-        return '401', 401
-    if not user:
-        return '401', 401
+@auth
+def add_room(user=None):
     data = request.json.get
-    open = data('open')
-    username = data('username')
+    # open = data('open')
     name = data('name')
     if Room.query.filter_by(name=name).first():
         return {'nameError': 'Name taken'}, 423
@@ -115,23 +97,11 @@ def add_room():
     }
     room = Room(data)
     user.join(room)
-    if username:
-        try:
-            user2 = User.query.filter_by(username=username).first()
-        except Exception:
-            return {'userError': 'Not Found'}
-        if not user2:
-            return {'userError': 'Not Found'}
-        if user2:
-            user2.join(room)
     return {'id': room.id}
 
 @bp.route('/rooms', methods=['PUT'])
-def edit_room():
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '', 401
+@auth
+def edit_room(user=None):
     data = request.json.get
     id = data('id')
     room = Room.query.get(id)
@@ -153,11 +123,8 @@ def edit_room():
     return {'id': room.id}
 
 @bp.route('/rooms/<value>', methods=['GET'])
-def get_room(value):
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '', 401
+@auth
+def get_room(value, user=None):
     try:
         room = Room.query.get(int(value))
     except:
@@ -169,11 +136,7 @@ def get_room(value):
     return room.dict(user=user)
 
 @bp.route('/rooms/<int:id>', methods=['DELETE'])
-def del_room(id):
-    token = request.headers.get('Authorization')
-    user = User.query.filter_by(token=token).first()
-    if not user:
-        return '', 401
+def del_room(id, user=None):
     room = Room.query.get(id)
     if room.user != user:
         return '', 401

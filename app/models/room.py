@@ -6,11 +6,11 @@ class Room(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
     open = db.Column(db.Boolean, default=False)
+    one = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     messages = db.relationship('Message', backref='room', lazy='dynamic')
     name = db.Column(db.Unicode)
     unseen = db.Column(db.Boolean, default=False)
-    score = db.Column(db.Float)
 
     def xfuz(id, tags):
         query = Room.query

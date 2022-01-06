@@ -107,7 +107,7 @@ def users():
         print(len(_items))
         return _items
 
-    query = User.get(sort, tags, loc)
+    query = User.query.filter_by(hidden=False)
     
     if sort == 'tag':
         search_attr = 'score'
