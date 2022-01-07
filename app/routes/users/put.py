@@ -49,37 +49,43 @@ def reset_password():
 @auth
 def edit_user(user=None):
     request_json = request.json.get
+    data_request_json = request.get_json()
 
-    save_users = request_json('save_users')
-    for id, idx in enumerate(save_users):
-        try:
-            id = int(id)
-        except:
-            return {'error': f"query arg 'id' does not seem to have a type of id"}
-        _user = User.query.get(id)
-        if not _user:
-            return {'error': f'user {id} not found'}
-        user.save_user(user)
+    save_users = request_json('save_toggle_users')
+    if save_users:
+        users_save_toggled = []
+        for idx, id in enumerate(save_users):
+            try:
+                id = int(id)
+            except:
+                return {'error': f"query arg 'id' does not seem to have a type of id"}, 400
+            _user = User.query.get(id)
+            if not _user:
+                return {'error': f'user {id} not found'}, 400
+            user.save_toggle_user(_user)
+            users_save_toggled.append(_user.dict(user=user, attrs=['saved']))
 
-    save_items = request_json('save_items')
-    for id, idx in enumerate(save_items):
-        try:
-            id = int(id)
-        except:
-            return {'error': f"query arg 'id' does not seem to have a type of id"}
-        item = Item.query.get(id)
-        if not item:
-            return {'error': f'item {id} not found'}
-        user.save_item(user)
+    save_items = request_json('save_toggle_items')
+    if save_items:
+        items_save_toggled = []
+        for idx, id in enumerate(save_items):
+            try:
+                id = int(id)
+            except:
+                return {'error': f"query arg 'id' does not seem to have a type of id"}, 400
+            item = Item.query.get(id)
+            if not item:
+                return {'error': f'item {id} not found'}, 400
+            user.save_toggle_item(item)
+            items_save_toggled.append(item.dict(user=user, attrs=['saved']))
 
-    data = {
-        'address': request_json('address'),
-        'website': request_json('website'),
-        'phone': request_json('phone'),
-        'location': request_json('location'),
-        'email': request_json('email'),
-        'name': request_json('name'),
-    }
+    data = {}
+    attrs = ['about', 'hiddden', 'images', 'image', 'tags']
+
+    for attr in attrs:
+        if attr in data_request_json:
+            data[attr] = data_request_json[attr]
+
     username = request_json('username')
     if not username or username == '':
         return {'usernameInvalid': True, 'usernameError': 'No username'}, 400
@@ -87,6 +93,7 @@ def edit_user(user=None):
             User.query.filter_by(username=username).first():
         return {'usernameInvalid': True, 'usernameError': 'Username taken'}, 400
     data['username'] = username
+    
     market_id = request_json('market_id')
     if market_id:
         try:
@@ -124,13 +131,10 @@ def edit_user(user=None):
             tags = tags.split(';')
         except SyntaxError or TypeError:
             return 'Unsupported tags format', 415
-
-    data['show_email'] = request_json('show_email')
-    data['about'] = request_json('about')
-    data['hidden'] = request_json('hidden')
-    data['location'] = request_json('location')
-    data['images'] = request_json('images')
-    data['image'] = request_json('image')
-    data['tags'] = tags
     user.edit(data)
-    return user.dict()
+
+    extra = {
+        'items_save_toggled': items_save_toggled,
+        'users_save_toggled': users_save_toggled
+    }
+    return user.dict(extra=extra)

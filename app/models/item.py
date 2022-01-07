@@ -123,7 +123,7 @@ class Item(db.Model):
         return query
 
     def dict(self, **kwargs):
-        return {
+        res = {
             'id': self.id,
             'name': self.name,
             'tags': self.tags,
@@ -132,11 +132,25 @@ class Item(db.Model):
             'itext': self.itext,
             'image': self.image,
             'images': self.images,
-            'fields': self.fields,
+            'type': type(self).__name__.lower(),
+            'fields': self.fields, 
             'hidden': self.hidden,
             'user': self.user.dict(),
             'redirect': self.redirect,
         }
+        print('type', res['type'])
+
+        if 'user' in kwargs and kwargs['user'] and 'attrs' in kwargs:
+            user = kwargs['user']
+            for attr in kwargs['attrs']:
+                if attr == 'saved':
+                    res[attr] = user.item_saved(self)
+                if hasattr(user, attr):
+                    res[attr] = getattr(user, attr)
+                else:
+                    # TODO-error
+                    pass
+        return res
 
     def __init__(self, data):
         for field in data:

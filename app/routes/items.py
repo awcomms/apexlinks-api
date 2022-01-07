@@ -56,7 +56,7 @@ def items(user=None):
     # print(fields)
     market_id = None
     fields = None
-    return cdict(Item.fuz(market_id, fields, user, id, hidden, tags), page)
+    return cdict(Item.fuz(market_id, fields, user, id, hidden, tags), page, user=user, attrs=['saved'])
 
 
 @bp.route('/items', methods=['POST'])

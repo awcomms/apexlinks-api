@@ -73,7 +73,13 @@ class User(db.Model):
     no_password = db.Column(db.Boolean)
 
     saved_users = db.relationship('User', secondary=_saved_users, primaryjoin=id == _saved_users.c.saver,
-                                  secondaryjoin=id == _saved_users.c.savee, backref=db.backref(lazy='dynamic'), lazy='dynamic')
+                                  secondaryjoin=id == _saved_users.c.savee, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
+
+    def save_toggle_user(self, user):
+        if self.usave_toggle_user(user):
+            self.unsave_user(user)
+        else:
+            self.save_user(user)
 
     def user_saved(self, user):
         return self.saved_users.filter(
@@ -91,11 +97,17 @@ class User(db.Model):
             db.session.commit()
 
     saved_items = db.relationship('Item', secondary=_saved_items, primaryjoin=id == _saved_items.c.user,
-                                  secondaryjoin=id == _saved_items.c.item, backref=db.backref(lazy='dynamic'), lazy='dynamic')
+                                  secondaryjoin=id == _saved_items.c.item, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
+    
+    def save_toggle_item(self, item):
+        if self.item_saved(item):
+            self.unsave_item(item)
+        else:
+            self.save_item(item)
 
     def item_saved(self, item):
         return self.saved_items.filter(
-            _saved_items.c.savee == item.id
+            _saved_items.c.item == item.id
         ).count() > 0
 
     def save_item(self, item):
@@ -264,13 +276,14 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def dict(self, **kwargs):
-        return {
+        res = {
             'id': self.id,
             'score': self.score,
             'show_email': self.show_email,
             'hidden': self.hidden,
             'username': self.username,
             'name': self.name,
+            'type': type(self).__name__.lower(),
             'email': self.email,
             'paid': self.paid,
             'fields': self.fields,
@@ -282,6 +295,24 @@ class User(db.Model):
             'address': self.address,
             'tags': self.tags,
         }
+
+        if 'user' in kwargs and kwargs['user'] and 'attrs' in kwargs:
+            user = kwargs['user']
+            # TODO
+            for attr in kwargs['attrs']:
+                if attr == 'saved':
+                    res[attr] = user.user_saved(self)
+                if hasattr(user, attr):
+                    res[attr] = getattr(user, attr)
+                else:
+                    # TODO-error
+                    pass
+
+        print('u_type', res['type'])
+        if 'extra' in kwargs:
+            res.update(kwargs['extra'])
+        
+        return res
 
     def edit(self, data):
         for field in data:
