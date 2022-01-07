@@ -35,12 +35,17 @@ def get_messages():
 
 
     if model == 'message':
+        message = Message.query.get(id)
+        if not message:
+            return {'error': f'message {id} not found'}, 404
+        if mode == 'single':
+            return message.dict()
         if mode == 'replies':
-            messages = Message.query.get(args('message')).replies
+            messages = Message.query.get(id).replies
         if mode == 'messages':
-            messages = Message.query.get(args('message')).messages
+            messages = Message.query.get(id).messages
     elif model == 'room':
-        messages = Room.query.get(args('room')).messages
+        messages = Room.query.get(id).messages
     
     messages = messages.order_by(Message.timestamp.desc())
     #TODO-search

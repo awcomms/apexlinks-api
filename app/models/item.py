@@ -1,3 +1,5 @@
+from app.models.mod import Mod
+from app.models.sitemap_index import SitemapIndex
 from app import db
 from fuzzywuzzy import process, fuzz
 from app.vars.q import host, global_priority
@@ -5,6 +7,11 @@ from app.misc.fields.score import field_score
 from app.misc.datetime_period import datetime_period
 import xml.etree.ElementTree as ET
 from app.models.user import User
+
+saved_items = db.Table('saved_items',
+                       db.Column('item', db.Integer, db.ForeignKey('item.id')),
+                       db.Column('user', db.Integer, db.ForeignKey('user.id')))
+
 
 class Item(db.Model):
     tags = db.Column(db.JSON)
@@ -48,7 +55,7 @@ class Item(db.Model):
         entry.append(priority)
 
         return entry
-    
+
     def last_modification(self):
         return self.mods.order_by(Mod.datetime.desc()).first()
 
@@ -91,15 +98,15 @@ class Item(db.Model):
         if market_id:
             query = query.filter(User.market_id == market_id)
         if id:
-            query = query.filter(User.id==id)
+            query = query.filter(User.id == id)
         if user and user.id == id:
             try:
-                query = query.filter(Item.hidden==hidden)
+                query = query.filter(Item.hidden == hidden)
             except:
-                pass #TODO-error
+                pass  # TODO-error
         else:
-            query = query.filter(User.hidden==False)
-            query = query.filter(Item.hidden==False)
+            query = query.filter(User.hidden == False)
+            query = query.filter(Item.hidden == False)
         for item in query:
             item.score = 0
             if isinstance(item.tags, list) and tags:
@@ -116,7 +123,7 @@ class Item(db.Model):
         return query
 
     def dict(self, **kwargs):
-       return {
+        return {
             'id': self.id,
             'name': self.name,
             'tags': self.tags,
@@ -145,6 +152,3 @@ class Item(db.Model):
             if hasattr(self, field):
                 setattr(self, field, data[field])
         db.session.commit()
-
-from app.models.sitemap_index import SitemapIndex
-from app.models.mod import Mod

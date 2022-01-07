@@ -30,7 +30,7 @@ def join(user=None):
     except:
         room = None
     user.join(room)
-    return '', 202
+    return {}, 202
 
 @bp.route('/leave', methods=['PUT'])
 @auth

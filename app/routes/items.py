@@ -16,12 +16,12 @@ def items(user=None):
     market_id = a('market_id')
     if market_id:
         market_id = int(market_id) #TODO #error_check
-    user = User.check_token(token)
-    try:
-        id = int(a('id'))
-    except:
-        id = None
+    id = a('id')
     if id:
+        try:
+            id = int(id)
+        except:
+            return {'error': "query arg 'id' doesn't seem to have a type of number"}
         try:
             _user = User.query.get(id)
             if not _user:

@@ -4,7 +4,7 @@ import json
 from flask import request
 from app.routes import bp
 from app.auth import auth
-from app.models.user import User
+from app.models import Item, User
 from app.models.market import Market
 
 
@@ -49,6 +49,29 @@ def reset_password():
 @auth
 def edit_user(user=None):
     request_json = request.json.get
+
+    save_users = request_json('save_users')
+    for id, idx in enumerate(save_users):
+        try:
+            id = int(id)
+        except:
+            return {'error': f"query arg 'id' does not seem to have a type of id"}
+        _user = User.query.get(id)
+        if not _user:
+            return {'error': f'user {id} not found'}
+        user.save_user(user)
+
+    save_items = request_json('save_items')
+    for id, idx in enumerate(save_items):
+        try:
+            id = int(id)
+        except:
+            return {'error': f"query arg 'id' does not seem to have a type of id"}
+        item = Item.query.get(id)
+        if not item:
+            return {'error': f'item {id} not found'}
+        user.save_item(user)
+
     data = {
         'address': request_json('address'),
         'website': request_json('website'),

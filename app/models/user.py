@@ -1,5 +1,7 @@
 import jwt
 from time import time
+
+from sqlalchemy.orm import backref
 from app.misc.distance import distance
 from app.vars.q import host, global_priority, default_user_fields
 from app.misc.datetime_period import datetime_period
@@ -13,6 +15,16 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 from app import db
 from flask import current_app
 from werkzeug.security import check_password_hash, generate_password_hash
+
+_saved_users = db.Table('_saved_users',
+                        db.Column('saver', db.Integer,
+                                  db.ForeignKey('user.id')),
+                        db.Column('savee', db.Integer, db.ForeignKey('user.id')))
+
+_saved_items = db.Table('_saved_items',
+                        db.Column('user', db.Integer,
+                                  db.ForeignKey('user.id')),
+                        db.Column('item', db.Integer, db.ForeignKey('item.id')))
 
 search_attributes = [
     'username'
@@ -59,6 +71,42 @@ class User(db.Model):
     hidden = db.Column(db.Boolean, default=False)
     socket_id = db.Column(db.Unicode)
     no_password = db.Column(db.Boolean)
+
+    saved_users = db.relationship('User', secondary=_saved_users, primaryjoin=id == _saved_users.c.saver,
+                                  secondaryjoin=id == _saved_users.c.savee, backref=db.backref(lazy='dynamic'), lazy='dynamic')
+
+    def user_saved(self, user):
+        return self.saved_users.filter(
+            _saved_users.c.savee == user.id
+        ).count() > 0
+
+    def save_user(self, user):
+        if not self.user_saved(user):
+            self.saved_users.append(user)
+            db.session.commit()
+
+    def unsave_user(self, user):
+        if self.user_saved(user):
+            self.saved_users.remove(user)
+            db.session.commit()
+
+    saved_items = db.relationship('Item', secondary=_saved_items, primaryjoin=id == _saved_items.c.user,
+                                  secondaryjoin=id == _saved_items.c.item, backref=db.backref(lazy='dynamic'), lazy='dynamic')
+
+    def item_saved(self, item):
+        return self.saved_items.filter(
+            _saved_items.c.savee == item.id
+        ).count() > 0
+
+    def save_item(self, item):
+        if not self.item_saved(item):
+            self.saved_items.append(item)
+            db.session.commit()
+
+    def unsave_item(self, item):
+        if self.item_saved(item):
+            self.saved_items.remove(item)
+            db.session.commit()
 
     items = db.relationship('Item', backref='user', lazy='dynamic')
     xrooms = db.relationship('Room', secondary=xrooms, backref=db.backref(
