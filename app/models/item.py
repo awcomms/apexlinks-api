@@ -8,11 +8,6 @@ from app.misc.datetime_period import datetime_period
 import xml.etree.ElementTree as ET
 from app.models.user import User
 
-saved_items = db.Table('saved_items',
-                       db.Column('item', db.Integer, db.ForeignKey('item.id')),
-                       db.Column('user', db.Integer, db.ForeignKey('user.id')))
-
-
 class Item(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)

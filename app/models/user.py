@@ -17,14 +17,13 @@ from flask import current_app
 from werkzeug.security import check_password_hash, generate_password_hash
 
 _saved_users = db.Table('_saved_users',
-                        db.Column('saver', db.Integer,
-                                  db.ForeignKey('user.id')),
+                        db.Column('saver', db.Integer, db.ForeignKey('user.id')),
                         db.Column('savee', db.Integer, db.ForeignKey('user.id')))
 
 _saved_items = db.Table('_saved_items',
-                        db.Column('user', db.Integer,
-                                  db.ForeignKey('user.id')),
-                        db.Column('item', db.Integer, db.ForeignKey('item.id')))
+                        db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                        db.Column('item_id', db.Integer, db.ForeignKey('item.id')),
+                        db.Column('tags', db.JSON))
 
 search_attributes = [
     'username'
@@ -76,12 +75,13 @@ class User(db.Model):
                                   secondaryjoin=id == _saved_users.c.savee, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
 
     def save_toggle_user(self, user):
-        if self.usave_toggle_user(user):
+        if self.user_saved(user):
             self.unsave_user(user)
         else:
             self.save_user(user)
 
     def user_saved(self, user):
+        print(self, user)
         return self.saved_users.filter(
             _saved_users.c.savee == user.id
         ).count() > 0
@@ -96,8 +96,8 @@ class User(db.Model):
             self.saved_users.remove(user)
             db.session.commit()
 
-    saved_items = db.relationship('Item', secondary=_saved_items, primaryjoin=id == _saved_items.c.user,
-                                  secondaryjoin=id == _saved_items.c.item, backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
+    saved_items = db.relationship('Item', secondary=_saved_items, primaryjoin=(id == _saved_items.c.user_id),
+                                  secondaryjoin=(id == _saved_items.c.item_id), backref=db.backref('savers', lazy='dynamic'), lazy='dynamic')
     
     def save_toggle_item(self, item):
         if self.item_saved(item):
@@ -107,7 +107,7 @@ class User(db.Model):
 
     def item_saved(self, item):
         return self.saved_items.filter(
-            _saved_items.c.item == item.id
+            _saved_items.c.item_id == item.id
         ).count() > 0
 
     def save_item(self, item):
@@ -309,8 +309,8 @@ class User(db.Model):
                     pass
 
         print('u_type', res['type'])
-        if 'extra' in kwargs:
-            res.update(kwargs['extra'])
+        if '_extra' in kwargs:
+            res.update(kwargs['_extra'])
         
         return res
 

@@ -48,6 +48,7 @@ def reset_password():
 @bp.route('/users', methods=['PUT'])
 @auth
 def edit_user(user=None):
+    _extra = {}
     request_json = request.json.get
     data_request_json = request.get_json()
 
@@ -55,15 +56,17 @@ def edit_user(user=None):
     if save_users:
         users_save_toggled = []
         for idx, id in enumerate(save_users):
+            print(id)
             try:
                 id = int(id)
             except:
                 return {'error': f"query arg 'id' does not seem to have a type of id"}, 400
             _user = User.query.get(id)
             if not _user:
-                return {'error': f'user {id} not found'}, 400
+                return {'error': f'user {id} not found'}, 404
             user.save_toggle_user(_user)
             users_save_toggled.append(_user.dict(user=user, attrs=['saved']))
+        _extra['users_save_toggled'] = users_save_toggled
 
     save_items = request_json('save_toggle_items')
     if save_items:
@@ -78,6 +81,7 @@ def edit_user(user=None):
                 return {'error': f'item {id} not found'}, 400
             user.save_toggle_item(item)
             items_save_toggled.append(item.dict(user=user, attrs=['saved']))
+        _extra['items_save_toggled'] = items_save_toggled
 
     data = {}
     attrs = ['about', 'hiddden', 'images', 'image', 'tags']
@@ -87,13 +91,14 @@ def edit_user(user=None):
             data[attr] = data_request_json[attr]
 
     username = request_json('username')
-    if not username or username == '':
-        return {'usernameInvalid': True, 'usernameError': 'No username'}, 400
-    if username and username != user.username and \
-            User.query.filter_by(username=username).first():
-        return {'usernameInvalid': True, 'usernameError': 'Username taken'}, 400
-    data['username'] = username
-    
+    if username:
+        if username == '':
+            return {'error': 'No username'}, 400
+        if username != user.username and \
+                User.query.filter_by(username=username).first():
+            return {'error': 'Username taken'}, 400
+        data['username'] = username
+
     market_id = request_json('market_id')
     if market_id:
         try:
@@ -133,8 +138,4 @@ def edit_user(user=None):
             return 'Unsupported tags format', 415
     user.edit(data)
 
-    extra = {
-        'items_save_toggled': items_save_toggled,
-        'users_save_toggled': users_save_toggled
-    }
-    return user.dict(extra=extra)
+    return user.dict(_extra=_extra)
