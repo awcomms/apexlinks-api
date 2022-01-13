@@ -1,3 +1,4 @@
+from sqlalchemy.orm import backref
 from app.models.mod import Mod
 from app.models.sitemap_index import SitemapIndex
 from app import db
@@ -7,6 +8,11 @@ from app.misc.fields.score import field_score
 from app.misc.datetime_period import datetime_period
 import xml.etree.ElementTree as ET
 from app.models.user import User
+
+item_items = db.Table('item_items',
+                      db.Column('parent', db.Integer,
+                                db.ForeignKey('item.id')),
+                      db.Column('child', db.Integer, db.ForeignKey('item.id')))
 
 class Item(db.Model):
     tags = db.Column(db.JSON)
@@ -24,6 +30,24 @@ class Item(db.Model):
     name = db.Column(db.Unicode)
     itext = db.Column(db.Unicode)
     score = db.Column(db.Float)
+
+    items = db.relationship('Item', secondary=item_items, primaryjoin=id ==
+                            item_items.c.parent, secondaryjoin=id == item_items.c.child, backref=db.backref('parents', lazy='dynamic'), lazy='dynamic')
+
+    def item_added(self, item):
+        return self.items.filter(
+            item_items.c.child == item.id
+        )
+
+    def add_item(self, item):
+        if not self.item_added(item):
+            self.items.append(item)
+            db.session.commit()
+
+    def remove_item(self, item):
+        if self.item_added(item):
+            self.items.remove(item)
+            db.session.commit()
 
     mods = db.relationship('Mod', backref='item', lazy='dynamic')
     sitemap_id = db.Column(db.Integer, db.ForeignKey('sitemap.id'))
@@ -87,21 +111,8 @@ class Item(db.Model):
             return f'{host}/i/{self.id}'
 
     @staticmethod
-    def fuz(market_id, fields, user, id, hidden, tags):
+    def fuz(query, fields, tags):
         fields = fields or []
-        query = Item.query.join(User)
-        if market_id:
-            query = query.filter(User.market_id == market_id)
-        if id:
-            query = query.filter(User.id == id)
-        if user and user.id == id:
-            try:
-                query = query.filter(Item.hidden == hidden)
-            except:
-                pass  # TODO-error
-        else:
-            query = query.filter(User.hidden == False)
-            query = query.filter(Item.hidden == False)
         for item in query:
             item.score = 0
             if isinstance(item.tags, list) and tags:
@@ -128,7 +139,7 @@ class Item(db.Model):
             'image': self.image,
             'images': self.images,
             'type': type(self).__name__.lower(),
-            'fields': self.fields, 
+            'fields': self.fields,
             'hidden': self.hidden,
             'user': self.user.dict(),
             'redirect': self.redirect,

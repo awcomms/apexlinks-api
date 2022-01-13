@@ -1,7 +1,7 @@
 def cdict(query, page=1, per_page=37, **kwargs):
-    resources = query.paginate(page, per_page, False)
-    items = [item.dict(**kwargs) for item in resources.items]
-    if 'run' in kwargs:
+    print('_query', query)
+    items = [item.dict(**kwargs) for item in query]
+    if 'run' in kwargs and kwargs['run']:
         run = kwargs['run']
         items = run(items)
     res =  {

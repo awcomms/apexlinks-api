@@ -1,5 +1,6 @@
 import json
 from app import db
+from app.misc.sort.tag_sort import tag_sort
 from app.routes import bp
 from app.misc.cdict import cdict
 from app.auth import auth
@@ -12,35 +13,31 @@ from flask import request
 def items(user=None):
     a = request.args.get
     user = User.check_token(request.headers.get('token'))['user']
-    token = request.headers.get('token')
+    saved = request.args.get('saved')
     market_id = a('market_id')
     if market_id:
         market_id = int(market_id) #TODO #error_check
-    id = a('id')
-    if id:
+    user_id = a('user_id')
+    if user_id:
         try:
-            id = int(id)
+            user_id = int(user_id)
         except:
-            return {'error': "query arg 'id' doesn't seem to have a type of number"}
+            return {'error': "query arg 'user_id' doesn't seem to have a type of number"}
         try:
-            _user = User.query.get(id)
+            _user = User.query.get(user_id)
             if not _user:
                 return {'error': 'User not found'}, 404
             if _user.hidden:
                 return {'error': 'User hidden'}, 423
         except:
             return {'error': 'Invalid id type'}, 400
-    try:
-        page = int(a('page'))
-    except:
-        page = 1
-    try:
-        fields = json.loads(a('fields'))
-        if not isinstance(fields, list):
-            return {'error': 'let fields arg be of a list type'}
-    except Exception as e:
-        print('fields route error:', e)
-        fields = []
+    
+    page = a('page')
+    if page:
+        try:
+            page = int(page)
+        except:
+            return {'error': f"'page' query arg does not seem to have a type of number"}
     hidden = a('hidden')
     if hidden == 'true':
         hidden = True
@@ -48,16 +45,33 @@ def items(user=None):
         hidden = False
     else:
         hidden = True
-    try:
-        tags = json.loads(a('tags'))
-    except Exception as e:
-        print('tags route error: ', e)
+    
+    tags = a('tags')
+    if tags:
+        try:
+            tags = json.loads(tags)
+        except Exception as e:
+            print('tags route error: ', e)
+            return {'error': "'tags' query arg does not seem to be a stringified list"}
+    else:
         tags = []
-    # print(fields)
     market_id = None
-    fields = None
-    return cdict(Item.fuz(market_id, fields, user, id, hidden, tags), page, user=user, attrs=['saved'])
-
+    query = Item.query.join(User)
+    # if market_id:
+    #     query = query.filter(User.market_id == market_id)
+    if id:
+        query = query.filter(User.id == id)
+    if user and user.id == id:
+        try:
+            query = query.filter(Item.hidden == hidden)
+        except:
+            pass  # TODO-error
+    else:
+        query = query.filter(User.hidden == False)
+        query = query.filter(Item.hidden == False)
+    
+    run = lambda items: tag_sort(items, tags)
+    return cdict(query, page, user=user, run=run, attrs=['saved'])
 
 @bp.route('/items', methods=['POST'])
 @auth

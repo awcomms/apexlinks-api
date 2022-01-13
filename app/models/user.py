@@ -3,6 +3,7 @@ from time import time
 
 from sqlalchemy.orm import backref
 from app.misc.distance import distance
+from app.models.junctions import xrooms
 from app.vars.q import host, global_priority, default_user_fields
 from app.misc.datetime_period import datetime_period
 from app.misc.fields.score import field_score
@@ -28,11 +29,6 @@ _saved_items = db.Table('_saved_items',
 search_attributes = [
     'username'
 ]
-
-xrooms = db.Table('xrooms',
-                  db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-                  db.Column('room_id', db.Integer, db.ForeignKey('room.id')),
-                  db.Column('seen', db.Boolean))
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

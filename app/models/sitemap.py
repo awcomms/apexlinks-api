@@ -213,5 +213,4 @@ class Sitemap(db.Model):
     def gzip(self):
         return gzip.compress(bytes(self.xml_string), 'utf-8')
 
-from app.models.user import User
 from app.models.sitemap_index import SitemapIndex

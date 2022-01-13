@@ -1,37 +1,42 @@
 from fuzzywuzzy import process
 from app.misc.exceptions import ContinueI
 
-continue_i = ContinueI()
+continue_i = ContinueI(Exception)
 
-def tag_sort(default_fields, items, tags):
+def tag_sort(items, tags):
+    print('ze tags', tags)
     for idx, item in enumerate(items):
         item['score'] = 0
+        if not 'tags' in item:
+            return
         if not isinstance(item['tags'], list):
             item['tags'] = []
         item_tags = item['tags']
         if 'user' in item:
-            item_tags += item['user']['tags']
+            item_tags += {'value': item['user']['tags']}
         if 'username' in item:
             item_tags.append({'value': item['username']})
-        if 'fields' in item:
+        if 'fields' in item and item['fields']:
             for field in item['fields']:
-                if field['label'] in default_fields:
-                    item_tags.append({'value': field['value']})
+                item_tags.append(
+                    {'value': f'{field["label"]}:{field["value"]}'})
         try:
+            item_tags_values = [i['value'] for i in item_tags]
+            print(item_tags_values)
             for tag in tags:
-                if tag['exact']:
-                    if tag['value'] not in [i['value'] for i in item_tags]:
+                if 'exact' in tag and tag['exact']:
+                    print('_exact')
+                    if tag['value'] not in item_tags_values:
                         items.pop(idx)
                         raise continue_i
                 try:
                     item['score'] += process.extractOne(
-                        tag['value'], [i['value'] for i in item_tags])[1]
+                        tag['value'], item_tags_values)[1]
                 except:
                     continue
-        except ContinueI():
+        except ContinueI:
             continue
-        # if fields and item['fields']:
-        #     user.score += field_score(item['fields'], fields)
-
+        print('_i_tags', item['tags'])
+        print('_score', item['score'])
     _sorted = sorted(items, key=lambda item: item['score'], reverse=True)
     return _sorted

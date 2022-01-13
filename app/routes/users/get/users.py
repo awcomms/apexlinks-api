@@ -1,9 +1,6 @@
 import json
-from app.vars.q import default_user_fields
 from flask import request
 from app.routes import bp
-from app.vars.q import search_fields
-from app.misc.sort.distance_sort import distance_sort
 from app.misc.sort.tag_sort import tag_sort
 from app.models.user import User
 from app.misc.cdict import cdict
@@ -74,43 +71,22 @@ def users():
             return user.dict()
         else:
             return {'error': f'user with id {id} not found'}
-    try:
-        tags = json.loads(a('tags'))
-        if not isinstance(tags, list):
-            return {'error': "tags query arg is doesn't seem to be of a list type"}
-    except:
+    tags = a('tags')
+    if tags:
+        try:
+            tags = json.loads(tags)
+            if not isinstance(tags, list):
+                return {'error': "tags query arg is doesn't seem to be of a list type"}
+        except:
+            tags = []
+    else:
         tags = []
     try:
         page = int(a('page'))
     except:
         page = 1
-    tag_score = lambda items: tag_sort(search_fields, items, tags)
-    distance_score = lambda items: distance_sort(items, loc)
-    if sort == 'tag': _sort = tag_score 
-    else: _sort = distance_score
     
-    def filter(items):
-        print('l', limit)
-        print(len(items))
-        for idx, item in enumerate(items):
-            if item['score'] < limit:
-                print(item['username'], item['score'])
-                items.pop(idx)
-        print(len(items))
-        return items
-
-    def run(items):
-        print(len(items))
-        _items = _sort(items)
-        if limit:
-            _items = filter(_items)
-        print(len(_items))
-        return _items
-
     query = User.query.filter_by(hidden=False)
     
-    extra = lambda items: {
-        "min":  min(items, key=lambda item: item['score'])['score'],
-        "max": max(items, key=lambda item: item['score'])['score']
-    }
-    return cdict(query, page, run=run, extra=extra)
+    run = lambda items: tag_sort(items, tags)
+    return cdict(query, page, run=run)

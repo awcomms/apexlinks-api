@@ -1,6 +1,6 @@
 from app import db
 from fuzzywuzzy import process
-from app.models.user import User, xrooms
+from app.models.junctions import xrooms
 from app.vars.q import room_search_fields
 from app.misc.sort.tag_sort import tag_sort
 
