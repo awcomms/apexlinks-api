@@ -144,13 +144,14 @@ class Item(db.Model):
             'user': self.user.dict(),
             'redirect': self.redirect,
         }
-        print('type', res['type'])
 
         if 'user' in kwargs and kwargs['user'] and 'attrs' in kwargs:
             user = kwargs['user']
+            print('.__attrs', kwargs['attrs'])
             for attr in kwargs['attrs']:
                 if attr == 'saved':
                     res[attr] = user.item_saved(self)
+                    continue
                 if hasattr(user, attr):
                     res[attr] = getattr(user, attr)
                 else:
@@ -159,6 +160,8 @@ class Item(db.Model):
         return res
 
     def __init__(self, data):
+        if not 'name' in [f['label'] for f in data]:
+            data.append({'label': 'name', 'value': ''})
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])

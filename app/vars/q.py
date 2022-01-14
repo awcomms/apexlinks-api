@@ -33,6 +33,11 @@ search_fields = [
 room_search_fields = [
 ]
 
+default_item_fields = [
+    'name',
+    'telephone',
+]
+
 default_user_fields = [
     'name',
     'email',

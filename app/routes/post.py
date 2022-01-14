@@ -5,7 +5,7 @@ from app.routes import bp
 from app.auth import auth
 from app.misc.cdict import cdict
 from app.relationship_tables import blogposts
-from app.model.blog import Blog
+from app.models.blog import Blog
 from app.models.post import Post
 from app.models.user import User
 
@@ -74,6 +74,17 @@ def add_post(user=None):
     body = json('body')
     title = json('title')
     id = json('id')
+
+    to = json('to')
+    if to:
+        try:
+            to = int(to)
+        except:
+            return {'error': "body parameter 'to' does not seem to have a type of number"}
+        to = Post.query.get(to)
+        if not to:
+            return {'error': f'reply with id {to} not found'}
+
     blog = None
     if id:
         try:
@@ -83,12 +94,12 @@ def add_post(user=None):
         except:
             return {'error': 'invalid id'}, 423
     if blog.user != user:
-        return {}, 401
-    if Post.query.filter(Post.blog_id == id).filter(Post.title == title):
-        # TODO
-        return {'titleError': 'A post with that title in that blog already exists'}, 423
-    if Post.query.filter(Post.blog == None).filter(Post.title == title):
-        return {'titleError': 'A post that belongs to no blog with that title already exists'}, 423
+        return {'error': 'authenticated user does not own specified blog'}, 401
+    # if Post.query.filter(Post.blog_id == id).filter(Post.title == title):
+    #     # TODO
+    #     return {'titleError': 'A post with that title in that blog already exists'}, 423 
+    # if Post.query.filter(Post.blog == None).filter(Post.title == title):
+    #     return {'titleError': 'A post that belongs to no blog with that title already exists'}, 423
     data = {
         'user': user,
         'title': title,
@@ -103,7 +114,12 @@ def add_post(user=None):
 def edit_post(user=None):
     json = request.json.get
     id = json('id')
+    blog_id = json('blog')
     if id:
+        try:
+            id = int(id)
+        except:
+            return {'error': "body param 'id' does not seem to have a type of number"}
         try:
             post = Post.query.get(id)
             if not post:
@@ -112,16 +128,29 @@ def edit_post(user=None):
             return {'error': 'invalid id'}, 423
     else:
         return {'error': 'please provide a post id'}, 423
-    title = json('title')
-    if Post.query.filter(Post.blog_id == id).filter(Post.title == title):
-        # TODO
-        return {'titleError': 'A post with that title in that blog already exists'}, 423
-    if Post.query.filter(Post.blog == None).filter(Post.title == title):
-        return {'titleError': 'A post that belongs to no blog with that title already exists'}, 423
+
+    if blog_id:
+        try:
+            blog_id = int(blog_id)
+        except:
+            return {'error': "body param 'blog' does not seem to have a type of number"}, 423
+        blog = Blog.query.get(blog_id)
+        if not blog:
+            return {'error': f"blog with id {blog_id} not found"}
+    else:
+        blog = None
+
+    title = json('title') # TODO-error
+    # if Post.query.filter(Post.blog_id == id).filter(Post.title == title):
+    #     # TODO
+    #     return {'titleError': 'A post with that title in that blog already exists'}, 423
+    # if Post.query.filter(Post.blog == None).filter(Post.title == title):
+    #     return {'titleError': 'A post that belongs to no blog with that title already exists'}, 423 TODO-consider
     body = json('body')
     data = {
         'title': title,
         'body': body,
+        'blog': blog,
     }
     post.edit(data)
-    return {}, 202
+    return post.dict(), 202

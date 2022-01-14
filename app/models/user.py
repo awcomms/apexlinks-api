@@ -44,6 +44,7 @@ class User(db.Model):
     address = db.Column(db.JSON)
     tags = db.Column(db.JSON)
     card = db.Column(db.JSON)
+    settings = db.Column(db.JSON)
     # folders = db.relationship('Folder', backref='user', lazy='dynamic')
     image = db.Column(db.Unicode)
     last_paid = db.Column(db.DateTime)
@@ -304,7 +305,6 @@ class User(db.Model):
                     # TODO-error
                     pass
 
-        print('u_type', res['type'])
         if '_extra' in kwargs:
             res.update(kwargs['_extra'])
         

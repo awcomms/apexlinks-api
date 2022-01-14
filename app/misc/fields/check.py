@@ -1,3 +1,8 @@
+FieldException = Exception()
+
+
+
+
 def check(field):
     if not isinstance(field, dict):
         return f'let field {field} be of an object type'
