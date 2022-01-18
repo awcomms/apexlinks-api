@@ -7,7 +7,7 @@ continue_i = ContinueI()
 def is_not_in(arr, obj):
     return obj and obj not in arr
 
-def tag_sort(items, tags, include_user=False):  
+def tag_sort(items, tags, include_user=False):
     field_tags = [t for t in tags if hasget(t, 'field')]
     for idx, item in enumerate(items):
         item['score'] = 0

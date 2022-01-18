@@ -1,4 +1,3 @@
-from logging import DEBUG
 import os
 from dotenv import load_dotenv
 
@@ -18,6 +17,7 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_HEADERS = 'Content-Type'
     LANGUAGES = ['en', 'es']
+    MAIL_DEBUG = os.environ.get('MAIL_DEBUG') or 1
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp-mail.outlook.com'
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25) or 587
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') or True
