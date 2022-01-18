@@ -15,7 +15,9 @@ def items(user=None):
 
     user = User.check_token(request.headers.get('token'))['user']
 
-    # sort = request.args.get('sort')
+    sort = request.args.get('sort')
+    limit = request.args.get('limit')
+    
     saved = request.args.get('saved')
 
     parent_ids = request.args.get('parent_ids')

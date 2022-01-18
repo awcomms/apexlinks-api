@@ -7,7 +7,7 @@ from app.models.user import User
 
 @bp.route('/images', methods=['POST'])
 @auth
-def post_image():
+def reply_image():
     urls = request.json.get('urls')
     for url in urls:
         Image(url)

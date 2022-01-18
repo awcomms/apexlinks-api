@@ -4,7 +4,7 @@ from app.models.sitemap_index import SitemapIndex
 from app import db
 from fuzzywuzzy import process, fuzz
 from app.vars.q import host, global_priority
-from app.misc.fields.score import field_score
+from app.misc.fields import score
 from app.misc.datetime_period import datetime_period
 import xml.etree.ElementTree as ET
 from app.models.user import User

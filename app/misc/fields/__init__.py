@@ -1,1 +1,1 @@
-from . import *
+from .score import score

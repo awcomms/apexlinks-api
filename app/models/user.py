@@ -6,7 +6,7 @@ from app.misc.distance import distance
 from app.models.junctions import xrooms
 from app.vars.q import host, global_priority, default_user_fields
 from app.misc.datetime_period import datetime_period
-from app.misc.fields.score import field_score
+from app.misc.fields import score
 import xml.etree.ElementTree as ET
 from app.models.learn.result import Result
 

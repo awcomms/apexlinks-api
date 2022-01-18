@@ -4,15 +4,15 @@ from app import db
 from app.routes import bp
 from app.auth import auth
 from app.misc.cdict import cdict
-from app.relationship_tables import blogposts
+from app.relationship_tables import blogreplies
 from app.models.blog import Blog
-from app.models.post import Post
+from app.models.reply import Reply
 from app.models.user import User
 
 
-@bp.route('/posts', methods=['GET'])
-@auth(optional=True)
-def posts(user=None):
+@bp.route('/replies', methods=['GET'])
+@auth
+def replies(user=None):
     a = request.args.get
     user_id = a('user_id')
     req_user = None
@@ -40,7 +40,7 @@ def posts(user=None):
     hidden = a('hidden')
     if hidden == '1':
         if not authed:
-            return {'error': 'unauthorized to see hidden posts for this account'}, 401
+            return {'error': 'unauthorized to see hidden replies for this account'}, 401
         hidden = True
     else:
         hidden = False
@@ -48,7 +48,7 @@ def posts(user=None):
         tags = json.loads(a('tags'))
     except:
         tags = []
-    return cdict(Post.fuz(user_id, blog_id, hidden, tags), page)
+    return cdict(Reply.fuz(user_id, blog_id, hidden, tags), page)
 
 
 @bp.route('/blogs/<int:id>', methods=['GET'])
@@ -58,18 +58,18 @@ def blog(id):
 
 @bp.route('/blogs/<int:id>', methods=['DELETE'])
 @auth
-def del_post(id, user=None):
-    post = Post.query.get(id)
-    if post.user != user:
+def del_reply(id, user=None):
+    reply = Reply.query.get(id)
+    if reply.user != user:
         return {}, 401
-    db.session.delete(post)
+    db.session.delete(reply)
     db.session.commit()
     return {}, 202
 
 
-@bp.route('/posts', methods=['POST'])
+@bp.route('/replies', methods=['POST'])
 @auth
-def add_post(user=None):
+def add_reply(user=None):
     json = request.json.get
     body = json('body')
     title = json('title')
@@ -81,7 +81,7 @@ def add_post(user=None):
             to = int(to)
         except:
             return {'error': "body parameter 'to' does not seem to have a type of number"}
-        to = Post.query.get(to)
+        to = Reply.query.get(to)
         if not to:
             return {'error': f'reply with id {to} not found'}
     blog = None
@@ -94,23 +94,23 @@ def add_post(user=None):
             return {'error': 'invalid id'}, 423
     if blog.user != user:
         return {'error': 'authenticated user does not own specified blog'}, 401
-    # if Post.query.filter(Post.blog_id == id).filter(Post.title == title):
+    # if Reply.query.filter(Reply.blog_id == id).filter(Reply.title == title):
     #     # TODO
-    #     return {'titleError': 'A post with that title in that blog already exists'}, 423 
-    # if Post.query.filter(Post.blog == None).filter(Post.title == title):
-    #     return {'titleError': 'A post that belongs to no blog with that title already exists'}, 423
+    #     return {'titleError': 'A reply with that title in that blog already exists'}, 423 
+    # if Reply.query.filter(Reply.blog == None).filter(Reply.title == title):
+    #     return {'titleError': 'A reply that belongs to no blog with that title already exists'}, 423
     data = {
         'user': user,
         'title': title,
         'body': body,
         'blog': blog,
     }
-    return {'id': Post(data).id}
+    return {'id': Reply(data).id}
 
 
-@bp.route('/posts', methods=['PUT'])
+@bp.route('/replies', methods=['PUT'])
 @auth
-def edit_post(user=None):
+def edit_reply(user=None):
     json = request.json.get
     id = json('id')
     blog_id = json('blog')
@@ -120,13 +120,13 @@ def edit_post(user=None):
         except:
             return {'error': "body param 'id' does not seem to have a type of number"}
         try:
-            post = Post.query.get(id)
-            if not post:
-                return {'error': 'post with that id does not exist'}, 404
+            reply = Reply.query.get(id)
+            if not reply:
+                return {'error': 'reply with that id does not exist'}, 404
         except:
             return {'error': 'invalid id'}, 423
     else:
-        return {'error': 'please provide a post id'}, 423
+        return {'error': 'please provide a reply id'}, 423
 
     if blog_id:
         try:
@@ -140,16 +140,16 @@ def edit_post(user=None):
         blog = None
 
     title = json('title') # TODO-error
-    # if Post.query.filter(Post.blog_id == id).filter(Post.title == title):
+    # if Reply.query.filter(Reply.blog_id == id).filter(Reply.title == title):
     #     # TODO
-    #     return {'titleError': 'A post with that title in that blog already exists'}, 423
-    # if Post.query.filter(Post.blog == None).filter(Post.title == title):
-    #     return {'titleError': 'A post that belongs to no blog with that title already exists'}, 423 TODO-consider
+    #     return {'titleError': 'A reply with that title in that blog already exists'}, 423
+    # if Reply.query.filter(Reply.blog == None).filter(Reply.title == title):
+    #     return {'titleError': 'A reply that belongs to no blog with that title already exists'}, 423 TODO-consider
     body = json('body')
     data = {
         'title': title,
         'body': body,
         'blog': blog,
     }
-    post.edit(data)
-    return post.dict(), 202
+    reply.edit(data)
+    return reply.dict(), 202
