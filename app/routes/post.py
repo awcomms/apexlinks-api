@@ -84,7 +84,6 @@ def add_post(user=None):
         to = Post.query.get(to)
         if not to:
             return {'error': f'reply with id {to} not found'}
-
     blog = None
     if id:
         try:

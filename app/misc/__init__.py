@@ -1,1 +1,1 @@
-from . import *
+from .hasget import hasget

@@ -17,6 +17,14 @@ def items(user=None):
 
     saved = request.args.get('saved')
 
+    parent_ids = request.args.get('parent_ids')
+    if parent_ids:
+        for id in parent_ids:
+            try:
+                int(id)
+            except:
+                return {'error': f'{id} in body parameter "parent_ids" does not seem to be a number'}
+
     market_id = a('market_id')
     if market_id:
         market_id = int(market_id) #TODO #error_check
@@ -94,6 +102,33 @@ def add_item(user=None):
     print(json('itype'))
     tags = json('tags') or []
     fields = json('fields')
+
+    parent_item_ids = json('parent_items')
+    parent_items = []
+    for item_id in parent_item_ids:
+        if item_id:
+            try:
+                item_id = int(item_id)
+            except:
+                return {'error': f"body param 'id' does not seem to have a type of number"}
+            parent_item = Item.query.get(item_id)
+            if not parent_item:
+                return {'error': f'item with id {item_id} not found'}
+            parent_items.append(parent_item)
+
+    child_item_ids = json('child_items')
+    child_items = []
+    for item_id in child_item_ids:
+        if item_id:
+            try:
+                item_id = int(item_id)
+            except:
+                return {'error': f"body param 'id' does not seem to have a type of number"}
+            child_item = Item.query.get(item_id)
+            if not child_item:
+                return {'error': f'item with id {item_id} not found'}
+            child_items.append(child_item)
+
     
     item_id = json('item')
     if item_id:
@@ -116,8 +151,13 @@ def add_item(user=None):
         'user': user,
         'tags': tags
     }
-    i = Item(data)
-    return {'id': i.id}
+    item = Item(data)
+    for parent in parent_items:
+        parent.add_item(item)
+    for child in child_items:
+        item.add_item(child)
+    db.session.commit()
+    return {'id': item.id}
 
 
 @bp.route('/items/<int:id>', methods=['PUT'])
@@ -152,6 +192,7 @@ def edit_item(id, user=None):
                 return {'error': f'item with id {item_id} not found'}
             child_items.append(child_item)
 
+
     if not item:
         return {'error': 'item does not exist'}, 404
     if item and item.user.id != user.id:
@@ -162,11 +203,15 @@ def edit_item(id, user=None):
         .filter_by(user_id=user.id)\
             .filter_by(name=name).first():
         return {'nameError': 'Author already has item with same name'}, 400
+    
     tags = json('tags') or []
+    
     if name and name not in tags:
         tags.append(name)
+    
     if itype and itype not in tags:
         tags.append(itype)
+    
     data = {
         'itext': json('itext'),
         'hidden': json('hidden'),
@@ -180,6 +225,13 @@ def edit_item(id, user=None):
         'name': name,
         'tags': tags
     }
+    
+    for parent in parent_items:
+        parent.add_item(item)
+    for child in child_items:
+        item.add_item(child)
+    db.session.commit()
+
     item.edit(data)
     return {'id': item.id}
 
