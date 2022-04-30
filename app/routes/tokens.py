@@ -8,14 +8,13 @@ from app.models.user import User
 from app.routes import bp
 
 
-@bp.route('/tokens')
+@bp.route('/tokens', methods=['GET'])
 @auth
 def check_token(user=None):
     if user:
         if isinstance(user, str):
             return ({'error': user})
         return user.dict()
-
 
 @bp.route('/tokens', methods=['POST'])
 @cred
@@ -55,7 +54,7 @@ def create_token(username=None, password=None):
         'user': user.dict(),
         'token': user.get_token()
     }
-    print('success')
+    print('create token', res['token'])
     return make_response(res, headers)
 
 @bp.route('/tokens', methods=['DELETE'])

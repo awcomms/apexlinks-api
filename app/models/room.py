@@ -4,13 +4,13 @@ from app.models.junctions import xrooms
 from app.vars.q import room_search_fields
 from app.misc.sort.tag_sort import tag_sort
 
-
 class Room(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
     open = db.Column(db.Boolean, default=False)
     one = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    # rooms = db.relationship('Room', backref=db.backref('room', lazy='dynamic'))
     messages = db.relationship('Message', backref='room', lazy='dynamic')
     name = db.Column(db.Unicode)
     unseen = db.Column(db.Boolean, default=False)

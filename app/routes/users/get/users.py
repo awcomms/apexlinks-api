@@ -1,3 +1,5 @@
+from app.auth import auth
+
 import json
 from flask import request
 from app.routes import bp
@@ -6,7 +8,7 @@ from app.models.user import User
 from app.misc.cdict import cdict
 
 @bp.route('/users', methods=['GET'])
-def users():
+def users(user=None):
     a = request.args.get
     extraFields = a('extraFields')
     market_id = a('market_id')

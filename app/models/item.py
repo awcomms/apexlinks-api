@@ -21,6 +21,7 @@ class Item(db.Model):
     hidden = db.Column(db.Boolean, default=False)
     # folder_id = db.Column(db.Integer, db.ForeignKey('folder.id'))
     image = db.Column(db.Unicode)
+    embed = db.Column(db.Unicode)
     fields = db.Column(db.JSON)
     distance = db.Column(db.JSON)
     images = db.Column(db.JSON)
@@ -141,7 +142,10 @@ class Item(db.Model):
             'type': type(self).__name__.lower(),
             'fields': self.fields,
             'hidden': self.hidden,
-            'user': self.user.dict(),
+            'user': {
+                'username': self.user.username,
+                'id': self.user.id
+            },
             'redirect': self.redirect,
         }
 
@@ -160,8 +164,8 @@ class Item(db.Model):
         return res
 
     def __init__(self, data):
-        if not 'name' in [f['label'] for f in data]:
-            data.append({'label': 'name', 'value': ''})
+        if not 'name' in [f['label'] for f in data['fields']]:
+            data['fields'].append({'label': 'name', 'value': ''})
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])

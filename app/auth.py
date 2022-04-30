@@ -29,6 +29,7 @@ def auth(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         token = request.headers.get('auth')
+        print('auth token', token)
         if not token:
             print('no token')
             return {'error': 'No token provided'}, 401

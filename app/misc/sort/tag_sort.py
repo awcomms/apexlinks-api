@@ -1,5 +1,6 @@
+from varname import nameof
 from fuzzywuzzy import process
-from app.misc import hasget
+from app.misc import hasget, name_print
 from app.misc.exceptions import ContinueI
 from app.misc.fields import score
 
@@ -9,21 +10,26 @@ def is_not_in(arr, obj):
     return obj and obj not in arr
 
 def tag_sort(items, tags, include_user=False):
+    name_print(tags)
     field_tags = [t for t in tags if hasget(t, 'field')]
+    name_print(field_tags)
 
     for idx, item in enumerate(items):
         item['score'] = 0
         if not 'tags' in item:
-            return
+            continue
         if not isinstance(item['tags'], list):
-            item['tags'] = []
+            continue
+            # item['tags'] = []
         item_tags = item['tags']
-        if include_user and hasget(item, 'user') and item['user']['tags'] and type(item['user']['tags'] == list):
+        # item_user_tags = hasget(item['user']['tags'])
+        if include_user and hasget(item, 'user') and hasget(item['user'], 'tags') and type(item['user']['tags'] == list):
             item_tags += item['user']['tags']
         if 'username' in item:
             item_tags.append({'value': item['username']})
             
         item_tags_values = [hasget(i, 'value') for i in item_tags]
+        print('itv:', item_tags_values)
 
         item_field_tags = [t for t in item_tags if hasget(t, 'field')]
 
@@ -44,11 +50,15 @@ def tag_sort(items, tags, include_user=False):
                         items.pop(idx)
                         raise continue_i
                 try:
+                    value = hasget(tag, 'value')
+                    print(nameof(value), ':', value)
                     item['score'] += process.extractOne(
                         hasget(tag, 'value'), item_tags_values)[1]
-                except:
+                except Exception as tpe:
+                    print(nameof(tpe), ':', tpe, ':', tag)
                     continue
         except ContinueI:
             continue
     _sorted = sorted(items, key=lambda item: item['score'], reverse=True)
+
     return _sorted

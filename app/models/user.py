@@ -1,7 +1,8 @@
-import jwt
 from time import time
+from itsdangerous import TimestampSigner
 
 from sqlalchemy.orm import backref
+from app.misc.vars import max_age
 from app.misc.distance import distance
 from app.models.junctions import xrooms
 from app.vars.q import host, global_priority, default_user_fields
@@ -10,8 +11,10 @@ from app.misc.fields import score
 import xml.etree.ElementTree as ET
 from app.models.learn.result import Result
 
-from itsdangerous import (TimedJSONWebSignatureSerializer
-                          as Serializer, BadSignature, SignatureExpired)
+from itsdangerous.serializer import Serializer
+from itsdangerous import TimestampSigner
+from itsdangerous.exc import BadSignature
+from itsdangerous.exc import SignatureExpired
 
 from app import db
 from flask import current_app
@@ -41,6 +44,7 @@ class User(db.Model):
     market_id = db.Column(db.Integer, db.ForeignKey('market.id'))
     location = db.Column(db.JSON)
     fields = db.Column(db.JSON)
+    wallet = db.Column(db.Unicode)
     address = db.Column(db.JSON)
     tags = db.Column(db.JSON)
     card = db.Column(db.JSON)
@@ -186,15 +190,18 @@ class User(db.Model):
         db.session.commit()
 
     def get_token(self):
-        s = Serializer(current_app.config['SECRET_KEY'], expires_in=31536000)
-        token = s.dumps({'id': self.id}).decode('utf-8')
+        # s = Serializer(current_app.config['SECRET_KEY'], signer=TimestampSigner)
+        s = Serializer(current_app.config['SECRET_KEY'])
+        token = s.dumps({'id': self.id})
         return token
-
+        
     @staticmethod
     def check_token(token):
         print('serializer got: ', token)
+        # s = TimestampSigner(current_app.config['SECRET_KEY'])
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
+            # data = s.unsign(token, max_age)
             data = s.loads(token)
         except SignatureExpired:
             print('SignatureExpired')
@@ -226,6 +233,7 @@ class User(db.Model):
         return User.query.get(id)
 
     def __init__(self, username, password, email=None):
+        self.tags = []
         fields = []
         for default_field in default_user_fields:
             value = ''

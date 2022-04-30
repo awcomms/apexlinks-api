@@ -13,10 +13,11 @@ def create_user(username=None, password=None):
     email = j('email')
     location = j('location')
     print('email: ', email)
-    if not email or email == '':
-        return {'error': True, 'emailError': 'Empty'}
-    if not check_email(email):
-        return {'error': True, 'emailError': 'Unaccepted'}
+    # email is optional
+    # if not email or email == '':
+    #     return {'error': True, 'emailError': 'Empty'}
+    # if not check_email(email):
+    #     return {'error': True, 'emailError': 'Unaccepted'}
     if not username or username == '':
         return {'error': True, 'usernameInvalid': True, 'usernameError': 'Empty'}
     # warn api users that account will be created without password
@@ -27,7 +28,7 @@ def create_user(username=None, password=None):
             'error': True,
             'usernameInvalid': True,
             'usernameError': 'Username taken'
-        }
+        }, 400 #TODO
     user = User(username, password, email)
     # user.location = location
     # db.session.commit()
@@ -35,4 +36,4 @@ def create_user(username=None, password=None):
     return {
         'user': user.dict(),
         'token': user.get_token()
-    }
+    }, 202

@@ -61,7 +61,6 @@ def items(user=None):
     else:
         hidden = True
     
-    print('.__here')
     tags = a('tags')
     if tags:
         try:
@@ -102,46 +101,37 @@ def items(user=None):
 @auth
 def add_item(user=None):
     json = request.json.get
-    print(json('itype'))
     tags = json('tags') or []
-    fields = json('fields')
+    fields = json('fields') or []
+
+    parent_items = []
+    child_items = []
 
     parent_item_ids = json('parent_items')
-    parent_items = []
-    for item_id in parent_item_ids:
-        if item_id:
-            try:
-                item_id = int(item_id)
-            except:
-                return {'error': f"body param 'id' does not seem to have a type of number"}
-            parent_item = Item.query.get(item_id)
-            if not parent_item:
-                return {'error': f'item with id {item_id} not found'}
-            parent_items.append(parent_item)
+    if parent_item_ids:
+        for item_id in parent_item_ids:
+            if item_id:
+                try:
+                    item_id = int(item_id)
+                except:
+                    return {'error': f"body param 'id' does not seem to have a type of number"}
+                parent_item = Item.query.get(item_id)
+                if not parent_item:
+                    return {'error': f'item with id {item_id} not found'}
+                parent_items.append(parent_item)
 
     child_item_ids = json('child_items')
-    child_items = []
-    for item_id in child_item_ids:
-        if item_id:
-            try:
-                item_id = int(item_id)
-            except:
-                return {'error': f"body param 'id' does not seem to have a type of number"}
-            child_item = Item.query.get(item_id)
-            if not child_item:
-                return {'error': f'item with id {item_id} not found'}
-            child_items.append(child_item)
-
-    
-    item_id = json('item')
-    if item_id:
-        try:
-            item_id = int(item_id)
-        except:
-            return {'error': f"body param 'id' does not seem to have a type of number"}
-        item = Item.query.get(item_id)
-        if not item:
-            return {'error': f'item with id {item_id} not found'}
+    if child_item_ids:
+        for item_id in child_item_ids:
+            if item_id:
+                try:
+                    item_id = int(item_id)
+                except:
+                    return {'error': f"body param 'id' does not seem to have a type of number"}
+                child_item = Item.query.get(item_id)
+                if not child_item:
+                    return {'error': f'item with id {item_id} not found'}
+                child_items.append(child_item)
 
     data = {
         'hidden': json('hidden'),
@@ -150,17 +140,19 @@ def add_item(user=None):
         'fields': fields,
         'image': json('image'),
         'link': json('link'),
-        'item': item,
         'user': user,
         'tags': tags
     }
+    
     item = Item(data)
+
     for parent in parent_items:
         parent.add_item(item)
     for child in child_items:
         item.add_item(child)
+    
     db.session.commit()
-    return {'id': item.id}
+    return {'id': item.id}, 202
 
 
 @bp.route('/items/<int:id>', methods=['PUT'])
@@ -171,29 +163,31 @@ def edit_item(id, user=None):
 
     parent_item_ids = json('parent_items')
     parent_items = []
-    for item_id in parent_item_ids:
-        if item_id:
-            try:
-                item_id = int(item_id)
-            except:
-                return {'error': f"body param 'id' does not seem to have a type of number"}
-            parent_item = Item.query.get(item_id)
-            if not parent_item:
-                return {'error': f'item with id {item_id} not found'}
-            parent_items.append(parent_item)
+    if parent_item_ids:
+        for item_id in parent_item_ids:
+            if item_id:
+                try:
+                    item_id = int(item_id)
+                except:
+                    return {'error': f"body param 'id' does not seem to have a type of number"}
+                parent_item = Item.query.get(item_id)
+                if not parent_item:
+                    return {'error': f'item with id {item_id} not found'}
+                parent_items.append(parent_item)
 
     child_item_ids = json('child_items')
     child_items = []
-    for item_id in child_item_ids:
-        if item_id:
-            try:
-                item_id = int(item_id)
-            except:
-                return {'error': f"body param 'id' does not seem to have a type of number"}
-            child_item = Item.query.get(item_id)
-            if not child_item:
-                return {'error': f'item with id {item_id} not found'}
-            child_items.append(child_item)
+    if child_item_ids:
+        for item_id in child_item_ids:
+            if item_id:
+                try:
+                    item_id = int(item_id)
+                except:
+                    return {'error': f"body param 'id' does not seem to have a type of number"}
+                child_item = Item.query.get(item_id)
+                if not child_item:
+                    return {'error': f'item with id {item_id} not found'}
+                child_items.append(child_item)
 
 
     if not item:
