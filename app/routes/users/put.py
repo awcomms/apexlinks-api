@@ -113,7 +113,7 @@ def edit_user(user=None):
     fields = request_json('fields')
     if fields:
         if not isinstance(fields, list):
-            return {'error': 'let fields body param be of a list type'}
+            return {'error': 'let fields request body parameter be of a list type'}
         for idx, field in enumerate(fields):
             res = check_and_clean(field)
             if isinstance(res, str):
@@ -126,7 +126,7 @@ def edit_user(user=None):
         try:
             tags = json.loads(tags)
             if not isinstance(tags, list):
-                return {'error': f'let tags body parameter be of a list type'}
+                return {'error': f'let tags request body parameter be of a list type'}
             for tag in tags:
                 if not isinstance(tag, str):
                     return {'error': f'let tag {tag} be of a string type'}

@@ -5,7 +5,7 @@ from app.routes import bp
 from app.misc.cdict import cdict
 from app.auth import auth
 from app.models.user import User
-from app.models.item import Item
+from app.models.item import Item, item_items
 from flask import request
 
 
@@ -20,6 +20,8 @@ def items(user=None):
     
     saved = request.args.get('saved')
 
+    query = Item.query.join(User)
+    
     parent_ids = request.args.get('parent-ids')
     if parent_ids:
         try:
@@ -29,12 +31,12 @@ def items(user=None):
         if not isinstance(parent_ids, list):
             return {'error': "query arg 'parent-id' does not seem to be a JSON list"}, 400
 
-        for i, id in enumerate(parent_ids):
+        for id in parent_ids:
             try:
                 id = int(id)
             except:
-                return {'error': f'{id} in body parameter "parent-ids" does not seem to be a number'}, 400
-            parent_ids[i] = id
+                return {'error': f'{id} in request body parameter "parent-ids" does not seem to be a number'}, 400
+            query = query.join(item_items, item_items.c.child == Item.id).filter(item_items.c.parent == id)
 
     child_ids = request.args.get('child-ids')
     if child_ids:
@@ -45,12 +47,13 @@ def items(user=None):
         if not isinstance(child_ids, list):
             return {'error': "query arg 'child-id' does not seem to be a JSON list"}, 400
 
-        for i, id in enumerate(child_ids):
+        for id in child_ids:
             try:
                 id = int(id)
             except:
-                return {'error': f'{id} in body parameter "child-ids" does not seem to be a number'}, 400
-            child_ids[i] = id
+                return {'error': f'{id} in request body parameter "child-ids" does not seem to be a number'}, 400
+            query = query.join(item_items, item_items.c.parent == Item.id).filter(
+                item_items.c.child == id)
 
     market_id = a('market-id')
     if market_id:
@@ -97,7 +100,6 @@ def items(user=None):
     else:
         tags = []
     market_id = None
-    query = Item.query.join(User)
 
     # if market_id:
     #     query = query.filter(User.market_id == market_id)
@@ -128,11 +130,11 @@ def add_item(user=None):
     json = request.json.get
     tags = json('tags')
     if not isinstance(tags, list):
-        return {'error': 'body param "tags" does not seem to be a JSON "list" type'}, 400
+        return {'error': 'request body parameter "tags" does not seem to be a JSON "list" type'}, 400
 
     fields = json('fields')
     if not isinstance(fields, list):
-        return {'error': 'body param "fields" does not seem to be a JSON "list" type'}, 400
+        return {'error': 'request body parameter "fields" does not seem to be a JSON "list" type'}, 400
 
     parent_items = []
     child_items = []
@@ -144,11 +146,13 @@ def add_item(user=None):
                 try:
                     item_id = int(item_id)
                 except:
-                    return {'error': f"body param 'id' does not seem to be a JSON number type"}, 400
+                    return {'error': f"request body parameter 'id' does not seem to be a JSON number type"}, 400
                 parent_item = Item.query.get(item_id)
                 if not parent_item:
                     return {'error': f'item with id {item_id} not found'}
                 parent_items.append(parent_item)
+    print('pids', parent_item_ids)
+    print('pis', parent_items)
 
     child_item_ids = json('child_items')
     if child_item_ids:
@@ -157,7 +161,7 @@ def add_item(user=None):
                 try:
                     item_id = int(item_id)
                 except:
-                    return {'error': f"body param 'id' does not seem to be a JSON number type"}, 400
+                    return {'error': f"request body parameter 'id' does not seem to be a JSON number type"}, 400
                 child_item = Item.query.get(item_id)
                 if not child_item:
                     return {'error': f'item with id {item_id} not found'}
@@ -199,7 +203,7 @@ def edit_item(id, user=None):
                 try:
                     item_id = int(item_id)
                 except:
-                    return {'error': f"body param 'id' does not seem to have a type of number"}
+                    return {'error': f"request body parameter 'id' does not seem to have a type of number"}
                 parent_item = Item.query.get(item_id)
                 if not parent_item:
                     return {'error': f'item with id {item_id} not found'}
@@ -213,7 +217,7 @@ def edit_item(id, user=None):
                 try:
                     item_id = int(item_id)
                 except:
-                    return {'error': f"body param 'id' does not seem to have a type of number"}
+                    return {'error': f"request body parameter 'id' does not seem to have a type of number"}
                 child_item = Item.query.get(item_id)
                 if not child_item:
                     return {'error': f'item with id {item_id} not found'}

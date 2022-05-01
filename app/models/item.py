@@ -14,6 +14,7 @@ item_items = db.Table('item_items',
                                 db.ForeignKey('item.id')),
                       db.Column('child', db.Integer, db.ForeignKey('item.id')))
 
+
 class Item(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
@@ -130,6 +131,16 @@ class Item(db.Model):
         query = query.order_by(Item.score.desc())
         return query
 
+    def min_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'user': {
+                'username': self.user.username,
+                'id': self.user.id
+            },
+        }
+
     def dict(self, **kwargs):
         res = {
             'id': self.id,
@@ -148,6 +159,8 @@ class Item(db.Model):
                 'id': self.user.id
             },
             'redirect': self.redirect,
+            'parents': [i.min_dict() for i in self.parents],
+            'children': [i.min_dict() for i in self.items]
         }
 
         if 'user' in kwargs and kwargs['user'] and 'attrs' in kwargs:

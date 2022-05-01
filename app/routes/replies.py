@@ -80,7 +80,7 @@ def add_reply(user=None):
         try:
             to = int(to)
         except:
-            return {'error': "body parameter 'to' does not seem to have a type of number"}
+            return {'error': "request body parameter 'to' does not seem to have a type of number"}
         to = Reply.query.get(to)
         if not to:
             return {'error': f'reply with id {to} not found'}
@@ -118,7 +118,7 @@ def edit_reply(user=None):
         try:
             id = int(id)
         except:
-            return {'error': "body param 'id' does not seem to have a type of number"}
+            return {'error': "request body parameter 'id' does not seem to have a type of number"}
         try:
             reply = Reply.query.get(id)
             if not reply:
@@ -132,7 +132,7 @@ def edit_reply(user=None):
         try:
             blog_id = int(blog_id)
         except:
-            return {'error': "body param 'blog' does not seem to have a type of number"}, 423
+            return {'error': "request body parameter 'blog' does not seem to have a type of number"}, 423
         blog = Blog.query.get(blog_id)
         if not blog:
             return {'error': f"blog with id {blog_id} not found"}

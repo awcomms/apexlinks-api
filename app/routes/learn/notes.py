@@ -15,7 +15,7 @@ def edit_note():
     id = try_int(id)
     if not id:
         print('bad id: ', id)
-        return {'error': "body param 'id' should be a number"}, 400
+        return {'error': "request body parameter 'id' should be a number"}, 400
     
     note = Note.query.get(id)
     if not note:
@@ -65,7 +65,7 @@ def get_note(id):
     # id = args(id)
     # id = try_int(id)
     # if not id:
-    #     return {'error': "body param 'id' should be a number"}
+    #     return {'error': "request body parameter 'id' should be a number"}
     note = Note.query.get(id)
     if not note:
         return {'error': f'note {id} not found'}
@@ -79,17 +79,17 @@ def get_notes():
     if level and level != 'null':
         level = try_int(level)
         if not level:
-            return {'error': f"body param 'level' should be a number"}, 400
+            return {'error': f"request body parameter 'level' should be a number"}, 400
     subject = args('subject')
     if subject and level != 'null':
         subject = try_int(subject)
         if not subject:
-            return {'error': f"body param 'subject' should be a number"}, 400
+            return {'error': f"request body parameter 'subject' should be a number"}, 400
     term = args('term')
     if term and level != 'null':
         term = try_int(term)
         if not term:
-            return {'error': f"body param 'term' should be a number"}, 400
+            return {'error': f"request body parameter 'term' should be a number"}, 400
     print(level, subject, term)
     notes = Note.query.filter(Note.level_id==level)
     notes = notes.filter(Note.subject_id==subject)
