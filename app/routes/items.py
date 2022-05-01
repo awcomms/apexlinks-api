@@ -20,24 +20,51 @@ def items(user=None):
     
     saved = request.args.get('saved')
 
-    parent_ids = request.args.get('parent_ids')
+    parent_ids = request.args.get('parent-ids')
     if parent_ids:
-        for id in parent_ids:
+        try:
+            parent_ids = json.loads(parent_ids)
+        except:
+            return {'error': "query arg 'parent-id' does not seem to be a stringified JSON object"}, 400
+        if not isinstance(parent_ids, list):
+            return {'error': "query arg 'parent-id' does not seem to be a JSON list"}, 400
+
+        for i, id in enumerate(parent_ids):
             try:
-                int(id)
+                id = int(id)
             except:
-                return {'error': f'{id} in body parameter "parent_ids" does not seem to be a number'}
+                return {'error': f'{id} in body parameter "parent-ids" does not seem to be a number'}, 400
+            parent_ids[i] = id
 
-    market_id = a('market_id')
+    child_ids = request.args.get('child-ids')
+    if child_ids:
+        try:
+            child_ids = json.loads(child_ids)
+        except:
+            return {'error': "query arg 'child-id' does not seem to be a stringified JSON object"}, 400
+        if not isinstance(child_ids, list):
+            return {'error': "query arg 'child-id' does not seem to be a JSON list"}, 400
+
+        for i, id in enumerate(child_ids):
+            try:
+                id = int(id)
+            except:
+                return {'error': f'{id} in body parameter "child-ids" does not seem to be a number'}, 400
+            child_ids[i] = id
+
+    market_id = a('market-id')
     if market_id:
-        market_id = int(market_id) #TODO #error_check
+        try:
+            market_id = int(market_id) #TODO #error_check
+        except:
+            return {'error': "query arg 'market-id does not seem have a type of number"}
 
-    user_id = a('user_id')
+    user_id = a('user-id')
     if user_id:
         try:
             user_id = int(user_id)
         except:
-            return {'error': "query arg 'user_id' doesn't seem to have a type of number"}
+            return {'error': "query arg 'user-id' doesn't seem to have a type of number"}
         try:
             _user = User.query.get(user_id)
             if not _user:
@@ -45,7 +72,7 @@ def items(user=None):
             if _user.hidden:
                 return {'error': 'User hidden'}, 423
         except:
-            return {'error': 'Invalid id type'}, 400
+            return {'error': "query arg 'user-id' doesn't seem to have a type of number"}, 400
     
     page = a('page')
     if page:
@@ -53,13 +80,12 @@ def items(user=None):
             page = int(page)
         except:
             return {'error': f"'page' query arg does not seem to have a type of number"}
+
     hidden = a('hidden')
-    if hidden == 'true':
+    if hidden:
         hidden = True
-    elif hidden == 'false':
-        hidden = False
     else:
-        hidden = True
+        hidden = False
     
     tags = a('tags')
     if tags:
@@ -73,14 +99,13 @@ def items(user=None):
     market_id = None
     query = Item.query.join(User)
 
-    
     # if market_id:
     #     query = query.filter(User.market_id == market_id)
 
     if user_id:
         query = query.filter(User.id == user_id)
 
-    if user and user.id == id:
+    if user and user.id == user_id:
         try:
             query = query.filter(Item.hidden == hidden)
         except:
@@ -101,8 +126,13 @@ def items(user=None):
 @auth
 def add_item(user=None):
     json = request.json.get
-    tags = json('tags') or []
-    fields = json('fields') or []
+    tags = json('tags')
+    if not isinstance(tags, list):
+        return {'error': 'body param "tags" does not seem to be a JSON "list" type'}, 400
+
+    fields = json('fields')
+    if not isinstance(fields, list):
+        return {'error': 'body param "fields" does not seem to be a JSON "list" type'}, 400
 
     parent_items = []
     child_items = []
@@ -114,7 +144,7 @@ def add_item(user=None):
                 try:
                     item_id = int(item_id)
                 except:
-                    return {'error': f"body param 'id' does not seem to have a type of number"}
+                    return {'error': f"body param 'id' does not seem to be a JSON number type"}, 400
                 parent_item = Item.query.get(item_id)
                 if not parent_item:
                     return {'error': f'item with id {item_id} not found'}
@@ -127,7 +157,7 @@ def add_item(user=None):
                 try:
                     item_id = int(item_id)
                 except:
-                    return {'error': f"body param 'id' does not seem to have a type of number"}
+                    return {'error': f"body param 'id' does not seem to be a JSON number type"}, 400
                 child_item = Item.query.get(item_id)
                 if not child_item:
                     return {'error': f'item with id {item_id} not found'}

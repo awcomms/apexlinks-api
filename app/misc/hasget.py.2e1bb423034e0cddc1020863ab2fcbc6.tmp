@@ -1,8 +1,0 @@
-def hasget(obj, attr):
-    print('hasget', obj, attr)
-    print(hasattr(obj, attr))
-    print(hasattr(obj, attr))
-    if hasattr(obj, attr) and getattr(obj, attr):
-        return getattr(obj, attr)
-    else:
-        return False

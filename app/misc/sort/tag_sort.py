@@ -6,8 +6,10 @@ from app.misc.fields import score
 
 continue_i = ContinueI()
 
+
 def is_not_in(arr, obj):
     return obj and obj not in arr
+
 
 def tag_sort(items, tags, include_user=False):
     name_print(tags)
@@ -27,9 +29,8 @@ def tag_sort(items, tags, include_user=False):
             item_tags += item['user']['tags']
         if 'username' in item:
             item_tags.append({'value': item['username']})
-            
+
         item_tags_values = [hasget(i, 'value') for i in item_tags]
-        print('itv:', item_tags_values)
 
         item_field_tags = [t for t in item_tags if hasget(t, 'field')]
 
@@ -37,14 +38,15 @@ def tag_sort(items, tags, include_user=False):
             for tag in item_field_tags:
                 if hasget(tag, 'exact'):
                     if len([t for t in [t for t in field_tags if hasget(
-                        t, 'label') == hasget(tag, 'label')] if hasget(t, 'value') == hasget(tag, 'value')]) < 1:
+                            t, 'label') == hasget(tag, 'label')] if hasget(t, 'value') == hasget(tag, 'value')]) < 1:
                         items.pop(idx)
                         raise continue_i
                 else:
                     item['score'] += score(item_field_tags, field_tags)
-                    
+
             for tag in tags:
-                if hasget(tag, 'field'): continue
+                if hasget(tag, 'field'):
+                    continue
                 if hasget(tag, 'exact'):
                     if tag['value'] not in item_tags_values:
                         items.pop(idx)

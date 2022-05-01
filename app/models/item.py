@@ -22,6 +22,7 @@ class Item(db.Model):
     # folder_id = db.Column(db.Integer, db.ForeignKey('folder.id'))
     image = db.Column(db.Unicode)
     embed = db.Column(db.Unicode)
+    options = db.Column(db.JSON)
     fields = db.Column(db.JSON)
     distance = db.Column(db.JSON)
     images = db.Column(db.JSON)
@@ -169,6 +170,8 @@ class Item(db.Model):
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])
+        if not 'tags' in data:
+            self.tags = []
         db.session.add(self)
         db.session.commit()
         self.new_mod()
