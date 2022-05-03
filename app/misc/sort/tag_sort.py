@@ -12,9 +12,7 @@ def is_not_in(arr, obj):
 
 
 def tag_sort(items, tags, include_user=False):
-    name_print(tags)
     field_tags = [t for t in tags if hasget(t, 'field')]
-    name_print(field_tags)
 
     for idx, item in enumerate(items):
         item['score'] = 0
@@ -53,11 +51,9 @@ def tag_sort(items, tags, include_user=False):
                         raise continue_i
                 try:
                     value = hasget(tag, 'value')
-                    print(nameof(value), ':', value)
                     item['score'] += process.extractOne(
                         hasget(tag, 'value'), item_tags_values)[1]
                 except Exception as tpe:
-                    print(nameof(tpe), ':', tpe, ':', tag)
                     continue
         except ContinueI:
             continue

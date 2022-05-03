@@ -1,6 +1,6 @@
 from app import create_app, db
 from flask_socketio import SocketIO
-from app.models import User, Item
+from app.models import User, Item, item_items
 from app.models.learn.note import Note
 from app.models.learn.level import Level
 from app.models.learn.subject import Subject
@@ -19,6 +19,7 @@ def make_shell_context():
         'db': db,
         'User': User,
         'Item': Item,
+        'item_items': item_items,
         'Note': Note,
         'Level': Level,
         'Subject': Subject,

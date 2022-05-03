@@ -24,7 +24,6 @@ class Room(db.Model):
             for idx, item in enumerate(items):
                 if item['score'] < limit:
                     items.pop(idx)
-            print(len(items))
             return items
 
         def run(items):

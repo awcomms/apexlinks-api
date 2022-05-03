@@ -82,7 +82,6 @@ class User(db.Model):
             self.save_user(user)
 
     def user_saved(self, user):
-        print(self, user)
         return self.saved_users.filter(
             _saved_users.c.savee == user.id
         ).count() > 0

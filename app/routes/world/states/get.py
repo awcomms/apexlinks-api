@@ -6,5 +6,4 @@ from app.misc.world.get import states
 def get_states():
     a = request.args.get
     country = a('country')
-    print(country)
     return {'items': states(country)}

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from sqlalchemy.orm import backref
 from app.models.mod import Mod
 from app.models.sitemap_index import SitemapIndex
@@ -21,6 +22,7 @@ class Item(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     hidden = db.Column(db.Boolean, default=False)
     # folder_id = db.Column(db.Integer, db.ForeignKey('folder.id'))
+    time = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     image = db.Column(db.Unicode)
     embed = db.Column(db.Unicode)
     options = db.Column(db.JSON)
@@ -40,7 +42,7 @@ class Item(db.Model):
     def item_added(self, item):
         return self.items.filter(
             item_items.c.child == item.id
-        )
+        ).count() > 0
 
     def add_item(self, item):
         if not self.item_added(item):
@@ -151,6 +153,8 @@ class Item(db.Model):
             'itext': self.itext,
             'image': self.image,
             'images': self.images,
+            'options': self.options,
+            'time': str(self.time),
             'type': type(self).__name__.lower(),
             'fields': self.fields,
             'hidden': self.hidden,
@@ -177,7 +181,7 @@ class Item(db.Model):
                     pass
         return res
 
-    def __init__(self, data):
+    def __init__(self, data, now=True):
         if not 'name' in [f['label'] for f in data['fields']]:
             data['fields'].append({'label': 'name', 'value': ''})
         for field in data:
@@ -185,8 +189,10 @@ class Item(db.Model):
                 setattr(self, field, data[field])
         if not 'tags' in data:
             self.tags = []
+        
         db.session.add(self)
-        db.session.commit()
+        if now:
+            db.session.commit()
         self.new_mod()
         SitemapIndex.add_item(self)
 
