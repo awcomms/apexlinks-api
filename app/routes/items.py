@@ -28,6 +28,7 @@ def items(user=None):
     
     parent_ids = request.args.get('parent-ids')
     if parent_ids:
+        print('parent-ids', parent_ids)
         try:
             parent_ids = json.loads(parent_ids)
         except:
@@ -43,6 +44,7 @@ def items(user=None):
             parent_query = query.join(item_items, item_items.c.child == Item.id).filter(item_items.c.parent == id)
 
     child_ids = request.args.get('child-ids')
+    print('children-ids', child_ids)
     if child_ids:
         try:
             child_ids = json.loads(child_ids)

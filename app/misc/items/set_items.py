@@ -1,5 +1,6 @@
 from app.models import Item
-from flask import Response, abort
+from flask import Response, abort, jsonify
+
 
 def remove_items(item, json, _arg):
     arg = f'remove-{_arg}'
@@ -10,12 +11,14 @@ def remove_items(item, json, _arg):
                 try:
                     id = int(id)
                 except:
-                    abort(400, Response({'error': f"{id} in request body parameter {arg} does not seem to be a JSON number type"}))
+                    print(f'remove {_arg} id not number')
+                    abort(400, jsonify(
+                        {'error': f"{id} in request body parameter {arg} does not seem to be a JSON number type"}))
 
                 second_item = Item.query.get(id)
                 if not second_item:
-                    abort(400, Response(
-                        {'error': f'item with id {id} not found'}))
+                    print('not found')
+                    abort(400, jsonify({'error': f'item with id {id} not found'}))
 
                 if arg == 'parents':
                     second_item.remove_item(item)
@@ -24,6 +27,7 @@ def remove_items(item, json, _arg):
             else:
                 pass
                 # TODO-error
+
 
 def add_items(item, json, arg):
     ids = json(arg)
@@ -34,12 +38,16 @@ def add_items(item, json, arg):
                 try:
                     id = int(id)
                 except:
-                    abort(400, Response({'error': f"{id} in request body parameter {arg} does not seem to be a JSON number type"}))
-                    
+                    print('add id not number')
+                    abort(400, jsonify(
+                        {'error': f"{id} in request body parameter {arg} does not seem to be a JSON number type"}))
+
                 second_item = Item.query.get(id)
                 print('sec', second_item)
                 if not second_item:
-                    abort(400, Response({'error': f'item with id {id} not found'}))
+                    print('not found')
+                    abort(400, jsonify(
+                        {'error': f'item with id {id} not found'}))
                 if arg == 'parents':
                     second_item.add_item(item)
                 elif arg == 'children':

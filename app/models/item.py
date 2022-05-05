@@ -25,6 +25,7 @@ class Item(db.Model):
     time = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     image = db.Column(db.Unicode)
     embed = db.Column(db.Unicode)
+    choices = db.Column(db.JSON)
     options = db.Column(db.JSON)
     fields = db.Column(db.JSON)
     distance = db.Column(db.JSON)
@@ -141,6 +142,9 @@ class Item(db.Model):
                 'username': self.user.username,
                 'id': self.user.id
             },
+            'options': self.options,
+            'tags': self.tags,
+            'choices': self.choices
         }
 
     def dict(self, **kwargs):

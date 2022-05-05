@@ -24,6 +24,11 @@ def create_app():
     migrate.init_app(app, db)
     mail.init_app(app)
 
+    @app.after_request
+    def after_request(response):
+        print('re', response.date, response.get_json() or response.get_data())
+        return response
+
     from app.routes import bp
     app.register_blueprint(bp)
 

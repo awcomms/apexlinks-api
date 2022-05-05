@@ -12,6 +12,8 @@ def is_not_in(arr, obj):
 
 
 def tag_sort(items, tags, include_user=False):
+    for tag in tags:
+        print('tag: ', tag['value'])
     field_tags = [t for t in tags if hasget(t, 'field')]
 
     for idx, item in enumerate(items):
