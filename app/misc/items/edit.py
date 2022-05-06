@@ -20,7 +20,6 @@ def edit(json, user, new=False):
             abort(401, jsonify({'error': "item does not belong to user"}))
 
     tags = json('tags')
-
     if not isinstance(tags, list):
         print('tags not list')
         abort(400, jsonify(

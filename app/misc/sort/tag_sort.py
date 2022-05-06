@@ -1,6 +1,5 @@
-from varname import nameof
 from fuzzywuzzy import process
-from app.misc import hasget, name_print
+from app.misc import hasget
 from app.misc.exceptions import ContinueI
 from app.misc.fields import score
 
@@ -12,21 +11,22 @@ def is_not_in(arr, obj):
 
 
 def tag_sort(items, tags, include_user=False):
-    for tag in tags:
-        print('tag: ', tag['value'])
+
     field_tags = [t for t in tags if hasget(t, 'field')]
 
     for idx, item in enumerate(items):
         item['score'] = 0
+
         if not 'tags' in item:
             continue
         if not isinstance(item['tags'], list):
             continue
-            # item['tags'] = []
+            
         item_tags = item['tags']
-        # item_user_tags = hasget(item['user']['tags'])
-        if include_user and hasget(item, 'user') and hasget(item['user'], 'tags') and type(item['user']['tags'] == list):
+
+        if include_user and hasget(item, 'user') and hasget(item['user'], 'tags') and isinstance(item['user']['tags'], list):
             item_tags += item['user']['tags']
+
         if 'username' in item:
             item_tags.append({'value': item['username']})
 
@@ -37,8 +37,9 @@ def tag_sort(items, tags, include_user=False):
         try:
             for tag in item_field_tags:
                 if hasget(tag, 'exact'):
-                    if len([t for t in [t for t in field_tags if hasget(
-                            t, 'label') == hasget(tag, 'label')] if hasget(t, 'value') == hasget(tag, 'value')]) < 1:
+                    if len([t for t in 
+                            [t for t in field_tags if hasget(t, 'label') == hasget(tag, 'label')]
+                                if hasget(t, 'value') == hasget(tag, 'value')]) < 1:
                         items.pop(idx)
                         raise continue_i
                 else:
@@ -52,10 +53,10 @@ def tag_sort(items, tags, include_user=False):
                         items.pop(idx)
                         raise continue_i
                 try:
-                    value = hasget(tag, 'value')
                     item['score'] += process.extractOne(
                         hasget(tag, 'value'), item_tags_values)[1]
                 except Exception as tpe:
+                    print(f'tag_sort exception. item: {item["id"]}, item_tags: {item["tags"]}, item_tags_values: {item_tags_values}. current tag: {tag}. exception:', tpe)
                     continue
         except ContinueI:
             continue

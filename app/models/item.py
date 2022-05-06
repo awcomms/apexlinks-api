@@ -34,7 +34,7 @@ class Item(db.Model):
     redirect = db.Column(db.Boolean, default=False)
     itype = db.Column(db.Unicode)
     name = db.Column(db.Unicode)
-    itext = db.Column(db.Unicode)
+    text = db.Column(db.Unicode)
     score = db.Column(db.Float)
 
     items = db.relationship('Item', secondary=item_items, primaryjoin=id ==
@@ -154,7 +154,7 @@ class Item(db.Model):
             'tags': self.tags,
             'itype': self.itype,
             'link': self.link,
-            'itext': self.itext,
+            'text': self.text,
             'image': self.image,
             'images': self.images,
             'options': self.options,

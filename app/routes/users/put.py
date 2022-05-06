@@ -122,7 +122,7 @@ def edit_user(user=None):
         data['fields'] = fields
 
     tags = request_json('tags') or []
-    if type(tags) != list:
+    if not isinstance(tags, list):
         try:
             tags = json.loads(tags)
             if not isinstance(tags, list):

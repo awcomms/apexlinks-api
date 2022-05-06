@@ -1,0 +1,1 @@
+not_number = lambda q : f''

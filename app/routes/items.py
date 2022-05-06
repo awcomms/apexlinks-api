@@ -12,132 +12,155 @@ from flask import request
 
 
 @bp.route('/items', methods=['GET'], endpoint='items')
-def items(user=None):
+def items():
     a = request.args.get
 
-    user = User.check_token(request.headers.get('token'))['user']
+    same_user = False
+    auth_user = User.check_token(request.headers.get('token'))['user']
+
+    query = Item.query.join(User).filter(User.hidden == False)
+
+    user = a('user')
+    if user:
+        try:
+            user = int(user)
+        except:
+            return {'error': "query arg 'user' does not seem to be a number"}
+        
+        user = User.query.get(user)
+        if not user:
+            return {'error': f'User {user} not found'}, 404
+        if user.hidden:
+            return {'error': 'User {user} is hidden'}, 423  # TODO-words
+
+        query = query.filter(User.id == user.id)
+
+        same_user = auth_user.id == user.id
 
     sort = request.args.get('sort')
     limit = request.args.get('limit')
-    
     saved = request.args.get('saved')
 
-    query = Item.query
+    parent = request.args.get('parent')
+    print('parent', parent)
+    child = request.args.get('child')
+    print('child', child)
+
     parent_query = None
     child_query = None
+    parents_query = None
+    children_query = None
+
+    if not parent == None:
+        parent_query = query.join(item_items, item_items.c.parent == Item.id)
+    if not child == None:
+        child_query = query.join(item_items, item_items.c.child == Item.id)
+
+    if parent_query:
+        print('z', parent_query.count())
+        if child_query:
+            print('ez', child_query.count())
+            query = parent_query.union(child_query)
+        else:
+            print('zee', parent_query.count())
+            query = parent_query
+    elif child_query:
+        print('c', child_query.count())
+        query = child_query
     
-    parent_ids = request.args.get('parent-ids')
-    if parent_ids:
-        print('parent-ids', parent_ids)
+    parents = request.args.get('parents')
+    if parents:
+        print('parent-ids', parents)
         try:
-            parent_ids = json.loads(parent_ids)
+            parents = json.loads(parents)
         except:
             return {'error': "query arg 'parent-id' does not seem to be a stringified JSON object"}, 400
-        if not isinstance(parent_ids, list):
+        if not isinstance(parents, list):
             return {'error': "query arg 'parent-id' does not seem to be a JSON list"}, 400
 
-        for id in parent_ids:
+        for id in parents:
             try:
                 id = int(id)
             except:
                 return {'error': f'{id} in request body parameter "parent-ids" does not seem to be a number'}, 400
-            parent_query = query.join(item_items, item_items.c.child == Item.id).filter(item_items.c.parent == id)
+            parents_query = query.join(item_items, item_items.c.child == Item.id).filter(item_items.c.parent == id)
 
-    child_ids = request.args.get('child-ids')
-    print('children-ids', child_ids)
-    if child_ids:
+    children = request.args.get('children')
+    print('children', children)
+    if children:
         try:
-            child_ids = json.loads(child_ids)
+            children = json.loads(children)
         except:
             return {'error': "query arg 'child-id' does not seem to be a stringified JSON object"}, 400
-        if not isinstance(child_ids, list):
+        if not isinstance(children, list):
             return {'error': "query arg 'child-id' does not seem to be a JSON list"}, 400
 
-        for id in child_ids:
+        for id in children:
             try:
                 id = int(id)
             except:
                 return {'error': f'{id} in request body parameter "child-ids" does not seem to be a number'}, 400
-            child_query = query.join(item_items, item_items.c.parent == Item.id).filter(
+            children_query = query.join(item_items, item_items.c.parent == Item.id).filter(
                 item_items.c.child == id)
 
-    if parent_query:
-        if child_query:
+    if parents_query:
+        if children_query:
             print('pcq', query.count())
-            query = parent_query.union(child_query)
+            query = parents_query.union(children_query)
         else:
             print('pcqx', query.count())
-            query = parent_query
-    elif child_query:
+            query = parents_query
+    elif children_query:
         print('pcs', query.count())
-        query = child_query
+        query = children_query
 
+    print('qc', query.count())
     market_id = a('market-id')
     if market_id:
         try:
             market_id = int(market_id) #TODO #error_check
         except:
             return {'error': "query arg 'market-id does not seem have a type of number"}
+        query = query.filter(User.market_id == market_id)
 
-    user_id = a('user-id')
-    if user_id:
-        try:
-            user_id = int(user_id)
-        except:
-            return {'error': "query arg 'user-id' doesn't seem to have a type of number"}
-        try:
-            _user = User.query.get(user_id)
-            if not _user:
-                return {'error': 'User not found'}, 404
-            if _user.hidden:
-                return {'error': 'User hidden'}, 423
-        except:
-            return {'error': "query arg 'user-id' doesn't seem to have a type of number"}, 400
-    
+    print('qc', query.count())
     page = a('page')
     if page:
         try:
             page = int(page)
         except:
-            return {'error': f"'page' query arg does not seem to have a type of number"}
+            return {'error': f"'page' query arg does not seem to be a number"}
 
-    hidden = a('hidden')
-    if hidden and user:
-        hidden = True
-    else:
-        hidden = False
-    
     tags = a('tags')
     if tags:
         try:
             tags = json.loads(tags)
         except Exception as e:
             print('tags route items error: ', e)
-            return {'error': "'tags' query arg does not seem to be a stringified list"}
+            return {'error': "'tags' query arg does not seem to be a stringified JSON list"}
+        if not isinstance(tags, list):
+            return {'error': "'tags' query arg does not seem to be a stringified JSON list"}
     else:
         tags = []
-    market_id = None
 
-    if market_id:
-        query = query.filter(User.market_id == market_id)
+    print('qc', query.count())
 
-    query = query.join(User)
-    if user_id:
-        print('user_id', user_id)
-        query = query.filter(User.id == user_id)
+    print('qc', query.count())
+    
+    # hidden = a('hidden')
+    # if hidden:
+    #     if same_user:
+    #         if hidden == 'include':
+    #             query = query.union(query.filter(Item.hidden == True))
+    #         else:
+    #             query = query.filter(Item.hidden == True)
+    #     else:
+    #         return {'error': 'query arg "hidden" was specified yet client is not authenticated as user specified in query arg "user"'}
+    # else:
+    #     query = query.filter(Item.hidden == False)
+        
+    print('qc', query.count())
 
-    if user and user.id == user_id:
-        try:
-            query = query.filter(Item.hidden == hidden)
-        except:
-            pass  # TODO-error
-    else:
-        print('eqs', query.count())
-        query = query.filter(User.hidden == False)
-        print('eqs', query.count())
-        # query = query.filter(Item.hidden == False)
-        print('eqs', query.count())
-    print('qs', query.count())
 
     run = lambda items: tag_sort(items, tags)
 
@@ -145,6 +168,8 @@ def items(user=None):
     # print('.__items', items)
     # _items = run(_items)
     # return { 'items': _items, 'total': len(_items)}
+
+    if parent_query: print('1zee', query.count(), parent_query.count())
     return cdict(query, page, user=user, run=run, attrs=['saved'])
 
 @bp.route('/items', methods=['POST'])

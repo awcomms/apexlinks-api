@@ -26,7 +26,7 @@ def create_app():
 
     @app.after_request
     def after_request(response):
-        print('re', response.date, response.get_json() or response.get_data())
+        # print('re', response.date, response.get_json() or response.get_data())
         return response
 
     from app.routes import bp

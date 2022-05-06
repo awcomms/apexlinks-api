@@ -209,7 +209,7 @@ class User(db.Model):
             print('BadSignature')
             return {'user': None, 'res': 'bad'}
         except Exception as e:
-            print('static method really invalid token: ', e)
+            # print('static method really invalid token: ', e)
             return {'user': None, 'res': ''}
         if 'id' in data:
             u = User.query.get(data['id'])
