@@ -8,7 +8,7 @@ from app.models.learn.term import Term
 
 app = create_app()
 app.static_folder = 'static'
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins='*')
 
 if __name__ == '__main__':
     socketio.run(app)

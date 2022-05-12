@@ -3,7 +3,8 @@ from sqlalchemy.orm import backref
 from app.models.mod import Mod
 from app.models.sitemap_index import SitemapIndex
 from app import db
-from fuzzywuzzy import process, fuzz
+from fuzzywuzzy import process
+from app.misc.hasget import hasget
 from app.vars.q import host, global_priority
 from app.misc.fields import score
 from app.misc.datetime_period import datetime_period
@@ -15,7 +16,7 @@ item_items = db.Table('item_items',
                                 db.ForeignKey('item.id')),
                       db.Column('child', db.Integer, db.ForeignKey('item.id')))
 
-
+# item_tags = db.Table('item_tags', )
 class Item(db.Model):
     tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
@@ -144,7 +145,6 @@ class Item(db.Model):
             },
             'options': self.options,
             'tags': self.tags,
-            'choices': self.choices
         }
 
     def dict(self, **kwargs):
@@ -185,9 +185,10 @@ class Item(db.Model):
                     pass
         return res
 
-    def __init__(self, data, now=True):
-        if not 'name' in [f['label'] for f in data['fields']]:
-            data['fields'].append({'label': 'name', 'value': ''})
+    def __init__(self, data={}, now=True):
+        if not 'name' in [hasget(f, 'label', '') for f in hasget(data, 'tags', [ ])]:
+            if not hasget(data, 'tags'): data['tags'] = []
+            data['tags'].append({'label': 'name', 'value': ''})
         for field in data:
             if hasattr(self, field) and data[field]:
                 setattr(self, field, data[field])

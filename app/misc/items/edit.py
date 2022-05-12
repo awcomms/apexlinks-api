@@ -6,7 +6,7 @@ from app import db
 
 def edit(json, user, new=False):
     if new:
-        item = Item(now=False, edit=False)
+        item = Item(now=False)
     else:
         id = json('id')
         if not id:
@@ -25,11 +25,11 @@ def edit(json, user, new=False):
         abort(400, jsonify(
             {'error': 'request body parameter "tags" does not seem to be a JSON "list" type'}))
 
-    fields = json('fields')
-    if not isinstance(fields, list):
-        print('fields not list')
-        abort(400, jsonify(
-            {'error': 'request body parameter "fields" does not seem to be a JSON "list" type'}))
+    # fields = json('fields')
+    # if not isinstance(fields, list):
+    #     print('fields not list')
+    #     abort(400, jsonify(
+    #         {'error': 'request body parameter "fields" does not seem to be a JSON "list" type'}))
 
     data = {
         'hidden': json('hidden'),
@@ -39,7 +39,7 @@ def edit(json, user, new=False):
         'choices': json('choices'),
         'image': json('image'),
         'link': json('link'),
-        'fields': fields,
+        # 'fields': fields,
         'user': user,
         'tags': tags
     }

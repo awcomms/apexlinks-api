@@ -1,5 +1,5 @@
 import json
-from app import db
+from app import db, socket
 from app.misc.items.edit import edit
 from app.misc.items.set_items import add_items, remove_items
 from app.misc.sort.tag_sort import tag_sort
@@ -114,7 +114,6 @@ def items():
         print('pcs', query.count())
         query = children_query
 
-    print('qc', query.count())
     market_id = a('market-id')
     if market_id:
         try:
@@ -123,7 +122,6 @@ def items():
             return {'error': "query arg 'market-id does not seem have a type of number"}
         query = query.filter(User.market_id == market_id)
 
-    print('qc', query.count())
     page = a('page')
     if page:
         try:
@@ -143,10 +141,6 @@ def items():
     else:
         tags = []
 
-    print('qc', query.count())
-
-    print('qc', query.count())
-    
     # hidden = a('hidden')
     # if hidden:
     #     if same_user:
@@ -159,9 +153,6 @@ def items():
     # else:
     #     query = query.filter(Item.hidden == False)
         
-    print('qc', query.count())
-
-
     run = lambda items: tag_sort(items, tags)
 
     # _items = [i.dict(user=user, attrs=['saved']) for i in query]
@@ -169,7 +160,6 @@ def items():
     # _items = run(_items)
     # return { 'items': _items, 'total': len(_items)}
 
-    if parent_query: print('1zee', query.count(), parent_query.count())
     return cdict(query, page, user=user, run=run, attrs=['saved'])
 
 @bp.route('/items', methods=['POST'])
@@ -178,9 +168,9 @@ def add_item(user=None):
     json = request.json.get
 
     item = edit(json, user, new=True)
+    socket.emit('add', item.dict())
 
-    return {'id': item.id}, 202
-
+    return item.dict(), 202
 
 @bp.route('/items', methods=['PUT'])
 @auth
@@ -190,7 +180,6 @@ def edit_item(user=None):
     item = edit(json, user)
     
     return {'id': item.id}
-
 
 @bp.route('/items/<int:id>', methods=['GET'])
 def item(id):
