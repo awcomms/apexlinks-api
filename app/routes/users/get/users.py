@@ -25,6 +25,8 @@ def users(user=None):
     if sort:
         if sort != 'tag' and sort != 'distance':
             return {'error': "sort query arg should be 'tag' or 'distance'"}
+    else:
+        sort = 'tag'
     loc = a('loc')
     # if loc:
     #     try:
@@ -45,34 +47,24 @@ def users(user=None):
     #         loc['lon'] = float(loc['lon'])
     #     except:
     #         return {'error': 'lon property in loc query arg should be a float'}, 400
-    if market_id:
-        market_id = int(market_id) #TODO #error_check
-    try:
-        extraFields = json.loads(extraFields)
-        if not isinstance(extraFields, list):
-            return {'error': 'extraFields query arg should be a stringified json list of objects'}
-    except:
-        return {'error': 'extraFields query arg should be a stringified json list of objects'}
+
+    # if market_id:
+    #     market_id = int(market_id) #TODO #error_check
+    # try:
+    #     extraFields = json.loads(extraFields)
+    #     if not isinstance(extraFields, list):
+    #         return {'error': 'extraFields query arg should be a stringified json list of objects'}
+    # except:
+    #     return {'error': 'extraFields query arg should be a stringified json list of objects'}
     
-    fields = a('fields')
-    try:
-        fields = json.loads(fields)
-        if not isinstance(fields, list):
-            return {'error': 'fields query arg should be a stringified json list of objects'}
-    except:
-        return {'error': 'fields query arg should be a stringified json list of objects'}
-    id = a('id')
-    user = None
-    try:
-        id = int(id)
-    except:
-        id = None
-    if id:
-        user = User.query.get(id)
-        if user:
-            return user.dict()
-        else:
-            return {'error': f'user with id {id} not found'}
+    # fields = a('fields')
+    # try:
+    #     fields = json.loads(fields)
+    #     if not isinstance(fields, list):
+    #         return {'error': 'fields query arg should be a stringified json list of objects'}
+    # except:
+    #     return {'error': 'fields query arg should be a stringified json list of objects'}
+   
     tags = a('tags')
     if tags:
         try:

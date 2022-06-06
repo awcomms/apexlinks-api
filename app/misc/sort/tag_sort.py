@@ -20,13 +20,13 @@ def tag_sort(items, tags, include_user=False):
             item['tags'] = []
 
     for tag in tags:
-        if hasget(tag, 'exact'):
-            items = [i for i in items if hasget(tag, 'value', '') in [hasget(t, 'value', '') for t in i['tags']]]
+        # if hasget(tag, 'exact'):
+        #     items = [i for i in items if hasget(tag, 'value', '') in [hasget(t, 'value', '') for t in i['tags']]]
         for item in items:
             item['score'] = 0
             try:
                 item['score'] += process.extractOne(
-                    hasget(tag, 'value'), [hasget(t, 'value', '') for t in item['tags']])[1]
+                    hasget(tag, 'value', ''), [hasget(t, 'value', '') for t in item['tags']])[1]
             except Exception as tpe:
                 print(f'tag_sort exception. item: {item["id"]}, item_tags: {item["tags"]}. current tag: {tag}. exception:', tpe)
                 continue

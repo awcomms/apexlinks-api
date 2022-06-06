@@ -1,2 +1,0 @@
-Click here on the following link to confirm your account:
-{{}}

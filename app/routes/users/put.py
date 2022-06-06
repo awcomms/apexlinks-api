@@ -84,7 +84,7 @@ def edit_user(user=None):
         _extra['items_save_toggled'] = items_save_toggled
 
     data = {}
-    attrs = ['about', 'settings', 'hiddden', 'images', 'image', 'tags']
+    attrs = ['about', 'options', 'settings', 'hiddden', 'images', 'image', 'tags']
 
     for attr in attrs:
         if attr in data_request_json:

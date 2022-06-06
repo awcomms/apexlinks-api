@@ -1,7 +1,6 @@
 import os
 import logging
 from flask import Flask
-from flask_socketio import SocketIO
 from flask_cors import CORS
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from flask_sqlalchemy import SQLAlchemy
@@ -14,7 +13,6 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
-socket = SocketIO()
 
 def create_app():
     app = Flask(__name__)
@@ -25,12 +23,6 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
-    socket.init_app(app)
-
-    @app.after_request
-    def after_request(response):
-        # print('re', response.date, response.get_json() or response.get_data())
-        return response
 
     from app.routes import bp
     app.register_blueprint(bp)
