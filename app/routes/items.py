@@ -1,5 +1,5 @@
 import json
-from app import db, socket
+from app import db
 from app.misc.items.edit import edit
 from app.misc.items.set_items import add_items, remove_items
 from app.misc.sort.tag_sort import tag_sort
@@ -168,7 +168,6 @@ def add_item(user=None):
     json = request.json.get
 
     item = edit(json, user, new=True)
-    socket.emit('add', item.dict())
 
     return item.dict(), 202
 

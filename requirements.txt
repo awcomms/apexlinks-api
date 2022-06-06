@@ -2,7 +2,6 @@ requests
 psycopg2
 jwt
 geopy
-flask-socketio
 flask
 fuzzywuzzy
 python-dotenv

@@ -1,12 +1,9 @@
 from app.misc.fields.check_and_clean import check_and_clean
-from app.email import send_reset_password
 import json
 from flask import request
 from app.routes import bp
 from app.auth import auth
 from app.models import Item, User
-from app.models.market import Market
-
 
 @bp.route('/users/activate')
 @auth
@@ -14,36 +11,6 @@ def activate_user():
     id = request.json.get('id')
     User.activate(id)
     return '', 200
-
-
-@bp.route('/forgot_password', methods=['PUT'])
-def forgot_password():
-    username = request.json.get('username')
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return {
-            'error': True,
-            'usernameInvalid': True,
-            'usernameError': 'No user with that username'
-        }, 401
-    if user.email:
-        send_reset_password(user)
-    else:
-        return {'r': 'No email set for this user'}, 404
-    return {'r': 'Check for an email'}
-
-
-@bp.route('/reset_password', methods=['PUT'])
-def reset_password():
-    token = request.headers.get('token')
-    password = request.json.get('password')
-    user = User.check_reset_password_token(token)
-    if user:
-        user.set_password(password)
-        return {'r': True}
-    else:
-        return {}
-
 
 @bp.route('/users', methods=['PUT'])
 @auth
