@@ -20,14 +20,11 @@ def seen(user=None):
         .where(xrooms.c.room_id==room.id).values(seen=True))
     return '202', 202
 
-@bp.route('/join', methods=['PUT'])
+@bp.route('/join/<int:id>', methods=['PUT'])
 @auth
-def join(user=None):
-    data = request.json.get
-    id = data('room')
-    try:
-        room = Room.query.get(id)
-    except:
+def join(id, user=None):
+    room = Room.query.get(id)
+    if not room:
         return {"error": f"room {id} not found"}, 404
     user.join(room)
     return {}, 202
@@ -95,8 +92,6 @@ def rooms(user=None):
             limit = int(limit)
         except:
             return {'error': "'limit' query arg should be a number"}
-    else:
-        limit = 0
 
     try:
         tags = json.loads(a('tags'))
@@ -119,12 +114,14 @@ def add_room(user=None):
     if Room.query.filter_by(name=name).first():
         return {'nameError': 'Name taken'}, 423
     tags = data('tags') or []
-    tags.append(name)
+    if not name in [t['value'] for t in tags]:
+        tags.append({'value': name})
     data = {
         'name': name,
         'user': user,
         # 'open': open,
-        'tags': tags
+        'tags': tags,
+        # 'about': data['about']
     }
     room = Room(data)
     user.join(room)
@@ -136,25 +133,28 @@ def edit_room(user=None):
     data = request.json.get
     id = data('id')
     room = Room.query.get(id)
+    if not room:
+        return {"error": f"room {id} not found"}
     name = data('name')
-    open = data('open')
     if name != room.name and Room.query\
             .filter_by(name=name).first():
-        return {'nameError': 'Name taken'}, 301 #wrong error code
+        return {'nameError': 'Name taken by a different room'}, 400 #wrong error code
     tags = data('tags') or []
     if room and room.user != user:
-        return '', 401
-    tags.append(name)
+        return {"error": "authenticated user did not create this room"}, 401
+    if not name in [t['value'] for t in tags]:
+        tags.append({'value': name})
     data = {
         'name': name,
-        'open': open,
-        'tags': tags
+        'tags': tags,
+        'about': data('about')
     }
+
     room.edit(data)
+
     return {'id': room.id}
 
 @bp.route('/rooms/<value>', methods=['GET'])
-@auth
 def get_room(value, user=None):
     try:
         room = Room.query.get(int(value))
@@ -162,9 +162,10 @@ def get_room(value, user=None):
         room = Room.query.filter_by(name=value).first()
     if not room:
         return '', 404
-    db.engine.execute(xrooms.update().where(xrooms.c.user_id==user.id)\
-        .where(xrooms.c.room_id==room.id).values(seen=True))
-    return room.dict(user=user)
+    if user:
+        db.engine.execute(xrooms.update().where(xrooms.c.user_id==user.id)\
+            .where(xrooms.c.room_id==room.id).values(seen=True))
+    return room.dict()
 
 @bp.route('/rooms/<int:id>', methods=['DELETE'])
 def del_room(id, user=None):

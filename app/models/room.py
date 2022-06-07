@@ -10,6 +10,7 @@ class Room(db.Model):
     open = db.Column(db.Boolean, default=False)
     one = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    about = db.Column(db.Unicode)
     # rooms = db.relationship('Room', backref=db.backref('room', lazy='dynamic'))
     messages = db.relationship('Message', backref='room', lazy='dynamic')
     name = db.Column(db.Unicode)
@@ -17,7 +18,7 @@ class Room(db.Model):
 
     @staticmethod
     def get(tags, limit=0):
-        def tag_score(items): return tag_sort(room_search_fields, items, tags)
+        def tag_score(items): return tag_sort(items, tags)
         _sort = tag_score
         
         def filter(items):
@@ -39,15 +40,16 @@ class Room(db.Model):
         seen = None
         if 'user' in kwargs:
             uid = kwargs['user'].id
-        row = db.engine.execute(xrooms.select().where(xrooms.c.user_id == uid)
-                                .where(xrooms.c.room_id == self.id)).first()
-        if row:
-            seen = row['seen']
+            row = db.engine.execute(xrooms.select().where(xrooms.c.user_id == uid)
+                                    .where(xrooms.c.room_id == self.id)).first()
+            if row:
+                seen = row['seen']
         data = {
             'id': self.id,
             'name': self.name,
             'tags': self.tags,
             'open': self.open,
+            'about': self.about,
             'user': self.user.dict()
         }
         if seen is False:

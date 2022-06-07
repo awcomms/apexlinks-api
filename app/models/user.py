@@ -288,8 +288,6 @@ class User(db.Model):
             'name': self.name,
             'type': type(self).__name__.lower(),
             'email': self.email,
-            'paid': self.paid,
-            'fields': self.fields,
             'phone': self.phone,
             'image': self.image,
             'author': self.author,
