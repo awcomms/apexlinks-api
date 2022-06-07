@@ -114,14 +114,6 @@ def items():
         print('pcs', query.count())
         query = children_query
 
-    market_id = a('market-id')
-    if market_id:
-        try:
-            market_id = int(market_id) #TODO #error_check
-        except:
-            return {'error': "query arg 'market-id does not seem have a type of number"}
-        query = query.filter(User.market_id == market_id)
-
     page = a('page')
     if page:
         try:

@@ -11,7 +11,6 @@ from app.misc.cdict import cdict
 def users(user=None):
     a = request.args.get
     extraFields = a('extraFields')
-    market_id = a('market_id')
     limit = a('limit')
     if limit:
         try:
@@ -48,8 +47,6 @@ def users(user=None):
     #     except:
     #         return {'error': 'lon property in loc query arg should be a float'}, 400
 
-    # if market_id:
-    #     market_id = int(market_id) #TODO #error_check
     # try:
     #     extraFields = json.loads(extraFields)
     #     if not isinstance(extraFields, list):

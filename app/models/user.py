@@ -41,7 +41,6 @@ class User(db.Model):
     website = db.Column(db.Unicode)
     email = db.Column(db.Unicode)
     about = db.Column(db.Unicode)
-    market_id = db.Column(db.Integer, db.ForeignKey('market.id'))
     location = db.Column(db.JSON)
     fields = db.Column(db.JSON)
     wallet = db.Column(db.Unicode)

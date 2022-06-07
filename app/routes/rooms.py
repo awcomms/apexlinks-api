@@ -24,27 +24,23 @@ def seen(user=None):
 @auth
 def join(user=None):
     data = request.json.get
-    id = data('id')
+    id = data('room')
     try:
         room = Room.query.get(id)
     except:
-        room = None
+        return {"error": f"room {id} not found"}, 404
     user.join(room)
     return {}, 202
 
 @bp.route('/leave', methods=['PUT'])
 @auth
 def leave(user=None):
-    token = request.headers.get('auth')
-    id = request.json.get('id')
+    id = request.json.get('room')
     room = Room.query.get(id)
     if not room:
-        return '', 404
+        return {"error": f"room {id} not found"}, 404
     user.leave(room)
-    if not room.open:
-        db.session.delete(room)
-        db.session.commit()
-    return '', 202
+    return {}, 202
 
 @bp.route('/xrooms', methods=['GET'])
 @auth

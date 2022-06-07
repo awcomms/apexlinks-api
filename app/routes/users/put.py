@@ -66,17 +66,6 @@ def edit_user(user=None):
             return {'error': 'Username taken'}, 400
         data['username'] = username
 
-    market_id = request_json('market_id')
-    if market_id:
-        try:
-            market_id = int(market_id)
-            market = Market.query.get(market_id)
-            if not market:
-                return {'error': f'market with id {market_id} not found'}
-        except:
-            return {'error': 'market_id should be an int'}
-        data['market'] = market
-
     fields = request_json('fields')
     if fields:
         if not isinstance(fields, list):

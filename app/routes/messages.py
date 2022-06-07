@@ -55,10 +55,10 @@ def get_messages():
 @auth
 def post_message(user=None):
     data = request.json.get
-    id = data('id')
+    id = data('room')
     room = Room.query.get(id)
     if not room:
-        return '', 404
+        return {"error": f"room {id} not found"}, 404
     value = data('value')
     Message(value, user, room)
     db.engine.execute(xrooms.update().where(xrooms.c.room_id==room.id).values(seen=False))
