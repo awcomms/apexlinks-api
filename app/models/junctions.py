@@ -1,6 +1,7 @@
 from app import db
 
-xrooms = db.Table('xrooms',
+xtxts = db.Table('xtxts',
                   db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-                  db.Column('room_id', db.Integer, db.ForeignKey('room.id')),
+                  db.Column('txt_id', db.Integer, db.ForeignKey('txt.id')),
+                  db.Column('notify', db.Boolean, default=True),
                   db.Column('seen', db.Boolean))

@@ -32,4 +32,4 @@ def create_user(username=None, password=None):
     return {
         'user': user.dict(),
         'token': user.get_token()
-    }, 202
+    }, 201

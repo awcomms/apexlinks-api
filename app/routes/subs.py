@@ -1,8 +1,8 @@
 from flask import request, current_app
 from app.routes import bp
 from app.models.sub import Sub
-from app.models.room import Room
-from app.models.user import User, xrooms
+from app.models.txt import Txt
+from app.models.user import User, xtxts
 
 @bp.route('/subs', methods=['POST'])
 def post_sub():
@@ -23,9 +23,9 @@ def get_subs():
     id = int(args('id'))
     if args('key') != current_app.config['KEY']:
         return '401', 401
-    if not Room.query.get(id):
+    if not Txt.query.get(id):
         return '404', 404
-    subs = Sub.query.join(User).join(xrooms, (xrooms.c.user_id == User.id))\
-        .filter(xrooms.c.room_id == id).all()
+    subs = Sub.query.join(User).join(xtxts, (xtxts.c.user_id == User.id))\
+        .filter(xtxts.c.txt_id == id).all()
     return {'subs': [s.sub for s in subs]}
     

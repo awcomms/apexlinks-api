@@ -4,7 +4,7 @@ from app.misc.datetime_period import datetime_period
 
 disallow = [
     'add_item',
-    'add_room',
+    'add_txt',
     'edit',
     'reset_password'
 ]

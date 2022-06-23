@@ -550,10 +550,10 @@
       }
     },
     {
-      "@id": "schema:numberOfBedrooms",
+      "@id": "schema:numberOfBedtxts",
       "@type": "rdf:Property",
-      "rdfs:comment": "The total integer number of bedrooms in a some [[Accommodation]], [[ApartmentComplex]] or [[FloorPlan]].",
-      "rdfs:label": "numberOfBedrooms",
+      "rdfs:comment": "The total integer number of bedtxts in a some [[Accommodation]], [[ApartmentComplex]] or [[FloorPlan]].",
+      "rdfs:label": "numberOfBedtxts",
       "schema:domainIncludes": [
         {
           "@id": "schema:Accommodation"
@@ -865,7 +865,7 @@
     {
       "@id": "schema:LeisureTimeActivity",
       "@type": "schema:PhysicalActivityCategory",
-      "rdfs:comment": "Any physical activity engaged in for recreational purposes. Examples may include ballroom dancing, roller skating, canoeing, fishing, etc.",
+      "rdfs:comment": "Any physical activity engaged in for recreational purposes. Examples may include balltxt dancing, roller skating, canoeing, fishing, etc.",
       "rdfs:label": "LeisureTimeActivity",
       "schema:isPartOf": {
         "@id": "https://health-lifesci.schema.org"
@@ -1162,10 +1162,10 @@
       }
     },
     {
-      "@id": "schema:numberOfBathroomsTotal",
+      "@id": "schema:numberOfBathtxtsTotal",
       "@type": "rdf:Property",
-      "rdfs:comment": "The total integer number of bathrooms in a some [[Accommodation]], following real estate conventions as [documented in RESO](https://ddwiki.reso.org/display/DDW17/BathroomsTotalInteger+Field): \"The simple sum of the number of bathrooms. For example for a property with two Full Bathrooms and one Half Bathroom, the Bathrooms Total Integer will be 3.\". See also [[numberOfRooms]].",
-      "rdfs:label": "numberOfBathroomsTotal",
+      "rdfs:comment": "The total integer number of bathtxts in a some [[Accommodation]], following real estate conventions as [documented in RESO](https://ddwiki.reso.org/display/DDW17/BathtxtsTotalInteger+Field): \"The simple sum of the number of bathtxts. For example for a property with two Full Bathtxts and one Half Bathtxt, the Bathtxts Total Integer will be 3.\". See also [[numberOfTxts]].",
+      "rdfs:label": "numberOfBathtxtsTotal",
       "schema:domainIncludes": [
         {
           "@id": "schema:FloorPlan"
@@ -1372,7 +1372,7 @@
       },
       "schema:domainIncludes": [
         {
-          "@id": "schema:Message"
+          "@id": "schema:Txt"
         },
         {
           "@id": "schema:ReceiveAction"
@@ -2584,10 +2584,10 @@
       }
     },
     {
-      "@id": "schema:Room",
+      "@id": "schema:Txt",
       "@type": "rdfs:Class",
-      "rdfs:comment": "A room is a distinguishable space within a structure, usually separated from other spaces by interior walls. (Source: Wikipedia, the free encyclopedia, see <a href=\"http://en.wikipedia.org/wiki/Room\">http://en.wikipedia.org/wiki/Room</a>).\n<br /><br />\nSee also the <a href=\"/docs/hotels.html\">dedicated document on the use of schema.org for marking up hotels and other forms of accommodations</a>.\n",
-      "rdfs:label": "Room",
+      "rdfs:comment": "A txt is a distinguishable space within a structure, usually separated from other spaces by interior walls. (Source: Wikipedia, the free encyclopedia, see <a href=\"http://en.wikipedia.org/wiki/Txt\">http://en.wikipedia.org/wiki/Txt</a>).\n<br /><br />\nSee also the <a href=\"/docs/hotels.html\">dedicated document on the use of schema.org for marking up hotels and other forms of accommodations</a>.\n",
+      "rdfs:label": "Txt",
       "rdfs:subClassOf": {
         "@id": "schema:Accommodation"
       },
@@ -3461,7 +3461,7 @@
     {
       "@id": "schema:actionableFeedbackPolicy",
       "@type": "rdf:Property",
-      "rdfs:comment": "For a [[NewsMediaOrganization]] or other news-related [[Organization]], a statement about public engagement activities (for news media, the newsroom’s), including involving the public - digitally or otherwise -- in coverage decisions, reporting and activities after publication.",
+      "rdfs:comment": "For a [[NewsMediaOrganization]] or other news-related [[Organization]], a statement about public engagement activities (for news media, the newstxt’s), including involving the public - digitally or otherwise -- in coverage decisions, reporting and activities after publication.",
       "rdfs:label": "actionableFeedbackPolicy",
       "rdfs:subPropertyOf": {
         "@id": "schema:publishingPrinciples"
@@ -4527,7 +4527,7 @@
     {
       "@id": "schema:Accommodation",
       "@type": "rdfs:Class",
-      "rdfs:comment": "An accommodation is a place that can accommodate human beings, e.g. a hotel room, a camping pitch, or a meeting room. Many accommodations are for overnight stays, but this is not a mandatory requirement.\nFor more specific types of accommodations not defined in schema.org, one can use additionalType with external vocabularies.\n<br /><br />\nSee also the <a href=\"/docs/hotels.html\">dedicated document on the use of schema.org for marking up hotels and other forms of accommodations</a>.\n",
+      "rdfs:comment": "An accommodation is a place that can accommodate human beings, e.g. a hotel txt, a camping pitch, or a meeting txt. Many accommodations are for overnight stays, but this is not a mandatory requirement.\nFor more specific types of accommodations not defined in schema.org, one can use additionalType with external vocabularies.\n<br /><br />\nSee also the <a href=\"/docs/hotels.html\">dedicated document on the use of schema.org for marking up hotels and other forms of accommodations</a>.\n",
       "rdfs:label": "Accommodation",
       "rdfs:subClassOf": {
         "@id": "schema:Place"
@@ -4650,10 +4650,10 @@
       "rdfs:label": "ItemListUnordered"
     },
     {
-      "@id": "schema:numberOfPartialBathrooms",
+      "@id": "schema:numberOfPartialBathtxts",
       "@type": "rdf:Property",
-      "rdfs:comment": "Number of partial bathrooms - The total number of half and ¼ bathrooms in an [[Accommodation]]. This corresponds to the [BathroomsPartial field in RESO](https://ddwiki.reso.org/display/DDW17/BathroomsPartial+Field). ",
-      "rdfs:label": "numberOfPartialBathrooms",
+      "rdfs:comment": "Number of partial bathtxts - The total number of half and ¼ bathtxts in an [[Accommodation]]. This corresponds to the [BathtxtsPartial field in RESO](https://ddwiki.reso.org/display/DDW17/BathtxtsPartial+Field). ",
+      "rdfs:label": "numberOfPartialBathtxts",
       "schema:domainIncludes": [
         {
           "@id": "schema:Accommodation"
@@ -4673,10 +4673,10 @@
       }
     },
     {
-      "@id": "schema:Message",
+      "@id": "schema:Txt",
       "@type": "rdfs:Class",
-      "rdfs:comment": "A single message from a sender to one or more organizations or people.",
-      "rdfs:label": "Message",
+      "rdfs:comment": "A single txt from a sender to one or more organizations or people.",
+      "rdfs:label": "Txt",
       "rdfs:subClassOf": {
         "@id": "schema:CreativeWork"
       }
@@ -5583,7 +5583,7 @@
     {
       "@id": "schema:diversityPolicy",
       "@type": "rdf:Property",
-      "rdfs:comment": "Statement on diversity policy by an [[Organization]] e.g. a [[NewsMediaOrganization]]. For a [[NewsMediaOrganization]], a statement describing the newsroom’s diversity policy on both staffing and sources, typically providing staffing data.",
+      "rdfs:comment": "Statement on diversity policy by an [[Organization]] e.g. a [[NewsMediaOrganization]]. For a [[NewsMediaOrganization]], a statement describing the newstxt’s diversity policy on both staffing and sources, typically providing staffing data.",
       "rdfs:label": "diversityPolicy",
       "schema:domainIncludes": [
         {
@@ -8021,13 +8021,13 @@
     {
       "@id": "schema:ccRecipient",
       "@type": "rdf:Property",
-      "rdfs:comment": "A sub property of recipient. The recipient copied on a message.",
+      "rdfs:comment": "A sub property of recipient. The recipient copied on a txt.",
       "rdfs:label": "ccRecipient",
       "rdfs:subPropertyOf": {
         "@id": "schema:recipient"
       },
       "schema:domainIncludes": {
-        "@id": "schema:Message"
+        "@id": "schema:Txt"
       },
       "schema:rangeIncludes": [
         {
@@ -10158,7 +10158,7 @@
     {
       "@id": "schema:smokingAllowed",
       "@type": "rdf:Property",
-      "rdfs:comment": "Indicates whether it is allowed to smoke in the place, e.g. in the restaurant, hotel or hotel room.",
+      "rdfs:comment": "Indicates whether it is allowed to smoke in the place, e.g. in the restaurant, hotel or hotel txt.",
       "rdfs:label": "smokingAllowed",
       "schema:domainIncludes": {
         "@id": "schema:Place"
@@ -11216,13 +11216,13 @@
     {
       "@id": "schema:toRecipient",
       "@type": "rdf:Property",
-      "rdfs:comment": "A sub property of recipient. The recipient who was directly sent the message.",
+      "rdfs:comment": "A sub property of recipient. The recipient who was directly sent the txt.",
       "rdfs:label": "toRecipient",
       "rdfs:subPropertyOf": {
         "@id": "schema:recipient"
       },
       "schema:domainIncludes": {
-        "@id": "schema:Message"
+        "@id": "schema:Txt"
       },
       "schema:rangeIncludes": [
         {
@@ -11573,7 +11573,7 @@
           "@id": "schema:GiveAction"
         },
         {
-          "@id": "schema:Message"
+          "@id": "schema:Txt"
         },
         {
           "@id": "schema:ReturnAction"
@@ -12725,7 +12725,7 @@
     {
       "@id": "schema:WorkBasedProgram",
       "@type": "rdfs:Class",
-      "rdfs:comment": "A program with both an educational and employment component. Typically based at a workplace and structured around work-based learning, with the aim of instilling competencies related to an occupation. WorkBasedProgram is used to distinguish programs such as apprenticeships from school, college or other classroom based educational programs.",
+      "rdfs:comment": "A program with both an educational and employment component. Typically based at a workplace and structured around work-based learning, with the aim of instilling competencies related to an occupation. WorkBasedProgram is used to distinguish programs such as apprenticeships from school, college or other classtxt based educational programs.",
       "rdfs:label": "WorkBasedProgram",
       "rdfs:subClassOf": {
         "@id": "schema:EducationalOccupationalProgram"
@@ -13437,12 +13437,12 @@
       }
     },
     {
-      "@id": "schema:MeetingRoom",
+      "@id": "schema:MeetingTxt",
       "@type": "rdfs:Class",
-      "rdfs:comment": "A meeting room, conference room, or conference hall is a room provided for singular events such as business conferences and meetings (Source: Wikipedia, the free encyclopedia, see <a href=\"http://en.wikipedia.org/wiki/Conference_hall\">http://en.wikipedia.org/wiki/Conference_hall</a>).\n<br /><br />\nSee also the <a href=\"/docs/hotels.html\">dedicated document on the use of schema.org for marking up hotels and other forms of accommodations</a>.\n",
-      "rdfs:label": "MeetingRoom",
+      "rdfs:comment": "A meeting txt, conference txt, or conference hall is a txt provided for singular events such as business conferences and meetings (Source: Wikipedia, the free encyclopedia, see <a href=\"http://en.wikipedia.org/wiki/Conference_hall\">http://en.wikipedia.org/wiki/Conference_hall</a>).\n<br /><br />\nSee also the <a href=\"/docs/hotels.html\">dedicated document on the use of schema.org for marking up hotels and other forms of accommodations</a>.\n",
+      "rdfs:label": "MeetingTxt",
       "rdfs:subClassOf": {
-        "@id": "schema:Room"
+        "@id": "schema:Txt"
       },
       "schema:source": {
         "@id": "https://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#STI_Accommodation_Ontology"
@@ -13572,7 +13572,7 @@
     {
       "@id": "schema:numberOfBeds",
       "@type": "rdf:Property",
-      "rdfs:comment": "The quantity of the given bed type available in the HotelRoom, Suite, House, or Apartment.",
+      "rdfs:comment": "The quantity of the given bed type available in the HotelTxt, Suite, House, or Apartment.",
       "rdfs:label": "numberOfBeds",
       "schema:domainIncludes": {
         "@id": "schema:BedDetails"
@@ -13848,10 +13848,10 @@
       }
     },
     {
-      "@id": "schema:numberOfRooms",
+      "@id": "schema:numberOfTxts",
       "@type": "rdf:Property",
-      "rdfs:comment": "The number of rooms (excluding bathrooms and closets) of the accommodation or lodging business.\nTypical unit code(s): ROM for room or C62 for no unit. The type of room can be put in the unitText property of the QuantitativeValue.",
-      "rdfs:label": "numberOfRooms",
+      "rdfs:comment": "The number of txts (excluding bathtxts and closets) of the accommodation or lodging business.\nTypical unit code(s): ROM for txt or C62 for no unit. The type of txt can be put in the unitText property of the QuantitativeValue.",
+      "rdfs:label": "numberOfTxts",
       "schema:domainIncludes": [
         {
           "@id": "schema:LodgingBusiness"
@@ -15883,12 +15883,12 @@
       ]
     },
     {
-      "@id": "schema:messageAttachment",
+      "@id": "schema:txtAttachment",
       "@type": "rdf:Property",
-      "rdfs:comment": "A CreativeWork attached to the message.",
-      "rdfs:label": "messageAttachment",
+      "rdfs:comment": "A CreativeWork attached to the txt.",
+      "rdfs:label": "txtAttachment",
       "schema:domainIncludes": {
-        "@id": "schema:Message"
+        "@id": "schema:Txt"
       },
       "schema:rangeIncludes": {
         "@id": "schema:CreativeWork"
@@ -16537,7 +16537,7 @@
     {
       "@id": "schema:correctionsPolicy",
       "@type": "rdf:Property",
-      "rdfs:comment": "For an [[Organization]] (e.g. [[NewsMediaOrganization]]), a statement describing (in news media, the newsroom’s) disclosure and correction policy for errors.",
+      "rdfs:comment": "For an [[Organization]] (e.g. [[NewsMediaOrganization]]), a statement describing (in news media, the newstxt’s) disclosure and correction policy for errors.",
       "rdfs:label": "correctionsPolicy",
       "rdfs:subPropertyOf": {
         "@id": "schema:publishingPrinciples"
@@ -17720,10 +17720,10 @@
     {
       "@id": "schema:dateRead",
       "@type": "rdf:Property",
-      "rdfs:comment": "The date/time at which the message has been read by the recipient if a single recipient exists.",
+      "rdfs:comment": "The date/time at which the txt has been read by the recipient if a single recipient exists.",
       "rdfs:label": "dateRead",
       "schema:domainIncludes": {
-        "@id": "schema:Message"
+        "@id": "schema:Txt"
       },
       "schema:rangeIncludes": [
         {
@@ -18171,7 +18171,7 @@
     {
       "@id": "schema:programType",
       "@type": "rdf:Property",
-      "rdfs:comment": "The type of educational or occupational program. For example, classroom, internship, alternance, etc..",
+      "rdfs:comment": "The type of educational or occupational program. For example, classtxt, internship, alternance, etc..",
       "rdfs:label": "programType",
       "schema:domainIncludes": {
         "@id": "schema:EducationalOccupationalProgram"
@@ -19228,7 +19228,7 @@
       "rdfs:label": "bed",
       "schema:domainIncludes": [
         {
-          "@id": "schema:HotelRoom"
+          "@id": "schema:HotelTxt"
         },
         {
           "@id": "schema:Suite"
@@ -19792,10 +19792,10 @@
     {
       "@id": "schema:dateSent",
       "@type": "rdf:Property",
-      "rdfs:comment": "The date/time at which the message was sent.",
+      "rdfs:comment": "The date/time at which the txt was sent.",
       "rdfs:label": "dateSent",
       "schema:domainIncludes": {
-        "@id": "schema:Message"
+        "@id": "schema:Txt"
       },
       "schema:rangeIncludes": {
         "@id": "schema:DateTime"
@@ -21401,7 +21401,7 @@
     {
       "@id": "schema:serviceSmsNumber",
       "@type": "rdf:Property",
-      "rdfs:comment": "The number to access the service by text message.",
+      "rdfs:comment": "The number to access the service by text txt.",
       "rdfs:label": "serviceSmsNumber",
       "schema:domainIncludes": {
         "@id": "schema:ServiceChannel"
@@ -21736,7 +21736,7 @@
     {
       "@id": "schema:conditionsOfAccess",
       "@type": "rdf:Property",
-      "rdfs:comment": "Conditions that affect the availability of, or method(s) of access to, an item. Typically used for real world items such as an [[ArchiveComponent]] held by an [[ArchiveOrganization]]. This property is not suitable for use as a general Web access control mechanism. It is expressed only in natural language.\\n\\nFor example \"Available by appointment from the Reading Room\" or \"Accessible only from logged-in accounts \". ",
+      "rdfs:comment": "Conditions that affect the availability of, or method(s) of access to, an item. Typically used for real world items such as an [[ArchiveComponent]] held by an [[ArchiveOrganization]]. This property is not suitable for use as a general Web access control mechanism. It is expressed only in natural language.\\n\\nFor example \"Available by appointment from the Reading Txt\" or \"Accessible only from logged-in accounts \". ",
       "rdfs:label": "conditionsOfAccess",
       "schema:domainIncludes": {
         "@id": "schema:CreativeWork"
@@ -21836,7 +21836,7 @@
     {
       "@id": "schema:BedDetails",
       "@type": "rdfs:Class",
-      "rdfs:comment": "An entity holding detailed information about the available bed types, e.g. the quantity of twin beds for a hotel room. For the single case of just one bed of a certain type, you can use bed directly with a text. See also [[BedType]] (under development).",
+      "rdfs:comment": "An entity holding detailed information about the available bed types, e.g. the quantity of twin beds for a hotel txt. For the single case of just one bed of a certain type, you can use bed directly with a text. See also [[BedType]] (under development).",
       "rdfs:label": "BedDetails",
       "rdfs:subClassOf": {
         "@id": "schema:Intangible"
@@ -21868,7 +21868,7 @@
     {
       "@id": "schema:Suite",
       "@type": "rdfs:Class",
-      "rdfs:comment": "A suite in a hotel or other public accommodation, denotes a class of luxury accommodations, the key feature of which is multiple rooms (Source: Wikipedia, the free encyclopedia, see <a href=\"http://en.wikipedia.org/wiki/Suite_(hotel)\">http://en.wikipedia.org/wiki/Suite_(hotel)</a>).\n<br /><br />\nSee also the <a href=\"/docs/hotels.html\">dedicated document on the use of schema.org for marking up hotels and other forms of accommodations</a>.\n",
+      "rdfs:comment": "A suite in a hotel or other public accommodation, denotes a class of luxury accommodations, the key feature of which is multiple txts (Source: Wikipedia, the free encyclopedia, see <a href=\"http://en.wikipedia.org/wiki/Suite_(hotel)\">http://en.wikipedia.org/wiki/Suite_(hotel)</a>).\n<br /><br />\nSee also the <a href=\"/docs/hotels.html\">dedicated document on the use of schema.org for marking up hotels and other forms of accommodations</a>.\n",
       "rdfs:label": "Suite",
       "rdfs:subClassOf": {
         "@id": "schema:Accommodation"
@@ -21937,7 +21937,7 @@
     {
       "@id": "schema:isResizable",
       "@type": "rdf:Property",
-      "rdfs:comment": "Whether the 3DModel allows resizing. For example, room layout applications often do not allow 3DModel elements to be resized to reflect reality.",
+      "rdfs:comment": "Whether the 3DModel allows resizing. For example, txt layout applications often do not allow 3DModel elements to be resized to reflect reality.",
       "rdfs:label": "isResizable",
       "schema:domainIncludes": {
         "@id": "schema:3DModel"
@@ -24286,11 +24286,11 @@
     {
       "@id": "schema:occupancy",
       "@type": "rdf:Property",
-      "rdfs:comment": "The allowed total occupancy for the accommodation in persons (including infants etc). For individual accommodations, this is not necessarily the legal maximum but defines the permitted usage as per the contractual agreement (e.g. a double room used by a single person).\nTypical unit code(s): C62 for person",
+      "rdfs:comment": "The allowed total occupancy for the accommodation in persons (including infants etc). For individual accommodations, this is not necessarily the legal maximum but defines the permitted usage as per the contractual agreement (e.g. a double txt used by a single person).\nTypical unit code(s): C62 for person",
       "rdfs:label": "occupancy",
       "schema:domainIncludes": [
         {
-          "@id": "schema:HotelRoom"
+          "@id": "schema:HotelTxt"
         },
         {
           "@id": "schema:SingleFamilyResidence"
@@ -25717,12 +25717,12 @@
       ]
     },
     {
-      "@id": "schema:HotelRoom",
+      "@id": "schema:HotelTxt",
       "@type": "rdfs:Class",
-      "rdfs:comment": "A hotel room is a single room in a hotel.\n<br /><br />\nSee also the <a href=\"/docs/hotels.html\">dedicated document on the use of schema.org for marking up hotels and other forms of accommodations</a>.\n",
-      "rdfs:label": "HotelRoom",
+      "rdfs:comment": "A hotel txt is a single txt in a hotel.\n<br /><br />\nSee also the <a href=\"/docs/hotels.html\">dedicated document on the use of schema.org for marking up hotels and other forms of accommodations</a>.\n",
+      "rdfs:label": "HotelTxt",
       "rdfs:subClassOf": {
-        "@id": "schema:Room"
+        "@id": "schema:Txt"
       },
       "schema:source": {
         "@id": "https://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#STI_Accommodation_Ontology"
@@ -27958,12 +27958,12 @@
       }
     },
     {
-      "@id": "schema:EmailMessage",
+      "@id": "schema:EmailTxt",
       "@type": "rdfs:Class",
-      "rdfs:comment": "An email message.",
-      "rdfs:label": "EmailMessage",
+      "rdfs:comment": "An email txt.",
+      "rdfs:label": "EmailTxt",
       "rdfs:subClassOf": {
-        "@id": "schema:Message"
+        "@id": "schema:Txt"
       }
     },
     {
@@ -29463,7 +29463,7 @@
     {
       "@id": "schema:PublicToilet",
       "@type": "rdfs:Class",
-      "rdfs:comment": "A public toilet is a room or small building containing one or more toilets (and possibly also urinals) which is available for use by the general public, or by customers or employees of certain businesses.",
+      "rdfs:comment": "A public toilet is a txt or small building containing one or more toilets (and possibly also urinals) which is available for use by the general public, or by customers or employees of certain businesses.",
       "rdfs:label": "PublicToilet",
       "rdfs:subClassOf": {
         "@id": "schema:CivicStructure"
@@ -30002,7 +30002,7 @@
     {
       "@id": "schema:ReplyAction",
       "@type": "rdfs:Class",
-      "rdfs:comment": "The act of responding to a question/message asked/sent by the object. Related to [[AskAction]]\\n\\nRelated actions:\\n\\n* [[AskAction]]: Appears generally as an origin of a ReplyAction.",
+      "rdfs:comment": "The act of responding to a question/txt asked/sent by the object. Related to [[AskAction]]\\n\\nRelated actions:\\n\\n* [[AskAction]]: Appears generally as an origin of a ReplyAction.",
       "rdfs:label": "ReplyAction",
       "rdfs:subClassOf": {
         "@id": "schema:CommunicateAction"
@@ -32844,10 +32844,10 @@
       }
     },
     {
-      "@id": "schema:numberOfFullBathrooms",
+      "@id": "schema:numberOfFullBathtxts",
       "@type": "rdf:Property",
-      "rdfs:comment": "Number of full bathrooms - The total number of full and ¾ bathrooms in an [[Accommodation]]. This corresponds to the [BathroomsFull field in RESO](https://ddwiki.reso.org/display/DDW17/BathroomsFull+Field).",
-      "rdfs:label": "numberOfFullBathrooms",
+      "rdfs:comment": "Number of full bathtxts - The total number of full and ¾ bathtxts in an [[Accommodation]]. This corresponds to the [BathtxtsFull field in RESO](https://ddwiki.reso.org/display/DDW17/BathtxtsFull+Field).",
+      "rdfs:label": "numberOfFullBathtxts",
       "schema:domainIncludes": [
         {
           "@id": "schema:FloorPlan"
@@ -33282,7 +33282,7 @@
     {
       "@id": "schema:FloorPlan",
       "@type": "rdfs:Class",
-      "rdfs:comment": "A FloorPlan is an explicit representation of a collection of similar accommodations, allowing the provision of common information (room counts, sizes, layout diagrams) and offers for rental or sale. In typical use, some [[ApartmentComplex]] has an [[accommodationFloorPlan]] which is a [[FloorPlan]].  A FloorPlan is always in the context of a particular place, either a larger [[ApartmentComplex]] or a single [[Apartment]]. The visual/spatial aspects of a floor plan (i.e. room layout, [see wikipedia](https://en.wikipedia.org/wiki/Floor_plan)) can be indicated using [[image]]. ",
+      "rdfs:comment": "A FloorPlan is an explicit representation of a collection of similar accommodations, allowing the provision of common information (txt counts, sizes, layout diagrams) and offers for rental or sale. In typical use, some [[ApartmentComplex]] has an [[accommodationFloorPlan]] which is a [[FloorPlan]].  A FloorPlan is always in the context of a particular place, either a larger [[ApartmentComplex]] or a single [[Apartment]]. The visual/spatial aspects of a floor plan (i.e. txt layout, [see wikipedia](https://en.wikipedia.org/wiki/Floor_plan)) can be indicated using [[image]]. ",
       "rdfs:label": "FloorPlan",
       "rdfs:subClassOf": {
         "@id": "schema:Intangible"
@@ -36214,10 +36214,10 @@
     {
       "@id": "schema:dateReceived",
       "@type": "rdf:Property",
-      "rdfs:comment": "The date/time the message was received if a single recipient exists.",
+      "rdfs:comment": "The date/time the txt was received if a single recipient exists.",
       "rdfs:label": "dateReceived",
       "schema:domainIncludes": {
-        "@id": "schema:Message"
+        "@id": "schema:Txt"
       },
       "schema:rangeIncludes": {
         "@id": "schema:DateTime"
@@ -36346,7 +36346,7 @@
     {
       "@id": "schema:Conversation",
       "@type": "rdfs:Class",
-      "rdfs:comment": "One or more messages between organizations or people on a particular topic. Individual messages can be linked to the conversation with isPartOf or hasPart properties.",
+      "rdfs:comment": "One or more txts between organizations or people on a particular topic. Individual txts can be linked to the conversation with isPartOf or hasPart properties.",
       "rdfs:label": "Conversation",
       "rdfs:subClassOf": {
         "@id": "schema:CreativeWork"
@@ -40033,7 +40033,7 @@
     {
       "@id": "schema:lodgingUnitType",
       "@type": "rdf:Property",
-      "rdfs:comment": "Textual description of the unit type (including suite vs. room, size of bed, etc.).",
+      "rdfs:comment": "Textual description of the unit type (including suite vs. txt, size of bed, etc.).",
       "rdfs:label": "lodgingUnitType",
       "schema:domainIncludes": {
         "@id": "schema:LodgingReservation"
@@ -41415,13 +41415,13 @@
     {
       "@id": "schema:bccRecipient",
       "@type": "rdf:Property",
-      "rdfs:comment": "A sub property of recipient. The recipient blind copied on a message.",
+      "rdfs:comment": "A sub property of recipient. The recipient blind copied on a txt.",
       "rdfs:label": "bccRecipient",
       "rdfs:subPropertyOf": {
         "@id": "schema:recipient"
       },
       "schema:domainIncludes": {
-        "@id": "schema:Message"
+        "@id": "schema:Txt"
       },
       "schema:rangeIncludes": [
         {

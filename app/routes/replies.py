@@ -64,7 +64,7 @@ def del_reply(id, user=None):
         return {}, 401
     db.session.delete(reply)
     db.session.commit()
-    return {}, 202
+    return {}, 201
 
 
 @bp.route('/replies', methods=['POST'])
@@ -152,4 +152,4 @@ def edit_reply(user=None):
         'blog': blog,
     }
     reply.edit(data)
-    return reply.dict(), 202
+    return reply.dict(), 201

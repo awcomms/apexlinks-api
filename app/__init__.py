@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from flask_sqlalchemy import SQLAlchemy
@@ -26,6 +26,11 @@ def create_app():
 
     from app.routes import bp
     app.register_blueprint(bp)
+
+    @app.after_request
+    def af(res):
+        print(res.status, res.response)
+        return res
 
     if not app.debug and not app.testing:
         if app.config['MAIL_SERVER']:
@@ -53,7 +58,7 @@ def create_app():
             file_handler = RotatingFileHandler('logs/marketlnx.log', maxBytes=1024,
                                                backupCount=10)
             file_handler.setFormatter(logging.Formatter(
-                '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+                '%(asctime)s %(levelname)s: %(txt)s [in %(pathname)s:%(lineno)d]'))
             file_handler.setLevel(logging.INFO)
             app.logger.addHandler(file_handler)
 

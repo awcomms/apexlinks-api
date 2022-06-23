@@ -62,4 +62,4 @@ def create_token(username=None, password=None):
 def revoke_token(user=None):
     user.token = None
     db.session.commit()
-    return {}, 202
+    return {}, 201

@@ -11,7 +11,7 @@ def reply_image():
     urls = request.json.get('urls')
     for url in urls:
         Image(url)
-    return '', 202
+    return '', 201
 
 @bp.route('/images', methods=['GET'])
 def get_images():

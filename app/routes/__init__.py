@@ -8,7 +8,7 @@ from . import \
     robots_txt,\
     subs,\
     items,\
-    rooms,\
+    txts,\
     users,\
     tokens,\
-    messages
+    txts

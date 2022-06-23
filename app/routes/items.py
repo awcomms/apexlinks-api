@@ -161,7 +161,7 @@ def add_item(user=None):
 
     item = edit(json, user, new=True)
 
-    return item.dict(), 202
+    return item.dict(), 201
 
 @bp.route('/items', methods=['PUT'])
 @auth
@@ -190,4 +190,4 @@ def del_item(id, user=None):
 
     db.session.delete(item)
     db.session.commit()
-    return {'yes': True}
+    return {}, 200

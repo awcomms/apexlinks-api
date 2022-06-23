@@ -30,7 +30,7 @@ search_fields = [
     'telephone',
 ]
 
-room_search_fields = [
+txt_search_fields = [
 ]
 
 default_item_fields = [

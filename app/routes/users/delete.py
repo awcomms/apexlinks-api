@@ -10,4 +10,4 @@ def delete_user(user=None):
         db.session.delete(item)
     db.session.delete(user)
     db.session.commit()
-    return {'yes': True}, 202
+    return {}, 201

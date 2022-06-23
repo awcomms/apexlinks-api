@@ -1,10 +1,11 @@
 from time import time
+from app.misc.hasget import hasget
 from itsdangerous import TimestampSigner
 
 from sqlalchemy.orm import backref
 from app.misc.vars import max_age
 from app.misc.distance import distance
-from app.models.junctions import xrooms
+from app.models.junctions import xtxts
 from app.vars.q import host, global_priority, default_user_fields
 from app.misc.datetime_period import datetime_period
 from app.misc.fields import score
@@ -120,10 +121,10 @@ class User(db.Model):
             db.session.commit()
 
     items = db.relationship('Item', backref='user', lazy='dynamic')
-    xrooms = db.relationship('Room', secondary=xrooms, backref=db.backref(
+    xtxts = db.relationship('Txt', secondary=xtxts, backref=db.backref(
         'users', lazy='dynamic'), lazy='dynamic')
-    messages = db.relationship('Message', backref='user', lazy='dynamic')
-    rooms = db.relationship('Room', backref='user', lazy='dynamic')
+    txts = db.relationship('Txt', backref='user', lazy='dynamic')
+    txts = db.relationship('Txt', backref='user', lazy='dynamic')
     subs = db.relationship('Sub', backref='user', lazy='dynamic')
 
     def xml(self):
@@ -258,17 +259,17 @@ class User(db.Model):
     def __repr__(self):
         return 'username: {}'.format(self.username)
 
-    def in_room(self, room):
-        return self.xrooms.filter_by(id=room.id).count() > 0
+    def in_txt(self, txt):
+        return self.xtxts.filter_by(id=txt.id).count() > 0
 
-    def join(self, room):
-        if not self.in_room(room):
-            self.xrooms.append(room)
+    def join(self, txt):
+        if not self.in_txt(txt):
+            self.xtxts.append(txt)
             db.session.commit()
 
-    def leave(self, room):
-        if self.in_room(room):
-            self.xrooms.remove(room)
+    def leave(self, txt):
+        if self.in_txt(txt):
+            self.xtxts.remove(txt)
             db.session.commit()
 
     def set_password(self, password):
@@ -281,21 +282,12 @@ class User(db.Model):
     def dict(self, **kwargs):
         res = {
             'id': self.id,
-            'score': self.score,
-            'show_email': self.show_email,
-            'hidden': self.hidden,
             'username': self.username,
-            'name': self.name,
             'type': type(self).__name__.lower(),
-            'email': self.email,
-            'phone': self.phone,
-            'image': self.image,
-            'author': self.author,
-            'website': self.website,
-            'about': self.about,
-            'address': self.address,
-            'tags': self.tags,
         }
+
+        if hasget(kwargs, 'include_tags'):
+            res['tags'] = self.tags
 
         if 'user' in kwargs and kwargs['user'] and 'attrs' in kwargs:
             user = kwargs['user']
