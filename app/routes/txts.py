@@ -13,7 +13,6 @@ from app.models.txt import txt_replies
 def get_txts():
     args = request.args.get
 
-    replies = args('replies') is not None
     per_page = args('per_page')
     page = args('page')
     id = args('id')
@@ -27,8 +26,6 @@ def get_txts():
         txt = Txt.query.get(id)
         if not txt:
             return {'error': f'txt {id} not found'}, 404
-        if not replies:
-            return txt.dict()
 
     if per_page:
         try:
@@ -50,7 +47,7 @@ def get_txts():
     if txt:
         txts = txt.replies
     else:
-        txts = Txt.query.join(txt_replies, txt_replies.c.txt == Txt.id).filter(txt_replies.c.reply != Txt.id)
+        txts = Txt.query.filter_by(dm=False).join(txt_replies, txt_replies.c.txt == Txt.id).filter(txt_replies.c.reply != Txt.id)
 
     txts = txts.order_by(Txt.timestamp.asc())
 

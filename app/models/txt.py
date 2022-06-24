@@ -76,8 +76,8 @@ class Txt(db.Model):
             'replies': self.replies.count(),
             'txts': self.txts.count()
         }
-        if hasget(kwargs, 'include_tags'):
-            data['tags'] = self.tags
+        # if hasget(kwargs, 'include_tags'):
+        #     data['tags'] = self.tags
         if self.user:
             data['user'] = self.user.dict()
         if seen is False:
