@@ -66,7 +66,7 @@ class Txt(db.Model):
             for phrase in phrases:
                 if phrase not in [t['value'] for t in tags]:
                     tags.append({'value': phrase})
-            data[tags] = tags
+            data['tags'] = tags
         db.session.add(self)
         self.edit(data)
 

@@ -22,7 +22,7 @@ def get_txts():
         try:
             id = int(id)
         except:
-            return {'error': 'id does not seem to be a number'}, 400
+            return {'error': 'query arg `id` does not seem to be a number'}, 400
         txt = Txt.query.get(id)
         if not txt:
             return {'error': f'txt {id} not found'}, 404
@@ -44,7 +44,7 @@ def get_txts():
         except:
             return {'error': "'per-page' query arg does not seem to be a number"}, 400
     else:
-        per_page = 100
+        per_page = 37
 
     if page:
         try:
@@ -58,28 +58,15 @@ def get_txts():
     if txt:
         txts = txt.replies
     else:
-        txts = Txt.query
-
-    txts = txts.order_by(Txt.timestamp.asc())
-
-    # n_pages = 0
-    # if page == 'last':
-    #     pages = txts.paginate(1, per_page)
-    #     n_pages = pages.pages
-    #     while pages.page != n_pages:
-    #         pages = pages.next()
-    #     page = pages.page
-    # else:
-    #     pages = txts.paginate(page, per_page, False)
-    #     n_pages = pages.pages
-    # txts = pages.items
-    # TODO-search
+        txts = Txt.query.filter_by(dm=False)
 
     kwargs = {'txt': id}
     if tags:
         kwargs['run'] = Txt.get(tags)
+    else:
+        txts = txts.order_by(Txt.timestamp.asc())
 
-    return cdict(txts, page, 0, **kwargs)
+    return cdict(txts, page, **kwargs)
 
 @bp.route('/txts', methods=['POST'])
 @auth
