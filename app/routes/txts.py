@@ -58,7 +58,7 @@ def get_txts():
     if txt:
         txts = txt.replies
     else:
-        txts = Txt.query.filter_by(dm=False).join(txt_replies, txt_replies.c.txt == Txt.id).filter(txt_replies.c.reply != Txt.id)
+        txts = Txt.query
 
     txts = txts.order_by(Txt.timestamp.asc())
 
@@ -73,16 +73,6 @@ def get_txts():
     #     pages = txts.paginate(page, per_page, False)
     #     n_pages = pages.pages
     # txts = pages.items
-
-    def sort(items):
-        for item in items:
-            item_tags = []
-            words = item.value.split(' ') #TODO trim double spaces
-            phrases = []
-            for word in words:
-                phrases.push(word)
-                phrase = word + words
-        pass
     # TODO-search
 
     kwargs = {'txt': id}
@@ -106,6 +96,7 @@ def post_txt(user=None):
             return {'error': check_tags_res}
         create_data['tags'] = tags
     t = Txt(create_data)
+
     id = data('txt')
     if id:
         txt = Txt.query.get(id)
@@ -113,6 +104,31 @@ def post_txt(user=None):
             return {"error": f"txt {id} specified in request body parameter `txt` not found"}, 404
         t.reply(txt)
     return t.dict(), 200
+
+@bp.route('/txts', methods=['PUT'])
+@auth
+def edit_txt(user=None):
+    data = request.json.get
+    id = data('id')
+    txt = Txt.query.get(id)
+    if not txt:
+        return {"error": f"txt {id} not found"}
+    tags = data('tags')
+    check_tags_res = check_tags(tags, 'request body parameter `tags`')
+    if check_tags_res:
+        return {"error": check_tags_res}
+    if txt.user.id != user.id:
+        return {"error": "authenticated user did not create this txt"}, 401
+    data = {
+        'value': data('value'),
+        'name': data('name'),
+        'tags': tags,
+        'about': data('about')
+    }
+
+    txt.edit(data)
+    return txt.dict()
+
 
 @bp.route('/seen', methods=['PUT'])
 @auth
@@ -193,46 +209,6 @@ def txts_users(user=None):
         other_user.join(txt)
         statusCode = 201
     return txt.dict(), statusCode
-
-@bp.route('/txts', methods=['POST'])
-@auth
-def add_txt(user=None):
-    data = request.json.get
-    name = data('name')
-    tags = data('tags') or []
-    data = {
-        'name': name,
-        'user': user,
-        'tags': tags,
-        'about': data('about')
-    }
-    txt = Txt(data)
-    user.join(txt)
-    return {'id': txt.id}
-
-@bp.route('/txts', methods=['PUT'])
-@auth
-def edit_txt(user=None):
-    data = request.json.get
-    id = data('id')
-    txt = Txt.query.get(id)
-    if not txt:
-        return {"error": f"txt {id} not found"}
-    tags = data('tags')
-    check_tags_res = check_tags(tags, 'request body parameter `tags`')
-    if check_tags_res:
-        return {"error": check_tags_res}
-    if txt.user.id != user.id:
-        return {"error": "authenticated user did not create this txt"}, 401
-    data = {
-        'name': data('name'),
-        'tags': tags,
-        'about': data('about')
-    }
-
-    txt.edit(data)
-
-    return {'id': txt.id}
 
 @bp.route('/txts/<int:id>', methods=['DELETE'])
 @auth

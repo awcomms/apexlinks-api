@@ -10,6 +10,7 @@ txt_replies = db.Table("txt_replies",
     db.Column('reply', db.Integer, db.ForeignKey('txt.id')))
 
 class Txt(db.Model):
+    tags = db.Column(db.JSON)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     value = db.Column(db.Unicode)
@@ -51,6 +52,21 @@ class Txt(db.Model):
         db.session.commit()
 
     def __init__(self, data):
+        value = hasget(data, 'value')
+        if value:
+            tags = hasget(data, 'tags', [])
+            words = value.split(' ')  # TODO trim double spaces
+            phrases = []
+            length = len(words)
+            for idx, word in enumerate(words):
+                phrases.append(word)
+                for i in range(idx+1, length):
+                    word = word + ' ' + words[i]
+                    phrases.append(word)
+            for phrase in phrases:
+                if phrase not in [t['value'] for t in tags]:
+                    tags.append({'value': phrase})
+            data[tags] = tags
         db.session.add(self)
         self.edit(data)
 
@@ -68,7 +84,7 @@ class Txt(db.Model):
             joined = user.in_txt(self)
         data = {
             'id': self.id,
-            # 'tags': self.tags,
+            'tags': self.tags,
             'about': self.about,
             'dm': self.dm,
             'value': self.value,
