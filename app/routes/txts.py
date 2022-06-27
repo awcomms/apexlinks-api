@@ -13,6 +13,13 @@ from app.models.txt import txt_replies
 def get_txts():
     args = request.args.get
 
+    reverse = args('reverse')
+    if reverse:
+        try:
+            reverse = int(reverse)
+        except:
+            return {'error': f'reverse query does not seem to be a number'}
+
     per_page = args('per_page')
     page = args('page')
     id = args('id')
@@ -64,7 +71,10 @@ def get_txts():
     if tags:
         kwargs['run'] = Txt.get(tags)
     else:
-        txts = txts.order_by(Txt.timestamp.asc())
+        if reverse:
+            txts = txts.order_by(Txt.timestamp.desc())
+        else:
+            txts = txts.order_by(Txt.timestamp.asc())
 
     return cdict(txts, page, **kwargs)
 
