@@ -104,7 +104,10 @@ def post_txt(user=None):
         txt = Txt.query.get(id)
         if not txt:
             return {"error": f"txt {id} specified in request body parameter `txt` not found"}, 404
+        if txt.self:
+            return {'error', f'txt {id} is not set to accept replies from other users'}, 400
         t.reply(txt)
+    
     return t.dict(), 200
 
 @bp.route('/txts', methods=['PUT'])
@@ -144,7 +147,6 @@ def edit_txt(user=None):
 
     txt.edit(data)
     return txt.dict()
-
 
 @bp.route('/seen', methods=['PUT'])
 @auth
@@ -243,4 +245,13 @@ def get_txt_by_id(id):
     txt = Txt.query.get(id)
     if not txt:
         return {'error': f'txt {id} not found'}, 404
+    if txt.personal:
+        token = request.headers.get('auth')
+        if not token:
+            return {'error': f'txt {id} is personal, and you are not logged in'}, 401
+        user = User.check_token(token)['user']
+        if not user:
+            return {'error': 'invalid auth token'}, 401
+        if user.id != txt.user.id:
+            return {'error': f'you are not authorized to view txt {txt.id}'}, 401
     return txt.dict(include_tags=True)
