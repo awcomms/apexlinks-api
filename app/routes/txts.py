@@ -27,6 +27,17 @@ def get_txts():
         if not txt:
             return {'error': f'txt {id} not found'}, 404
 
+    tags = args('tags')
+    if tags:
+        tags_error_prefix = 'value in query arg `tags` '
+        try:
+            tags = json.loads(tags)
+        except:
+            return {'error': f'{tags_error_prefix}does not seem tob be a stringified JSON object'}
+        tags_error = check_tags(tags, tags_error_prefix)
+        if tags_error:
+            return {'error', tags_error}
+
     if per_page:
         try:
             per_page = int(per_page)
@@ -63,7 +74,7 @@ def get_txts():
     #     n_pages = pages.pages
     # txts = pages.items
 
-    def run(items):
+    def sort(items):
         for item in items:
             item_tags = []
             words = item.value.split(' ') #TODO trim double spaces
@@ -74,7 +85,11 @@ def get_txts():
         pass
     # TODO-search
 
-    return cdict(txts, page, 0, txt=id)
+    kwargs = {'txt': id}
+    if tags:
+        kwargs['run'] = Txt.get(tags)
+
+    return cdict(txts, page, 0, **kwargs)
 
 @bp.route('/txts', methods=['POST'])
 @auth
@@ -98,7 +113,6 @@ def post_txt(user=None):
             return {"error": f"txt {id} specified in request body parameter `txt` not found"}, 404
         t.reply(txt)
     return t.dict(), 200
-
 
 @bp.route('/seen', methods=['PUT'])
 @auth
@@ -153,6 +167,7 @@ def get_xtxts(user=None):
 @bp.route('/txts/users', methods=['POST'])
 @auth
 def txts_users(user=None):
+    print(user)
     request_data = request.json.get
     user_id = request_data('user')
     if not user_id:
@@ -160,16 +175,24 @@ def txts_users(user=None):
     other_user = User.query.get(user_id)
     if not other_user:
         return {'error': f'user {user_id} not found'}
-    user_txts = db.session.query(Txt.id).join(xtxts).filter(xtxts.c.user_id == user.id)
-    other_user_txts = r = db.session.query(Txt).join(
-        xtxts).filter(xtxts.c.user_id == 2)
-    both_users_txts = other_user_txts.filter(Txt.id.in_(user_txts))
-    txt = both_users_txts.filter(Txt.dm == True).first()
+    txt = None
+    dm_txts = Txt.query.filter_by(dm=True)
+    for t in dm_txts:
+        txt_users = t.dict()['users']
+        if user.id in txt_users and other_user.id in txt_users:
+            txt = t
+    # user_txts = db.session.query(Txt.id).join(xtxts).filter(xtxts.c.user_id == user.id)
+    # other_user_txts = db.session.query(Txt).join(
+    #     xtxts).filter(xtxts.c.user_id == 2)
+    # both_users_txts = other_user_txts.filter(Txt.id.in_(user_txts))
+    # txt = both_users_txts.filter(Txt.dm == True).first()
+    statusCode = 200
     if not txt:
         txt = Txt({'dm': True})
         user.join(txt)
         other_user.join(txt)
-    return txt.dict(), 201
+        statusCode = 201
+    return txt.dict(), statusCode
 
 @bp.route('/txts', methods=['POST'])
 @auth

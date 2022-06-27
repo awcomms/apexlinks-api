@@ -1,7 +1,5 @@
 from app.auth import auth
 from app.routes import bp
-from flask import request
-from app.misc.cdict import cdict
 from app.models.user import User
 
 @bp.route('/user')
