@@ -9,6 +9,11 @@ from app.models.user import User, xtxts
 from app.models.txt import Txt
 from app.models.txt import txt_replies
 
+# @bp.route('/es')
+# def es():
+#     print(request.args)
+#     return ''
+
 @bp.route('/txts')
 def get_txts():
     args = request.args.get
@@ -106,20 +111,34 @@ def post_txt(user=None):
 @auth
 def edit_txt(user=None):
     data = request.json.get
+
     id = data('id')
     txt = Txt.query.get(id)
     if not txt:
         return {"error": f"txt {id} not found"}
+
     tags = data('tags')
     check_tags_res = check_tags(tags, 'request body parameter `tags`')
     if check_tags_res:
         return {"error": check_tags_res}
+
     if txt.user.id != user.id:
         return {"error": "authenticated user did not create this txt"}, 401
+
+    self = data('self')
+    if not isinstance(self, bool):
+        return {'error': 'let `self` body parameter be a boolean'}
+
+    personal = data('personal')
+    if not isinstance(personal, bool):
+        return {'error': 'let `personal` body parameter be a boolean'}
+
     data = {
         'value': data('value'),
         'name': data('name'),
         'tags': tags,
+        'self': self,
+        'personal': personal,
         'about': data('about')
     }
 

@@ -17,6 +17,8 @@ class Txt(db.Model):
     about = db.Column(db.Unicode)
     seen = db.Column(db.Boolean, default=False)
     dm = db.Column(db.Boolean, default=False)
+    self = db.Column(db.Boolean, default=False)
+    personal = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     replies = db.relationship(
         'Txt',
@@ -88,6 +90,8 @@ class Txt(db.Model):
             'about': self.about,
             'dm': self.dm,
             'value': self.value,
+            'self': self.self,
+            'personal': self.personal,
             'joined': joined,
             'replies': self.replies.count(),
             'txts': self.txts.count()

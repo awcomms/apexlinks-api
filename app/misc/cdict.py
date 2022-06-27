@@ -7,6 +7,8 @@ def cdict(query, page=None, per_page=37, **kwargs):
     # slice items with step as `per_page`
     # get item at index `page-1`
     # get `per_page` number of items from item including item
+
+    pages = None
     
     page_items = items
     items_length = len(items)
