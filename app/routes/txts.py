@@ -11,19 +11,13 @@ from app.models.txt import txt_replies
 
 # @bp.route('/es')
 # def es():
-#     print(request.args)
 #     return ''
 
 @bp.route('/txts')
 def get_txts():
     args = request.args.get
 
-    reverse = args('reverse')
-    if reverse:
-        try:
-            reverse = int(reverse)
-        except:
-            return {'error': f'reverse query does not seem to be a number'}
+    reverse = isinstance(args('reverse'), str)
 
     per_page = args('per_page')
     page = args('page')
@@ -70,7 +64,28 @@ def get_txts():
     if txt:
         txts = txt.replies
     else:
-        txts = Txt.query.filter_by(dm=False)
+        txts = Txt.query
+        
+    txts = txts.filter(Txt.dm==False)
+        
+    joined = isinstance(args('joined'), str)
+    if joined:
+        token = request.headers.get('token')
+        if not token:
+            return {'error': 'query arg `join` provided. but invalid auth token in header `auth`'}, 401
+
+        authUser = User.check_token(token)['user']
+        if not authUser:
+            return {'error': 'query arg `join` provided. but invalid auth token in header `auth`'}, 401 #TODO-verbose
+
+        txts = txts.join(xtxts).filter(xtxts.c.user_id == authUser.id)
+
+    user = args('user')
+    if user:
+        user = User.query.get(user)
+        if not user:
+            return {'error': f'user {user} specified in query arg `user` not found'}, 404
+        txts = txts.filter(Txt.user_id==user.id)
 
     kwargs = {'txt': id}
     if tags:
@@ -87,8 +102,14 @@ def get_txts():
 @auth
 def post_txt(user=None):
     data = request.json.get
+
+    dm = data('dm')
+    if dm:
+        if not isinstance(dm, bool):
+            return {'error': 'let query body parameter `dm` be a boolean'}
     create_data = {
         'value': data('value'),
+        'dm': dm,
         'user': user,
     }
     tags = data('tags')
@@ -183,7 +204,6 @@ def get_xtxts(user=None):
     query = Txt.query
     args = request.args.get
 
-    query = query.join(xtxts).filter(xtxts.c.user_id == user.id)
 
     try:
         tags = json.loads(args('tags'))
@@ -238,7 +258,7 @@ def del_txt(id, user=None):
         return {'error': 'authenticated user was not owner of specified txt'}, 401
     db.session.delete(txt)
     db.session.commit()
-    return '', 200
+    return {}, 200
 
 @bp.route('/txts/<int:id>', methods=['GET'])
 def get_txt_by_id(id):

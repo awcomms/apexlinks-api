@@ -12,6 +12,7 @@ def cdict(query, page=None, per_page=37, **kwargs):
     
     page_items = items
     items_length = len(items)
+    print('il', items_length)
     if items_length > per_page:
         sliced = items[None:None:per_page]
         pages = len(sliced)
@@ -22,9 +23,14 @@ def cdict(query, page=None, per_page=37, **kwargs):
         if page > pages:
             return {'error': f'specified page {page} more than available pages for query', 'pages': pages}
 
+
         first_in_page = sliced[page-1]
+        print('fip', first_in_page)
+        awid = [i for i in items if first_in_page['id'] == i['id']]
+        print('awid', awid)
         index_of_first_in_page = items.index(
-            [i for i in items if first_in_page['id'] == i['id']][0])
+            awid[0])
+        print('ifip', index_of_first_in_page)
 
         page_items = []
         for i in range(index_of_first_in_page, index_of_first_in_page + per_page):
