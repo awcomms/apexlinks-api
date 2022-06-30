@@ -5,6 +5,7 @@ geopy
 flask
 fuzzywuzzy
 python-dotenv
+pywebpush
 flask_sqlalchemy
 flask_migrate
 flask_mail

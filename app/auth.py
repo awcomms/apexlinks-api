@@ -30,7 +30,7 @@ def auth(f):
     def wrapper(*args, **kwargs):
         token = request.headers.get('auth')
         if not token:
-            return {'error': 'No token provided'}, 401
+            return {'error': 'No token specified'}, 401
         user = User.check_token(token)['user']
         res = User.check_token(token)['res']
         if res == 'expired':

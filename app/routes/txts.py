@@ -1,5 +1,5 @@
 import json
-from flask import request
+from flask import current_app, request
 from app import db
 from app.auth import auth
 from app.misc.check_tags import check_tags
@@ -7,11 +7,13 @@ from app.routes import bp
 from app.misc.cdict import cdict
 from app.models.user import User, xtxts
 from app.models.txt import Txt
-from app.models.txt import txt_replies
+from app.models import Sub
+from pywebpush import webpush, WebPushException
 
 # @bp.route('/es')
 # def es():
 #     return ''
+
 
 @bp.route('/txts')
 def get_txts():
@@ -65,18 +67,19 @@ def get_txts():
         txts = txt.replies
     else:
         txts = Txt.query
-        
-    txts = txts.filter(Txt.dm==False)
-        
+
+    txts = txts.filter(Txt.dm == False)
+
     joined = isinstance(args('joined'), str)
     if joined:
-        token = request.headers.get('token')
+        token = request.headers.get('auth')
         if not token:
-            return {'error': 'query arg `join` provided. but invalid auth token in header `auth`'}, 401
+            return {'error': 'query arg `join` specified. but no auth token in header field `auth`'}, 401
 
         authUser = User.check_token(token)['user']
         if not authUser:
-            return {'error': 'query arg `join` provided. but invalid auth token in header `auth`'}, 401 #TODO-verbose
+            # TODO-verbose
+            return {'error': 'query arg `join` specified. but invalid auth token in header `auth`'}, 401
 
         txts = txts.join(xtxts).filter(xtxts.c.user_id == authUser.id)
 
@@ -85,7 +88,7 @@ def get_txts():
         user = User.query.get(user)
         if not user:
             return {'error': f'user {user} specified in query arg `user` not found'}, 404
-        txts = txts.filter(Txt.user_id==user.id)
+        txts = txts.filter(Txt.user_id == user.id)
 
     kwargs = {'txt': id}
     if tags:
@@ -98,11 +101,11 @@ def get_txts():
 
     return cdict(txts, page, **kwargs)
 
+
 @bp.route('/txts', methods=['POST'])
 @auth
 def post_txt(user=None):
     data = request.json.get
-
     dm = data('dm')
     if dm:
         if not isinstance(dm, bool):
@@ -129,7 +132,13 @@ def post_txt(user=None):
         if txt.self:
             return {'error', f'txt {id} is not set to accept replies from other users'}, 400
         t.reply(txt)
-    
+        db.engine.execute(xtxts.update().where(xtxts.c.user_id == user.id)
+                          .where(xtxts.c.txt_id == id).values(seen=False))
+        subs = Sub.query.join(User).join(
+            xtxts, (xtxts.c.user_id == User.id)).filter(xtxts.c.txt_id == id).filter(User.id != user.id)
+        for sub in subs:
+            webpush(
+                sub, data, vapid_private_key=current_app.config['VAPID'], vapid_claims={"sub": "mailto:angelwingscomms@outlook.com"})
     return t.dict(), 200
 
 @bp.route('/txts', methods=['PUT'])
@@ -177,10 +186,10 @@ def seen(user=None):
     id = request.args.get('id')
     txt = Txt.query.get(id)
     if not txt:
-        return '404', 404
+        return {'error': f'specified txt {id} was not found'}, 404
     db.engine.execute(xtxts.update().where(xtxts.c.user_id == user.id)
                       .where(xtxts.c.txt_id == txt.id).values(seen=True))
-    return '201', 201
+    return {}, 201
 
 @bp.route('/join/<int:id>', methods=['PUT'])
 @auth
@@ -191,6 +200,7 @@ def join(id, user=None):
     user.join(txt)
     return {}, 201
 
+
 @bp.route('/leave/<int:id>', methods=['PUT'])
 @auth
 def leave(id, user=None):
@@ -200,12 +210,12 @@ def leave(id, user=None):
     user.leave(txt)
     return {}, 201
 
+
 @bp.route('/xtxts', methods=['GET'])
 @auth
 def get_xtxts(user=None):
     query = Txt.query
     args = request.args.get
-
 
     try:
         tags = json.loads(args('tags'))
@@ -220,6 +230,7 @@ def get_xtxts(user=None):
     run = Txt.get(tags)
     return cdict(query, page, run=run)
 
+
 @bp.route('/txts/users', methods=['POST'])
 @auth
 def txts_users(user=None):
@@ -227,7 +238,7 @@ def txts_users(user=None):
     request_data = request.json.get
     user_id = request_data('user')
     if not user_id:
-        return {'error': "user id field `user` not provided in query parameters"}, 400
+        return {'error': "user id field `user` not specified in query parameters"}, 400
     other_user = User.query.get(user_id)
     if not other_user:
         return {'error': f'user {user_id} not found'}
@@ -250,6 +261,7 @@ def txts_users(user=None):
         statusCode = 201
     return txt.dict(), statusCode
 
+
 @bp.route('/txts/<int:id>', methods=['DELETE'])
 @auth
 def del_txt(id, user=None):
@@ -262,18 +274,28 @@ def del_txt(id, user=None):
     db.session.commit()
     return {}, 200
 
+
 @bp.route('/txts/<int:id>', methods=['GET'])
 def get_txt_by_id(id):
     txt = Txt.query.get(id)
     if not txt:
         return {'error': f'txt {id} not found'}, 404
-    if txt.personal:
+    if txt.personal or txt.dm:
+        error = {
+            'error': f'private txt was requested for but invalid auth token in headers'}, 401
+
         token = request.headers.get('auth')
         if not token:
-            return {'error': f'txt {id} is personal, and you are not logged in'}, 401
+            return error
         user = User.check_token(token)['user']
         if not user:
-            return {'error': 'invalid auth token'}, 401
-        if user.id != txt.user.id:
-            return {'error': f'you are not authorized to view txt {txt.id}'}, 401
+            return error
+
+        error = {'error': f'you are not authorized to view txt {txt.id}'}, 401
+        if txt.personal:
+            if user.id != txt.user.id:
+                return error
+        elif txt.dm:
+            if user.id not in txt.dict()['users']:
+                return error
     return txt.dict(include_tags=True)

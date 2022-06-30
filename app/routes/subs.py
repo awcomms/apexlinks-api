@@ -1,16 +1,14 @@
 from flask import request, current_app
 from app.routes import bp
+from app.auth import auth
 from app.models.sub import Sub
 from app.models.txt import Txt
 from app.models.user import User, xtxts
 
 @bp.route('/subs', methods=['POST'])
-def post_sub():
-    data = request.json.get
-    id = data('id')
-    user = User.query.get(id)
-    if not user or user.subs.first():
-        return ''
+@auth
+def post_sub(user=None):
+    data = request.json.get('sub')
     sub = data('sub')
     if Sub.query.filter(Sub.sub['endpoint'] == sub['endpoint']):
         return ''

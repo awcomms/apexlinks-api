@@ -16,7 +16,7 @@ def items():
     a = request.args.get
 
     same_user = False
-    auth_user = User.check_token(request.headers.get('token'))['user']
+    auth_user = User.check_token(request.headers.get('auth'))['user']
 
     query = Item.query.join(User).filter(User.hidden == False)
 
