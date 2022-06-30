@@ -109,6 +109,7 @@ def post_txt(user=None):
             return {'error': 'let query body parameter `dm` be a boolean'}
     create_data = {
         'value': data('value'),
+        'text': data('text'),
         'dm': dm,
         'user': user,
     }
@@ -135,6 +136,7 @@ def post_txt(user=None):
 @auth
 def edit_txt(user=None):
     data = request.json.get
+    print(request.get_json())
 
     id = data('id')
     txt = Txt.query.get(id)
@@ -163,7 +165,7 @@ def edit_txt(user=None):
         'tags': tags,
         'self': self,
         'personal': personal,
-        'about': data('about')
+        'text': data('text')
     }
 
     txt.edit(data)

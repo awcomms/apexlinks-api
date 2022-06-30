@@ -14,7 +14,7 @@ class Txt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     value = db.Column(db.Unicode)
-    about = db.Column(db.Unicode)
+    text = db.Column(db.Unicode)
     seen = db.Column(db.Boolean, default=False)
     dm = db.Column(db.Boolean, default=False)
     self = db.Column(db.Boolean, default=False)
@@ -87,7 +87,7 @@ class Txt(db.Model):
         data = {
             'id': self.id,
             'tags': self.tags,
-            'about': self.about,
+            'text': self.text,
             'dm': self.dm,
             'value': self.value,
             'self': self.self,
@@ -107,10 +107,11 @@ class Txt(db.Model):
         txt_id = hasget(kwargs, 'txt')
         if txt_id:
             txt = Txt.query.get(txt_id)
-            if txt and txt.user:
-                owner_id = txt.user.id
-                owner_replies = self.replies.filter(Txt.user_id == owner_id).count()
-                data['ownerReplies'] = owner_replies
+            if txt:
+                if txt.user:
+                    owner_id = txt.user.id
+                    owner_replies = self.replies.filter(Txt.user_id == owner_id).count()
+                    data['ownerReplies'] = owner_replies
             else:
                 print(f'txt {txt_id} in **kwargs in txt.dict() call not found')
                 # TODO-log

@@ -41,7 +41,7 @@ class User(db.Model):
     phone = db.Column(db.Unicode)
     website = db.Column(db.Unicode)
     email = db.Column(db.Unicode)
-    about = db.Column(db.Unicode)
+    text = db.Column(db.Unicode)
     location = db.Column(db.JSON)
     fields = db.Column(db.JSON)
     wallet = db.Column(db.Unicode)
