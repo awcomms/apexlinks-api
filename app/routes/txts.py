@@ -189,7 +189,7 @@ def seen(user=None):
         return {'error': f'specified txt {id} was not found'}, 404
     db.engine.execute(xtxts.update().where(xtxts.c.user_id == user.id)
                       .where(xtxts.c.txt_id == txt.id).values(seen=True))
-    return {}, 201
+    return {}
 
 @bp.route('/join/<int:id>', methods=['PUT'])
 @auth
