@@ -96,8 +96,6 @@ class Txt(db.Model):
             'replies': self.replies.count(),
             'txts': self.txts.count()
         }
-        # if hasget(kwargs, 'include_tags'):
-        #     data['tags'] = self.tags
         if self.user:
             data['user'] = self.user.dict()
         if seen is False:
@@ -140,4 +138,9 @@ class Txt(db.Model):
     def reply(self, txt):
         if not self.replied(txt):
             self.txts.append(txt)
+            db.session.commit()
+
+    def unreply(self, txt):
+        if self.replied(txt):
+            self.txts.remove(txt)
             db.session.commit()

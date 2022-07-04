@@ -4,9 +4,10 @@ from app import db
 from app.auth import auth
 from app.misc.check_tags import check_tags
 from app.routes import bp
+from app.misc.re import re
 from app.misc.cdict import cdict
 from app.models.user import User, xtxts
-from app.models.txt import Txt
+from app.models.txt import Txt, txt_replies
 from app.models import Sub
 from pywebpush import webpush, WebPushException
 
@@ -68,7 +69,13 @@ def get_txts():
     else:
         txts = Txt.query
 
-    txts = txts.filter(Txt.dm == False)
+    to = isinstance(args('to'), str)
+    if to:
+        if not txt:
+            return {'error': '`to` query arg specified but not valid txt in query arg `id` specified'}
+        txts = Txt.query.join(txt_replies, (txt_replies.c.txt == Txt.id)).filter(txt_replies.c.reply == Txt.id)
+    else:
+        txts = txts.filter(Txt.dm == False)
 
     joined = isinstance(args('joined'), str)
     if joined:
@@ -100,7 +107,6 @@ def get_txts():
             txts = txts.order_by(Txt.timestamp.asc())
 
     return cdict(txts, page, **kwargs)
-
 
 @bp.route('/txts', methods=['POST'])
 @auth
@@ -144,23 +150,33 @@ def post_txt(user=None):
 @bp.route('/txts', methods=['PUT'])
 @auth
 def edit_txt(user=None):
+
     data = request.json.get
     print(request.get_json())
 
     id = data('id')
     txt = Txt.query.get(id)
     if not txt:
-        return {"error": f"txt {id} not found"}
+        return {'error': f'txt {id} not found'}, 404
 
+    reply_re_res = re(data, txt, 'reply')
+    if reply_re_res:
+        return reply_re_res
+    unreply_re_res = re(data, txt, 'unreply')
+    if unreply_re_res:
+        return unreply_re_res
+
+    
     tags = data('tags')
     check_tags_res = check_tags(tags, 'request body parameter `tags`')
     if check_tags_res:
-        return {"error": check_tags_res}
+        return {"error": check_tags_res}, 400
 
     if txt.user.id != user.id:
         return {"error": "authenticated user did not create this txt"}, 401
 
     self = data('self')
+    print('self', self)
     if not isinstance(self, bool):
         return {'error': 'let `self` body parameter be a boolean'}
 
@@ -200,7 +216,6 @@ def join(id, user=None):
     user.join(txt)
     return {}, 201
 
-
 @bp.route('/leave/<int:id>', methods=['PUT'])
 @auth
 def leave(id, user=None):
@@ -209,7 +224,6 @@ def leave(id, user=None):
         return {"error": f"txt {id} not found"}, 404
     user.leave(txt)
     return {}, 201
-
 
 @bp.route('/xtxts', methods=['GET'])
 @auth
@@ -229,7 +243,6 @@ def get_xtxts(user=None):
 
     run = Txt.get(tags)
     return cdict(query, page, run=run)
-
 
 @bp.route('/txts/users', methods=['POST'])
 @auth
@@ -278,16 +291,13 @@ def del_txt(id, user=None):
 @bp.route('/txts/<int:id>', methods=['GET'])
 def get_txt_by_id(id):
     txt = Txt.query.get(id)
+    token = request.headers.get('auth')
+    user = User.check_token(token)['user']
     if not txt:
         return {'error': f'txt {id} not found'}, 404
     if txt.personal or txt.dm:
         error = {
             'error': f'private txt was requested for but invalid auth token in headers'}, 401
-
-        token = request.headers.get('auth')
-        if not token:
-            return error
-        user = User.check_token(token)['user']
         if not user:
             return error
 
@@ -298,4 +308,4 @@ def get_txt_by_id(id):
         elif txt.dm:
             if user.id not in txt.dict()['users']:
                 return error
-    return txt.dict(include_tags=True)
+    return txt.dict()

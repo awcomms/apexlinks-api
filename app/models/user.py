@@ -286,7 +286,7 @@ class User(db.Model):
             'type': type(self).__name__.lower(),
         }
 
-        if hasget(kwargs, 'include_tags'):
+        if not hasget(kwargs, 'exclude_tags'):
             res['tags'] = self.tags
 
         if 'user' in kwargs and kwargs['user'] and 'attrs' in kwargs:

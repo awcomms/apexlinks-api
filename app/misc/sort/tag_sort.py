@@ -13,20 +13,23 @@ def is_not_in(arr, obj):
 def tag_sort(items, tags, include_user=False):
     # field_tags = [t for t in tags if hasget(t, 'field')]
 
-    for item in items:
-        if not 'tags' in item:
-            item['tags'] = []
-        if not isinstance(item['tags'], list):
-            item['tags'] = []
+    # for item in items:
+    #     if not 'tags' in item:
+    #         item['tags'] = []
+    #     if not isinstance(item['tags'], list):
+    #         item['tags'] = []
 
     for tag in tags:
         # if hasget(tag, 'exact'):
         #     items = [i for i in items if hasget(tag, 'value', '') in [hasget(t, 'value', '') for t in i['tags']]]
         for item in items:
             item['score'] = 0
+            tag_value = hasget(tag, 'value', '')
+            item_tag_values = [hasget(t, 'value', '') for t in item['tags']]
+            print('t', tag_value, item_tag_values)
             try:
                 item['score'] += process.extractOne(
-                    hasget(tag, 'value', ''), [hasget(t, 'value', '') for t in item['tags']])[1]
+                   tag_value, item_tag_values)[1]
             except Exception as tpe:
                 print(f'tag_sort exception. item: {item["id"]}, item_tags: {item["tags"]}. current tag: {tag}. exception:', tpe)
                 continue

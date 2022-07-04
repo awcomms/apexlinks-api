@@ -15,12 +15,12 @@ def get_user_by_username(username):
     user = User.query.filter_by(username=username).first()
     if not user:
         return {"error": f"user with username `{username}` not found"}, 404
-    return user.dict(include_tags=True)
+    return user.dict()
 
 @bp.route('/users/<int:id>')
 def get_user(id):
     user = User.query.get(id)
     if user:
-        return user.dict(include_tags=True)
+        return user.dict()
     else:
         return {'error': f'user with id {id} was not found'}, 404
