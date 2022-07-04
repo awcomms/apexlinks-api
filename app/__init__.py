@@ -29,7 +29,6 @@ def create_app():
 
     @app.after_request
     def af(res):
-        print(res.response)
         return res
 
     if not app.debug and not app.testing:

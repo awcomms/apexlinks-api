@@ -126,6 +126,11 @@ class Txt(db.Model):
                     # TODO-log
         return data
 
+    def inherit(self, txt):
+        attrs = ['dm', 'personal']
+        for field in attrs:
+            setattr(self, field, getattr(txt, field))
+
     @staticmethod
     def get_replies(id):
         return Txt.query.get(id).replies
@@ -138,6 +143,7 @@ class Txt(db.Model):
     def reply(self, txt):
         if not self.replied(txt):
             self.txts.append(txt)
+            self.inherit(txt)
             db.session.commit()
 
     def unreply(self, txt):

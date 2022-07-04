@@ -131,6 +131,7 @@ def post_txt(user=None):
     t = Txt(create_data)
 
     id = data('txt')
+    print('id', id)
     if id:
         txt = Txt.query.get(id)
         if not txt:
@@ -261,6 +262,7 @@ def txts_users(user=None):
         txt_users = t.dict()['users']
         if user.id in txt_users and other_user.id in txt_users:
             txt = t
+    print('txt', txt)
     # user_txts = db.session.query(Txt.id).join(xtxts).filter(xtxts.c.user_id == user.id)
     # other_user_txts = db.session.query(Txt).join(
     #     xtxts).filter(xtxts.c.user_id == 2)
