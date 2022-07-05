@@ -124,7 +124,6 @@ class User(db.Model):
     xtxts = db.relationship('Txt', secondary=xtxts, backref=db.backref(
         'users', lazy='dynamic'), lazy='dynamic')
     txts = db.relationship('Txt', backref='user', lazy='dynamic')
-    txts = db.relationship('Txt', backref='user', lazy='dynamic')
     subs = db.relationship('Sub', backref='user', lazy='dynamic')
 
     def xml(self):
@@ -278,27 +277,16 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def dict(self, **kwargs):
+    def dict(self, include=None, **kwargs):
         res = {
             'id': self.id,
-            'username': self.username,
-            'type': type(self).__name__.lower(),
         }
 
-        if not hasget(kwargs, 'exclude_tags'):
-            res['tags'] = self.tags
-
-        if 'user' in kwargs and kwargs['user'] and 'attrs' in kwargs:
-            user = kwargs['user']
-            # TODO
-            for attr in kwargs['attrs']:
-                if attr == 'saved':
-                    res[attr] = user.user_saved(self)
-                if hasattr(user, attr):
-                    res[attr] = getattr(user, attr)
-                else:
-                    # TODO-error
-                    pass
+        if include:
+            attrs = ['username', 'tags', 'text']
+            for i in include:
+                if i in attrs and hasattr(self, i):
+                    res[i] = getattr(self, i)
 
         if '_extra' in kwargs:
             res.update(kwargs['_extra'])

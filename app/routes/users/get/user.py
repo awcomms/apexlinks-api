@@ -1,6 +1,9 @@
+from requests import request
 from app.auth import auth
+from app.misc.check_include import check_include
 from app.routes import bp
 from app.models.user import User
+
 
 @bp.route('/user')
 @auth
@@ -10,6 +13,7 @@ def get_auth_user(user=None):
     else:
         return '', 400
 
+
 @bp.route('/users/<username>')
 def get_user_by_username(username):
     user = User.query.filter_by(username=username).first()
@@ -17,10 +21,16 @@ def get_user_by_username(username):
         return {"error": f"user with username `{username}` not found"}, 404
     return user.dict()
 
+
 @bp.route('/users/<int:id>')
 def get_user(id):
     user = User.query.get(id)
     if user:
-        return user.dict()
+        include = request.args.get(include)
+        try:
+            include = check_include(include)
+        except Exception as e:
+            return e.args
+        return user.dict(include=include)
     else:
         return {'error': f'user with id {id} was not found'}, 404

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from app.misc.sort.tag_sort import tag_sort
 from app.misc import hasget
 from app import db
+from app.misc.to_tags import to_tags
 from app.models import User
 from app.models.junctions import xtxts
 
@@ -11,12 +12,12 @@ txt_replies = db.Table("txt_replies",
     db.Column('reply', db.Integer, db.ForeignKey('txt.id')))
 
 class Txt(db.Model):
-    tags = db.Column(db.JSON)
+    tags = db.Column(db.JSON, default=[])
+    search_tags = db.Column(db.JSON, default=[])
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    value = db.Column(db.Unicode)
-    text = db.Column(db.Unicode)
-    seen = db.Column(db.Boolean, default=False)
+    value = db.Column(db.Unicode, default='')
+    text = db.Column(db.Unicode, default='')
     dm = db.Column(db.Boolean, default=False)
     self = db.Column(db.Boolean, default=False)
     personal = db.Column(db.Boolean, default=False)
@@ -49,83 +50,75 @@ class Txt(db.Model):
         return run
 
     def edit(self, data):
-        for field in data:
-            if hasattr(self, field) and data[field]:
-                setattr(self, field, data[field])
-        db.session.commit()
+        if data:
+            for field in data:
+                if hasattr(self, field) and data[field]:
+                    setattr(self, field, data[field])
+            db.session.commit()
 
-    def __init__(self, data):
+    def __init__(self, data=None):
         value = hasget(data, 'value')
         if value:
-            tags = hasget(data, 'tags', [])
-            words = value.split(' ')  # TODO trim double spaces
-            phrases = []
-            length = len(words)
-            for idx, word in enumerate(words):
-                phrases.append(word)
-                for i in range(idx+1, length):
-                    word = word + ' ' + words[i]
-                    phrases.append(word)
-            for phrase in phrases:
-                if phrase not in [t['value'] for t in tags]:
-                    tags.append({'value': phrase})
-            data['tags'] = tags
+            tags = hasget(data, 'search_tags', [])
+            search_tags = to_tags(value, tags)
+            data['search_tags'] = search_tags
+
         db.session.add(self)
         self.edit(data)
-        self.user.join(self) #TODO-watch-out
+        if self.user:
+            self.user.join(self) #TODO-watch-out
+        db.session.commit()
+        
 
-    def dict(self, **kwargs):
-        uid = None
-        seen = None
-        joined = None
-        if 'user' in kwargs:
-            user = kwargs['user']
-            uid = user.id
-            row = db.engine.execute(xtxts.select().where(xtxts.c.user_id == uid)
-                                    .where(xtxts.c.txt_id == self.id)).first()
-            if row:
-                seen = row['seen']
-            joined = user.in_txt(self)
+    def dict(self, include=None, **kwargs):
         data = {
             'id': self.id,
-            'tags': self.tags,
-            'text': self.text,
-            'dm': self.dm,
-            'value': self.value,
-            'self': self.self,
-            'personal': self.personal,
-            'joined': joined,
-            'replies': self.replies.count(),
-            'txts': self.txts.count()
         }
-        if self.user:
-            data['user'] = self.user.dict()
-        if seen is False:
-            data['unseen'] = True
-        if self.dm:
-            data['users'] = [user.id for user in self.users]
-        txt_id = hasget(kwargs, 'txt')
-        if txt_id:
-            txt = Txt.query.get(txt_id)
-            if txt:
-                if txt.user:
-                    owner_id = txt.user.id
-                    owner_replies = self.replies.filter(Txt.user_id == owner_id).count()
-                    data['ownerReplies'] = owner_replies
-            else:
-                print(f'txt {txt_id} in **kwargs in txt.dict() call not found')
-                # TODO-log
-        else:
-            txt_id = hasget(kwargs, 'txt')
-            if txt_id:
-                txt = Txt.query.get(txt_id)
-                if txt:
-                    owner_id = txt.user_id
-                    owner_replies = self.replies.filter(Txt.user_id == owner_id).count()
-                    data['ownerReplies'] = owner_replies
-                else:
-                    print('txt in **kwargs in txt.dict() call not found')
-                    # TODO-log
+        if include:
+            attrs = ['tags', 'text', 'value', 'self', 'personal', 'search_tags']
+            for i in include:
+                if i in attrs and hasattr(self, i):
+                    data[i] = getattr(self, i)
+            if 'user' in include:
+                if self.user:
+                    data['user'] = self.user.dict()
+            if 'seen' in include:
+                user = hasget(kwargs, 'user')
+                if not user:
+                    return {'error': '`seen` specified in query arg `include` but no logged in user'}, 400
+                uid = user.id
+                row = db.engine.execute(xtxts.select().where(xtxts.c.user_id == uid)
+                                        .where(xtxts.c.txt_id == self.id)).first()
+                if row:
+                    seen = row['seen']
+                if seen is False:
+                    data['unseen'] = True
+            if 'users' in include:
+                data['users'] = [user.id for user in self.users]
+            if 'joined' in include:
+                user = hasget(kwargs, 'user')
+                if not user:
+                    return {'error': '`seen` specified in query arg `include` but no logged in user'}, 400
+                data['joined'] = user.in_txt(self)
+            if 'replyCount' in include:
+                data['replyCount'] = self.replies.count()
+            if 'ownerReplyCount' in include:
+                txt_id = hasget(kwargs, 'txt')
+                if not txt_id:
+                    return {'error': '`ownerReplyCount` specified in query arg but no txt specified'}, 400
+                if txt_id:
+                    txt = Txt.query.get(txt_id)
+                    if txt:
+                        if txt.user:
+                            owner_id = txt.user.id
+                            owner_replies = self.replies.filter(Txt.user_id == owner_id).count()
+                            data['ownerReplies'] = owner_replies
+                        else:
+                            return {'error': '`ownerReplyCount` specified in query arg `include` but specified txt has no owner'}, 400
+                    else:
+                        print(f'txt {txt_id} in **kwargs in txt.dict() call not found') # TODO-log
+            if 'txtsRepliedToCount' in include:
+                data['txtsRepliedToCount'] = self.txts.count()
         return data
 
     def inherit(self, txt):

@@ -3,6 +3,7 @@ from app.auth import auth
 import json
 from flask import request
 from app.routes import bp
+from app.misc.check_include import check_include
 from app.misc.sort.tag_sort import tag_sort
 from app.models.user import User
 from app.misc.cdict import cdict
@@ -27,6 +28,13 @@ def users(user=None):
     else:
         sort = 'tag'
     loc = a('loc')
+
+    include = a('include')
+    try:
+        include = check_include(include, 'query arg')
+    except Exception as e:
+        return e.args
+
     # if loc:
     #     try:
     #         loc = json.loads(loc)
@@ -80,4 +88,4 @@ def users(user=None):
     query = User.query.filter_by(hidden=False)
     
     run = lambda items: tag_sort(items, tags)
-    return cdict(query, page, run=run)
+    return cdict(query, page, run=run, include=include)

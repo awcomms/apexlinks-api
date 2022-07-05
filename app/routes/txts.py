@@ -2,6 +2,7 @@ import json
 from flask import current_app, request
 from app import db
 from app.auth import auth
+from app.misc.check_include import check_include
 from app.misc.check_tags import check_tags
 from app.routes import bp
 from app.misc.re import re
@@ -109,7 +110,14 @@ def get_txts():
             return {'error': f'user {user} specified in query arg `user` not found'}, 404
         txts = txts.filter(Txt.user_id == user.id)
 
-    kwargs = {'txt': id}
+    include = args('include')
+    if include:
+        try:
+            include = check_include(include, 'query arg')
+        except Exception as e:
+            return e.args
+
+    kwargs = {'include': include}
     if tags:
         kwargs['run'] = Txt.get(tags)
     else:
@@ -277,7 +285,7 @@ def txts_dm(user=None):
     txt = None
     dm_txts = Txt.query.filter_by(dm=True)
     for t in dm_txts:
-        txt_users = t.dict()['users']
+        txt_users = t.dict(include=['users'])['users']
         if (user.id in txt_users) and (other_user.id in txt_users):
             txt = t
     # user_txts = db.session.query(Txt.id).join(xtxts).filter(xtxts.c.user_id == user.id)
@@ -307,7 +315,6 @@ def del_txt(id, user=None):
     db.session.commit()
     return {}, 200
 
-
 @bp.route('/txts/<int:id>', methods=['GET'])
 def get_txt_by_id(id):
     txt = Txt.query.get(id)
@@ -318,7 +325,6 @@ def get_txt_by_id(id):
     if txt.personal or txt.dm:
         if not user:
             return no_auth_private_error
-
         
         if txt.personal:
             if user.id != txt.user.id:
@@ -327,4 +333,11 @@ def get_txt_by_id(id):
             print(txt.dict())
             if user.id not in txt.dict()['users']:
                 return unauthorized_to_view_error(txt)
-    return txt.dict()
+    
+    include = request.args.get('include')
+    if include:
+        try:
+            include = check_include(include)
+        except Exception as e:
+            return e.args
+    return txt.dict(include=include)

@@ -25,14 +25,25 @@ def tag_sort(items, tags, include_user=False):
         for item in items:
             item['score'] = 0
             tag_value = hasget(tag, 'value', '')
-            item_tag_values = [hasget(t, 'value', '') for t in item['tags']]
-            print('t', tag_value, item_tag_values)
+            item_tags = hasget(item, 'tags')
+            if not item_tags:
+                continue
+            item_tags_values = [hasget(t, 'value', '') for t in item_tags]
+            item_search_tags = hasget(item, 'search_tags')
+            if item_search_tags:
+                item_search_tags_values = [hasget(t, 'value', '') for t in item_search_tags]
+                item_tags_values = item_tags_values + item_search_tags_values
+            print('t', tag_value, item_tags_values)
             try:
                 item['score'] += process.extractOne(
-                   tag_value, item_tag_values)[1]
+                   tag_value, item_tags_values)[1]
             except Exception as tpe:
                 print(f'tag_sort exception. item: {item["id"]}, item_tags: {item["tags"]}. current tag: {tag}. exception:', tpe)
                 continue
+            tags_length = len(tags)
+            item_tags_length = len(item_tags)
+            ratio = item_tags_length / tags_length
+            item['score'] = item['score'] /ratio
 
     # for idx, item in enumerate(items):
     #     item['score'] = 0

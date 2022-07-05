@@ -1,8 +1,21 @@
-def cdict(query, page='last', per_page=37, **kwargs):
-    items = [item.dict(**kwargs) for item in query]
-    if 'run' in kwargs and kwargs['run']:
-        run = kwargs['run']
+from app.misc.hasget import hasget
+
+
+def cdict(query, page='last', per_page=37, include=[], **kwargs):
+    if 'tags' not in include:
+        include.append('tags')
+    if 'search_tags' not in include:
+        include.append('search_tags')
+    items = [item.dict(include=include, **kwargs) for item in query]
+    run = hasget(kwargs, 'run')
+    if run:
         items = run(items)
+    for i in items:
+        if not 'tags' in include:
+            if hasget(i, 'tags'):
+                    del i['tags']
+        if hasget(i, 'search_tags'):
+            del i['search_tags']
 
     # slice items with step as `per_page`
     # get item at index `page-1`
