@@ -11,6 +11,12 @@ from app.models.txt import Txt, txt_replies
 from app.models import Sub
 from pywebpush import webpush, WebPushException
 
+no_auth_private_error = {
+    'error': f'private txt was requested for but invalid auth token in headers'}, 400
+
+unauthorized_to_view_error = lambda txt: {
+    'error': f'you are not authorized to view txt {txt.id}'}, 401
+
 # @bp.route('/es')
 # def es():
 #     return ''
@@ -20,21 +26,27 @@ from pywebpush import webpush, WebPushException
 def get_txts():
     args = request.args.get
 
-    reverse = isinstance(args('reverse'), str)
-
-    per_page = args('per_page')
-    page = args('page')
-    id = args('id')
 
     txt = None
+    id = args('id')
     if id:
         try:
             id = int(id)
         except:
-            return {'error': 'query arg `id` does not seem to be a number'}, 400
+            return {'error': 'let query arg `id` be a number'}, 400
         txt = Txt.query.get(id)
         if not txt:
             return {'error': f'txt {id} not found'}, 404
+        if txt.dm or txt.personal:
+            auth_user = User.check_token(request.headers.get('auth'))['user']
+            if not auth_user:
+                return no_auth_private_error
+            if txt.dm:
+                if auth_user.id not in txt.dict()['users']:
+                    return unauthorized_to_view_error(txt)
+            elif txt.personal:
+                if txt.user.id != auth_user.id:
+                    return unauthorized_to_view_error(txt)
 
     tags = args('tags')
     if tags:
@@ -47,6 +59,7 @@ def get_txts():
         if tags_error:
             return {'error', tags_error}
 
+    per_page = args('per_page')
     if per_page:
         try:
             per_page = int(per_page)
@@ -55,6 +68,7 @@ def get_txts():
     else:
         per_page = 37
 
+    page = args('page')
     if page:
         try:
             page = int(page)
@@ -64,18 +78,17 @@ def get_txts():
     else:
         page = 'last'
 
-    if txt:
-        txts = txt.replies
-    else:
-        txts = Txt.query
-
     to = isinstance(args('to'), str)
     if to:
         if not txt:
-            return {'error': '`to` query arg specified but not valid txt in query arg `id` specified'}
-        txts = Txt.query.join(txt_replies, (txt_replies.c.txt == Txt.id)).filter(txt_replies.c.reply == Txt.id)
+            return {'error': '`to` query arg specified but no valid txt in query arg `id` specified'}
+        txts = Txt.query.join(txt_replies, (txt_replies.c.txt == Txt.id)).filter(
+            txt_replies.c.reply == Txt.id)
+
+    if txt:
+        txts = txt.replies
     else:
-        txts = txts.filter(Txt.dm == False)
+        txts = Txt.query.filter(Txt.dm == False)
 
     joined = isinstance(args('joined'), str)
     if joined:
@@ -101,11 +114,13 @@ def get_txts():
     if tags:
         kwargs['run'] = Txt.get(tags)
     else:
+        reverse = isinstance(args('reverse'), str)
         if reverse:
             txts = txts.order_by(Txt.timestamp.desc())
         else:
             txts = txts.order_by(Txt.timestamp.asc())
 
+    print('c', txts.count())
     return cdict(txts, page, **kwargs)
 
 @bp.route('/txts', methods=['POST'])
@@ -126,7 +141,7 @@ def post_txt(user=None):
     if tags:
         check_tags_res = check_tags(tags, 'in request body parameter `tags`')
         if check_tags_res:
-            return {'error': check_tags_res}
+            return {'error': check_tags_res}, 400
         create_data['tags'] = tags
     t = Txt(create_data)
 
@@ -139,6 +154,7 @@ def post_txt(user=None):
         if txt.self:
             return {'error', f'txt {id} is not set to accept replies from other users'}, 400
         t.reply(txt)
+        print('q', txt.id, txt.value, txt.users.all())
         db.engine.execute(xtxts.update().where(xtxts.c.user_id == user.id)
                           .where(xtxts.c.txt_id == id).values(seen=False))
         subs = Sub.query.join(User).join(
@@ -153,12 +169,14 @@ def post_txt(user=None):
 def edit_txt(user=None):
 
     data = request.json.get
-    print(request.get_json())
 
     id = data('id')
     txt = Txt.query.get(id)
     if not txt:
         return {'error': f'txt {id} not found'}, 404
+
+    if txt.user.id != user.id:
+        return {"error": "authenticated user did not create this txt"}, 401
 
     reply_re_res = re(data, txt, 'reply')
     if reply_re_res:
@@ -169,25 +187,27 @@ def edit_txt(user=None):
 
     
     tags = data('tags')
-    check_tags_res = check_tags(tags, 'request body parameter `tags`')
-    if check_tags_res:
-        return {"error": check_tags_res}, 400
-
-    if txt.user.id != user.id:
-        return {"error": "authenticated user did not create this txt"}, 401
+    if tags:
+        check_tags_res = check_tags(tags, 'request body parameter `tags`')
+        if check_tags_res:
+            return {"error": check_tags_res}, 400
 
     self = data('self')
-    print('self', self)
-    if not isinstance(self, bool):
-        return {'error': 'let `self` body parameter be a boolean'}
+    if self:
+        if txt.dm:
+            {'error': 'txt attribute `self` may not be set for a dm txt'}, 400  # TODO
+        if not isinstance(self, bool):
+            return {'error': 'let `self` body parameter be a boolean'}
 
     personal = data('personal')
-    if not isinstance(personal, bool):
-        return {'error': 'let `personal` body parameter be a boolean'}
+    if personal:
+        if txt.dm:
+            {'error': 'txt attribute `personal` may not be set for a dm txt'}, 400 #TODO
+        if not isinstance(personal, bool):
+            return {'error': 'let `personal` body parameter be a boolean'}
 
     data = {
         'value': data('value'),
-        'name': data('name'),
         'tags': tags,
         'self': self,
         'personal': personal,
@@ -245,12 +265,10 @@ def get_xtxts(user=None):
     run = Txt.get(tags)
     return cdict(query, page, run=run)
 
-@bp.route('/txts/users', methods=['POST'])
+@bp.route('/txts/dm', methods=['GET'])
 @auth
-def txts_users(user=None):
-    print(user)
-    request_data = request.json.get
-    user_id = request_data('user')
+def txts_dm(user=None):
+    user_id = request.args.get('user')
     if not user_id:
         return {'error': "user id field `user` not specified in query parameters"}, 400
     other_user = User.query.get(user_id)
@@ -260,9 +278,8 @@ def txts_users(user=None):
     dm_txts = Txt.query.filter_by(dm=True)
     for t in dm_txts:
         txt_users = t.dict()['users']
-        if user.id in txt_users and other_user.id in txt_users:
+        if (user.id in txt_users) and (other_user.id in txt_users):
             txt = t
-    print('txt', txt)
     # user_txts = db.session.query(Txt.id).join(xtxts).filter(xtxts.c.user_id == user.id)
     # other_user_txts = db.session.query(Txt).join(
     #     xtxts).filter(xtxts.c.user_id == 2)
@@ -271,11 +288,12 @@ def txts_users(user=None):
     statusCode = 200
     if not txt:
         txt = Txt({'dm': True})
+        print(txt.id)
         user.join(txt)
         other_user.join(txt)
         statusCode = 201
+    print('a', txt.id, txt.value, txt.users.all())
     return txt.dict(), statusCode
-
 
 @bp.route('/txts/<int:id>', methods=['DELETE'])
 @auth
@@ -298,16 +316,15 @@ def get_txt_by_id(id):
     if not txt:
         return {'error': f'txt {id} not found'}, 404
     if txt.personal or txt.dm:
-        error = {
-            'error': f'private txt was requested for but invalid auth token in headers'}, 401
         if not user:
-            return error
+            return no_auth_private_error
 
-        error = {'error': f'you are not authorized to view txt {txt.id}'}, 401
+        
         if txt.personal:
             if user.id != txt.user.id:
-                return error
+                return unauthorized_to_view_error(txt)
         elif txt.dm:
+            print(txt.dict())
             if user.id not in txt.dict()['users']:
-                return error
+                return unauthorized_to_view_error(txt)
     return txt.dict()

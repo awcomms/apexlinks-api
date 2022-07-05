@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from app.misc.sort.tag_sort import tag_sort
 from app.misc import hasget
 from app import db
+from app.models import User
 from app.models.junctions import xtxts
 
 txt_replies = db.Table("txt_replies",
@@ -130,6 +131,11 @@ class Txt(db.Model):
         attrs = ['dm', 'personal']
         for field in attrs:
             setattr(self, field, getattr(txt, field))
+        if txt.dm:
+            for id in txt.dict()['users']:
+                user = User.query.get(id)
+                user.join(self)
+        db.session.commit()
 
     @staticmethod
     def get_replies(id):

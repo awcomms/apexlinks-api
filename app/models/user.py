@@ -196,7 +196,6 @@ class User(db.Model):
         
     @staticmethod
     def check_token(token):
-        print('serializer got: ', token)
         # s = TimestampSigner(current_app.config['SECRET_KEY'])
         s = Serializer(current_app.config['SECRET_KEY'])
         try:

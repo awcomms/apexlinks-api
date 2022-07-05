@@ -12,7 +12,6 @@ def cdict(query, page=None, per_page=37, **kwargs):
     
     page_items = items
     items_length = len(items)
-    print('il', items_length)
     if items_length > per_page:
         sliced = items[None:None:per_page]
         pages = len(sliced)
