@@ -72,6 +72,7 @@ class Txt(db.Model):
             data['tags'] = tags
         db.session.add(self)
         self.edit(data)
+        self.user.join(self) #TODO-watch-out
 
     def dict(self, **kwargs):
         uid = None
@@ -150,6 +151,7 @@ class Txt(db.Model):
         if not self.replied(txt):
             self.txts.append(txt)
             self.inherit(txt)
+            self.user.join(txt)
             db.session.commit()
 
     def unreply(self, txt):

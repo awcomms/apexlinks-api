@@ -1,4 +1,4 @@
-def cdict(query, page=None, per_page=37, **kwargs):
+def cdict(query, page='last', per_page=37, **kwargs):
     items = [item.dict(**kwargs) for item in query]
     if 'run' in kwargs and kwargs['run']:
         run = kwargs['run']
@@ -38,10 +38,9 @@ def cdict(query, page=None, per_page=37, **kwargs):
 
     res = {
         'items': page_items,
-        'total': items_length
+        'total': items_length,
+        'page': page
     }
-    if page:
-        res['page'] = page
     if pages:
         res['pages'] = pages
     if 'extra' in kwargs:

@@ -26,7 +26,6 @@ unauthorized_to_view_error = lambda txt: {
 def get_txts():
     args = request.args.get
 
-
     txt = None
     id = args('id')
     if id:
@@ -160,6 +159,7 @@ def post_txt(user=None):
         subs = Sub.query.join(User).join(
             xtxts, (xtxts.c.user_id == User.id)).filter(xtxts.c.txt_id == id).filter(User.id != user.id)
         for sub in subs:
+            print('sub', sub)
             webpush(
                 sub, data, vapid_private_key=current_app.config['VAPID'], vapid_claims={"sub": "mailto:angelwingscomms@outlook.com"})
     return t.dict(), 200
