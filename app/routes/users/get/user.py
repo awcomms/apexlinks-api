@@ -13,7 +13,7 @@ def get_auth_user(user=None):
         try:
             include = check_include(include)
         except Exception as e:
-            return e.args[0]
+            return e.args
         return user.dict(include=include)
     else:
         return '', 400
@@ -35,8 +35,8 @@ def get_user(id):
         try:
             include = check_include(include)
         except Exception as e:
-            print('sdi', type(e.args), e.args[0])
-            return e.args[0]
+            print('sdi', type(e.args), e.args)
+            return e.args
         return user.dict(include=include)
     else:
         return {'error': f'user with id {id} was not found'}, 404

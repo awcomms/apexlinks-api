@@ -11,7 +11,7 @@ def check_include(include, arg='query arg'):
         except TypeError or json.decoder.JSONDecodeError:
             raise Exception(type_error)
         except Exception as e:
-            raise Exception({'error': f'internal error while trying to parse {arg} include'}, 400)
+            raise Exception(({'error': f'internal error while trying to parse {arg} include'}, 400))
     if not isinstance(include, list):
         raise Exception(type_error)
     return include

@@ -48,6 +48,8 @@ def cdict(query, page='last', per_page=37, include=[], **kwargs):
         for i in range(index_of_first_in_page, index_of_first_in_page + per_page):
             if i < items_length:
                 page_items.append(items[i])
+    else:
+        page = 1
 
     res = {
         'items': page_items,

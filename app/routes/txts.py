@@ -15,7 +15,8 @@ from pywebpush import webpush, WebPushException
 no_auth_private_error = {
     'error': f'private txt was requested for but invalid auth token in headers'}, 400
 
-unauthorized_to_view_error = lambda txt: {
+
+def unauthorized_to_view_error(txt): return {
     'error': f'you are not authorized to view txt {txt.id}'}, 401
 
 # @bp.route('/es')
@@ -54,10 +55,10 @@ def get_txts():
         try:
             tags = json.loads(tags)
         except:
-            return {'error': f'{tags_error_prefix}does not seem tob be a stringified JSON object'}
+            return {'error': f'{tags_error_prefix}does not seem tob be a stringified JSON object'}, 400
         tags_error = check_tags(tags, tags_error_prefix)
         if tags_error:
-            return {'error', tags_error}
+            return {'error', tags_error}, 400
 
     per_page = args('per_page')
     if per_page:
@@ -89,7 +90,7 @@ def get_txts():
     if txt:
         txts = txt.replies
     else:
-        txts = Txt.query.filter(Txt.dm == False)
+        txts = Txt.query.filter(Txt.dm == False).filter(Txt.personal == False)
 
     joined = isinstance(args('joined'), str)
     if joined:
@@ -115,7 +116,8 @@ def get_txts():
     try:
         include = check_include(include, 'query arg')
     except Exception as e:
-        return e.args[0]
+        print('ic', include, e)
+        return e.args
 
     kwargs = {'include': include}
     if tags:
@@ -130,6 +132,7 @@ def get_txts():
     print('c', txts.count())
     return cdict(txts, page, **kwargs)
 
+
 @bp.route('/txts', methods=['POST'])
 @auth
 def post_txt(user=None):
@@ -139,8 +142,8 @@ def post_txt(user=None):
     try:
         include = check_include(include)
     except Exception as e:
-        return e.args[0]
-    
+        return e.args
+
     dm = data('dm')
     if dm:
         if not isinstance(dm, bool):
@@ -159,20 +162,16 @@ def post_txt(user=None):
         create_data['tags'] = tags
     t = Txt(create_data)
 
-
-
     id = data('txt')
-    print('id', id)
     if id:
         txt = Txt.query.get(id)
         if not txt:
             return {"error": f"txt {id} specified in request body parameter `txt` not found"}, 404
-        if txt.self:
+        if txt.self and txt.user.id != user.id:
             return {'error', f'txt {id} is not set to accept replies from other users'}, 400
         t.reply(txt)
         print('q', txt.id, txt.value, txt.users.all())
-        db.engine.execute(xtxts.update().where(xtxts.c.user_id == user.id)
-                          .where(xtxts.c.txt_id == id).values(seen=False))
+        db.engine.execute(xtxts.update().where(xtxts.c.txt_id == id).values(seen=False))
         subs = Sub.query.join(User).join(
             xtxts, (xtxts.c.user_id == User.id)).filter(xtxts.c.txt_id == id).filter(User.id != user.id)
         for sub in subs:
@@ -180,6 +179,7 @@ def post_txt(user=None):
             webpush(
                 sub, data, vapid_private_key=current_app.config['VAPID'], vapid_claims={"sub": "mailto:angelwingscomms@outlook.com"})
     return t.dict(include=include), 200
+
 
 @bp.route('/txts', methods=['PUT'])
 @auth
@@ -202,7 +202,6 @@ def edit_txt(user=None):
     if unreply_re_res:
         return unreply_re_res
 
-    
     tags = data('tags')
     if tags:
         check_tags_res = check_tags(tags, 'request body parameter `tags`')
@@ -219,7 +218,7 @@ def edit_txt(user=None):
     personal = data('personal')
     if personal:
         if txt.dm:
-            {'error': 'txt attribute `personal` may not be set for a dm txt'}, 400 #TODO
+            {'error': 'txt attribute `personal` may not be set for a dm txt'}, 400  # TODO
         if not isinstance(personal, bool):
             return {'error': 'let `personal` body parameter be a boolean'}
 
@@ -234,6 +233,7 @@ def edit_txt(user=None):
     txt.edit(data)
     return txt.dict()
 
+
 @bp.route('/seen', methods=['PUT'])
 @auth
 def seen(user=None):
@@ -245,6 +245,7 @@ def seen(user=None):
                       .where(xtxts.c.txt_id == txt.id).values(seen=True))
     return {}
 
+
 @bp.route('/join/<int:id>', methods=['PUT'])
 @auth
 def join(id, user=None):
@@ -252,7 +253,7 @@ def join(id, user=None):
     if not txt:
         return {"error": f"txt {id} not found"}, 404
     user.join(txt)
-    return {}, 201
+    return {'joined': user.in_txt(txt)}
 
 @bp.route('/leave/<int:id>', methods=['PUT'])
 @auth
@@ -261,7 +262,7 @@ def leave(id, user=None):
     if not txt:
         return {"error": f"txt {id} not found"}, 404
     user.leave(txt)
-    return {}, 201
+    return {'joined': user.in_txt(txt)}
 
 @bp.route('/xtxts', methods=['GET'])
 @auth
@@ -312,6 +313,7 @@ def txts_dm(user=None):
     print('a', txt.id, txt.value, txt.users.all())
     return txt.dict(), statusCode
 
+
 @bp.route('/txts/<int:id>', methods=['DELETE'])
 @auth
 def del_txt(id, user=None):
@@ -324,6 +326,7 @@ def del_txt(id, user=None):
     db.session.commit()
     return {}, 200
 
+
 @bp.route('/txts/<int:id>', methods=['GET'])
 def get_txt_by_id(id):
     txt = Txt.query.get(id)
@@ -334,7 +337,7 @@ def get_txt_by_id(id):
     if txt.personal or txt.dm:
         if not user:
             return no_auth_private_error
-        
+
         if txt.personal:
             if user.id != txt.user.id:
                 return unauthorized_to_view_error(txt)
@@ -342,10 +345,10 @@ def get_txt_by_id(id):
             print(txt.dict())
             if user.id not in txt.dict()['users']:
                 return unauthorized_to_view_error(txt)
-    
+
     include = request.args.get('include')
     try:
         include = check_include(include)
     except Exception as e:
-        return e.args[0]
-    return txt.dict(include=include)
+        return e.args
+    return txt.dict(include=include, user=user)

@@ -8,8 +8,7 @@ from app.models.user import User, xtxts
 @bp.route('/subs', methods=['POST'])
 @auth
 def post_sub(user=None):
-    data = request.json.get('sub')
-    sub = data('sub')
+    sub = request.json.get('sub')
     if Sub.query.filter(Sub.sub['endpoint'] == sub['endpoint']):
         return ''
     Sub(user, sub)

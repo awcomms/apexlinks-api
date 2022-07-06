@@ -82,10 +82,12 @@ class Txt(db.Model):
             if 'user' in include:
                 if self.user:
                     data['user'] = self.user.dict(include=['username'])
+            if 'time' in include:
+                data['time'] = str(self.timestamp)
             if 'seen' in include:
                 user = hasget(kwargs, 'user')
                 if not user:
-                    return {'error': '`seen` specified in query arg `include` but no logged in user'}, 400
+                    return Exception(({'error': '`seen` specified in query arg `include` but no logged in user'}, 400))
                 uid = user.id
                 row = db.engine.execute(xtxts.select().where(xtxts.c.user_id == uid)
                                         .where(xtxts.c.txt_id == self.id)).first()
@@ -98,14 +100,14 @@ class Txt(db.Model):
             if 'joined' in include:
                 user = hasget(kwargs, 'user')
                 if not user:
-                    return {'error': '`seen` specified in query arg `include` but no logged in user'}, 400
+                    raise Exception(({'error': '`seen` specified in query arg `include` but no logged in user'}, 400))
                 data['joined'] = user.in_txt(self)
             if 'replyCount' in include:
                 data['replyCount'] = self.replies.count()
             if 'ownerReplyCount' in include:
                 txt_id = hasget(kwargs, 'txt')
                 if not txt_id:
-                    return {'error': '`ownerReplyCount` specified in query arg but no txt specified'}, 400
+                    raise Exception(({'error': '`ownerReplyCount` specified in query arg but no txt specified'}, 400))
                 if txt_id:
                     txt = Txt.query.get(txt_id)
                     if txt:
@@ -114,7 +116,7 @@ class Txt(db.Model):
                             owner_replies = self.replies.filter(Txt.user_id == owner_id).count()
                             data['ownerReplies'] = owner_replies
                         else:
-                            return {'error': '`ownerReplyCount` specified in query arg `include` but specified txt has no owner'}, 400
+                            raise Exception(({'error': '`ownerReplyCount` specified in query arg `include` but specified txt has no owner'}, 400))
                     else:
                         print(f'txt {txt_id} in **kwargs in txt.dict() call not found') # TODO-log
             if 'txtsRepliedToCount' in include:

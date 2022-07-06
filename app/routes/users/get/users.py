@@ -33,7 +33,7 @@ def users(user=None):
     try:
         include = check_include(include, 'query arg')
     except Exception as e:
-        return e.args[0]
+        return e.args
 
     # if loc:
     #     try:

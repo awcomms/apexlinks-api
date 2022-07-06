@@ -22,10 +22,10 @@ def create_user(username=None, password=None):
     #     return {'error': True, 'passwordInvalid': True, 'passwordError': 'Empty'}
     if User.query.filter_by(username=username).first():
         return {
-            'error': True,
+            'error': 'Username taken',
             'usernameInvalid': True,
             'usernameError': 'Username taken'
-        }, 400 #TODO
+        }, 400
     user = User(username, password, email)
     # user.location = location
     # db.session.commit()
