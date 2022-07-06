@@ -69,6 +69,7 @@ def get_txts():
         per_page = 37
 
     page = args('page')
+    print('page', page)
     if page:
         try:
             page = int(page)
@@ -111,11 +112,10 @@ def get_txts():
         txts = txts.filter(Txt.user_id == user.id)
 
     include = args('include')
-    if include:
-        try:
-            include = check_include(include, 'query arg')
-        except Exception as e:
-            return e.args[0]
+    try:
+        include = check_include(include, 'query arg')
+    except Exception as e:
+        return e.args[0]
 
     kwargs = {'include': include}
     if tags:
@@ -136,11 +136,10 @@ def post_txt(user=None):
     data = request.json.get
 
     include = request.args.get('include')
-    if include:
-        try:
-            include = check_include(include)
-        except Exception as e:
-            return e.args[0]
+    try:
+        include = check_include(include)
+    except Exception as e:
+        return e.args[0]
     
     dm = data('dm')
     if dm:
@@ -345,9 +344,8 @@ def get_txt_by_id(id):
                 return unauthorized_to_view_error(txt)
     
     include = request.args.get('include')
-    if include:
-        try:
-            include = check_include(include)
-        except Exception as e:
-            return e.args[0]
+    try:
+        include = check_include(include)
+    except Exception as e:
+        return e.args[0]
     return txt.dict(include=include)

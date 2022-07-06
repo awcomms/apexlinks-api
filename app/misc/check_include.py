@@ -1,6 +1,8 @@
 import json
 
 def check_include(include, arg='query arg'):
+    if not include:
+        return
     type_error = {
         'error': f'let {arg} include be a JSON list of strings as a string'}, 400
     if isinstance(arg, str):

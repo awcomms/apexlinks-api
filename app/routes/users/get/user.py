@@ -32,12 +32,11 @@ def get_user(id):
     user = User.query.get(id)
     if user:
         include = request.args.get('include')
-        if include:
-            try:
-                include = check_include(include)
-            except Exception as e:
-                print('sdi', type(e.args), e.args[0])
-                return e.args[0]
+        try:
+            include = check_include(include)
+        except Exception as e:
+            print('sdi', type(e.args), e.args[0])
+            return e.args[0]
         return user.dict(include=include)
     else:
         return {'error': f'user with id {id} was not found'}, 404
