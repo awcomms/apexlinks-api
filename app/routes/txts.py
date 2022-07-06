@@ -115,7 +115,7 @@ def get_txts():
         try:
             include = check_include(include, 'query arg')
         except Exception as e:
-            return e.args
+            return e.args[0]
 
     kwargs = {'include': include}
     if tags:
@@ -134,6 +134,14 @@ def get_txts():
 @auth
 def post_txt(user=None):
     data = request.json.get
+
+    include = request.args.get('include')
+    if include:
+        try:
+            include = check_include(include)
+        except Exception as e:
+            return e.args[0]
+    
     dm = data('dm')
     if dm:
         if not isinstance(dm, bool):
@@ -151,6 +159,8 @@ def post_txt(user=None):
             return {'error': check_tags_res}, 400
         create_data['tags'] = tags
     t = Txt(create_data)
+
+
 
     id = data('txt')
     print('id', id)
@@ -170,7 +180,7 @@ def post_txt(user=None):
             print('sub', sub)
             webpush(
                 sub, data, vapid_private_key=current_app.config['VAPID'], vapid_claims={"sub": "mailto:angelwingscomms@outlook.com"})
-    return t.dict(), 200
+    return t.dict(include=include), 200
 
 @bp.route('/txts', methods=['PUT'])
 @auth
@@ -339,5 +349,5 @@ def get_txt_by_id(id):
         try:
             include = check_include(include)
         except Exception as e:
-            return e.args
+            return e.args[0]
     return txt.dict(include=include)

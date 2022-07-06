@@ -1,5 +1,5 @@
-from requests import request
 from app.auth import auth
+from flask import request
 from app.misc.check_include import check_include
 from app.routes import bp
 from app.models.user import User
@@ -9,7 +9,12 @@ from app.models.user import User
 @auth
 def get_auth_user(user=None):
     if user:
-        return user.dict()
+        include = request.args.get('include')
+        try:
+            include = check_include(include)
+        except Exception as e:
+            return e.args[0]
+        return user.dict(include=include)
     else:
         return '', 400
 
@@ -26,11 +31,13 @@ def get_user_by_username(username):
 def get_user(id):
     user = User.query.get(id)
     if user:
-        include = request.args.get(include)
-        try:
-            include = check_include(include)
-        except Exception as e:
-            return e.args
+        include = request.args.get('include')
+        if include:
+            try:
+                include = check_include(include)
+            except Exception as e:
+                print('sdi', type(e.args), e.args[0])
+                return e.args[0]
         return user.dict(include=include)
     else:
         return {'error': f'user with id {id} was not found'}, 404

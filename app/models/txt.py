@@ -81,7 +81,7 @@ class Txt(db.Model):
                     data[i] = getattr(self, i)
             if 'user' in include:
                 if self.user:
-                    data['user'] = self.user.dict()
+                    data['user'] = self.user.dict(include=['username'])
             if 'seen' in include:
                 user = hasget(kwargs, 'user')
                 if not user:
