@@ -35,7 +35,6 @@ def cdict(query, page='last', per_page=37, include=[], **kwargs):
         if page > pages:
             return {'error': f'specified page {page} more than available pages for query', 'pages': pages}
 
-
         first_in_page = sliced[page-1]
         print('fip', first_in_page)
         awid = [i for i in items if first_in_page['id'] == i['id']]

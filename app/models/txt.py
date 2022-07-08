@@ -99,15 +99,16 @@ class Txt(db.Model):
                 data['users'] = [user.id for user in self.users]
             if 'joined' in include:
                 user = hasget(kwargs, 'user')
-                if not user:
-                    raise Exception(({'error': '`seen` specified in query arg `include` but no logged in user'}, 400))
-                data['joined'] = user.in_txt(self)
+                # if not user:
+                    # return {'error': '`joined` specified in query arg `include` but no logged in user'}, 400
+                if user:
+                    data['joined'] = user.in_txt(self)
             if 'replyCount' in include:
                 data['replyCount'] = self.replies.count()
             if 'ownerReplyCount' in include:
                 txt_id = hasget(kwargs, 'txt')
                 if not txt_id:
-                    raise Exception(({'error': '`ownerReplyCount` specified in query arg but no txt specified'}, 400))
+                    return {'error': '`ownerReplyCount` specified in query arg but no txt specified'}, 400
                 if txt_id:
                     txt = Txt.query.get(txt_id)
                     if txt:
@@ -116,7 +117,7 @@ class Txt(db.Model):
                             owner_replies = self.replies.filter(Txt.user_id == owner_id).count()
                             data['ownerReplies'] = owner_replies
                         else:
-                            raise Exception(({'error': '`ownerReplyCount` specified in query arg `include` but specified txt has no owner'}, 400))
+                            return {'error': '`ownerReplyCount` specified in query arg `include` but specified txt has no owner'}, 400
                     else:
                         print(f'txt {txt_id} in **kwargs in txt.dict() call not found') # TODO-log
             if 'txtsRepliedToCount' in include:

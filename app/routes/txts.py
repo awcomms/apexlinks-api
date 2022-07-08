@@ -170,16 +170,16 @@ def post_txt(user=None):
         if txt.self and txt.user.id != user.id:
             return {'error', f'txt {id} is not set to accept replies from other users'}, 400
         t.reply(txt)
-        print('q', txt.id, txt.value, txt.users.all())
         db.engine.execute(xtxts.update().where(xtxts.c.txt_id == id).values(seen=False))
-        subs = Sub.query.join(User).join(
-            xtxts, (xtxts.c.user_id == User.id)).filter(xtxts.c.txt_id == id).filter(User.id != user.id)
-        for sub in subs:
-            print('sub', sub)
-            webpush(
-                sub, data, vapid_private_key=current_app.config['VAPID'], vapid_claims={"sub": "mailto:angelwingscomms@outlook.com"})
+        # subs = Sub.query.join(Txt).join(User).join(
+        #     xtxts, (xtxts.c.user_id == User.id and xtxts.c.txt_id)).filter(xtxts.c.txt_id == id).filter(Sub.user_id != user.id)
+        for sub in Sub.query:
+            try:
+                webpush(
+                    sub.sub, json.dumps({'id': txt.id}), vapid_private_key=current_app.config['VAPID'], vapid_claims={"sub": "mailto:angelwingscomms@outlook.com"})
+            except WebPushException as e:
+                print(e.args)
     return t.dict(include=include), 200
-
 
 @bp.route('/txts', methods=['PUT'])
 @auth

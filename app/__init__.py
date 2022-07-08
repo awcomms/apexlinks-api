@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, request
+from flask import Flask
 from flask_cors import CORS
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from flask_sqlalchemy import SQLAlchemy

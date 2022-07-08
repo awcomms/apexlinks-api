@@ -9,10 +9,13 @@ from app.models.user import User, xtxts
 @auth
 def post_sub(user=None):
     sub = request.json.get('sub')
-    if Sub.query.filter(Sub.sub['endpoint'] == sub['endpoint']):
-        return ''
-    Sub(user, sub)
-    return '', 201
+    # existing_sub = Sub.query.filter(Sub.sub['endpoint'].as_string() == sub['endpoint']).first()
+    # if existing_sub:
+    #     print('existing')
+    #     existing_sub.sub = sub
+    #     return existing_sub.sub, 200
+    s = Sub(user, sub)
+    return s.sub, 201
 
 @bp.route('/subs', methods=['GET'])
 def get_subs():
