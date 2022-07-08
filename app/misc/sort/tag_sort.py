@@ -9,21 +9,22 @@ continue_i = ContinueI()
 def is_not_in(arr, obj):
     return obj and obj not in arr
 
-
 def tag_sort(items, tags, include_user=False):
     # field_tags = [t for t in tags if hasget(t, 'field')]
 
-    # for item in items:
+    for item in items:
+        item['score'] = 0
     #     if not 'tags' in item:
     #         item['tags'] = []
     #     if not isinstance(item['tags'], list):
     #         item['tags'] = []
 
+    tags_length = len(tags)
     for tag in tags:
         # if hasget(tag, 'exact'):
         #     items = [i for i in items if hasget(tag, 'value', '') in [hasget(t, 'value', '') for t in i['tags']]]
         for item in items:
-            item['score'] = 0
+            score = hasget(item, 'score')
             tag_value = hasget(tag, 'value', '')
             item_tags = hasget(item, 'tags')
             if not item_tags:
@@ -33,17 +34,21 @@ def tag_sort(items, tags, include_user=False):
             if item_search_tags:
                 item_search_tags_values = [hasget(t, 'value', '') for t in item_search_tags]
                 item_tags_values = item_tags_values + item_search_tags_values
-            print('t', tag_value, item_tags_values)
             try:
-                item['score'] += process.extractOne(
+                score += process.extractOne(
                    tag_value, item_tags_values)[1]
             except Exception as tpe:
                 print(f'tag_sort exception. item: {item["id"]}, item_tags: {item["tags"]}. current tag: {tag}. exception:', tpe)
                 continue
-            tags_length = len(tags)
-            item_tags_length = len(item_tags)
-            ratio = item_tags_length / tags_length
-            item['score'] = item['score'] /ratio
+            item['score'] = score
+
+    for item in items:
+        score = item['score']
+        item_tags_length = len(item_tags)
+        average_score = score / item_tags_length
+        difference = abs(item_tags_length - tags_length)
+        score = score - (difference * average_score)
+        item['score'] = score
 
     # for idx, item in enumerate(items):
     #     item['score'] = 0

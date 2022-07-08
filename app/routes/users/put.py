@@ -1,3 +1,4 @@
+from app.misc.check_tags import check_tags
 from app.misc.fields.check_and_clean import check_and_clean
 import json
 from flask import request
@@ -51,7 +52,7 @@ def edit_user(user=None):
         _extra['items_save_toggled'] = items_save_toggled
 
     data = {}
-    attrs = ['text', 'options', 'settings', 'hiddden', 'images', 'image', 'tags']
+    attrs = ['text', 'options', 'settings', 'hidden', 'images', 'image', 'online']
 
     for attr in attrs:
         if attr in data_request_json:
@@ -77,21 +78,11 @@ def edit_user(user=None):
             fields[idx] = res
         data['fields'] = fields
 
-    tags = request_json('tags') or []
-    if not isinstance(tags, list):
-        try:
-            tags = json.loads(tags)
-            if not isinstance(tags, list):
-                return {'error': f'let tags request body parameter be of a list type'}
-            for tag in tags:
-                if not isinstance(tag, str):
-                    return {'error': f'let tag {tag} be of a string type'}
-        except SyntaxError or TypeError:
-            tags = tags.split(',')
-        except SyntaxError or TypeError:
-            tags = tags.split(';')
-        except SyntaxError or TypeError:
-            return 'Unsupported tags format', 415
+    tags = request_json('tags')
+    check_tags_res = check_tags(tags, 'query body parameter `tags`')
+    if check_tags_res:
+        return {'error': check_tags_res}, 400
+    data['tags'] = tags
     user.edit(data)
 
     return user.dict(_extra=_extra)

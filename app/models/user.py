@@ -52,6 +52,7 @@ class User(db.Model):
     # folders = db.relationship('Folder', backref='user', lazy='dynamic')
     image = db.Column(db.Unicode)
     last_paid = db.Column(db.DateTime)
+    online = db.Column(db.Boolean, default=False)
     paid = db.Column(db.Boolean, default=False)
 
     notes = db.relationship('Note', backref='author', lazy='dynamic')
@@ -283,7 +284,7 @@ class User(db.Model):
         }
 
         if include:
-            attrs = ['username', 'tags', 'text']
+            attrs = ['username', 'tags', 'text', 'online']
             for i in include:
                 if i in attrs and hasattr(self, i):
                     res[i] = getattr(self, i)

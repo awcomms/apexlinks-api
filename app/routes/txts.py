@@ -51,7 +51,7 @@ def get_txts():
 
     tags = args('tags')
     if tags:
-        tags_error_prefix = 'value in query arg `tags` '
+        tags_error_prefix = 'query arg `tags`'
         try:
             tags = json.loads(tags)
         except:
@@ -156,7 +156,7 @@ def post_txt(user=None):
     }
     tags = data('tags')
     if tags:
-        check_tags_res = check_tags(tags, 'in request body parameter `tags`')
+        check_tags_res = check_tags(tags, 'request body parameter `tags`')
         if check_tags_res:
             return {'error': check_tags_res}, 400
         create_data['tags'] = tags
