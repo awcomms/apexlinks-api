@@ -2,11 +2,15 @@ from flask import request
 from app.auth import cred
 from app.routes import bp
 from app.models.user import User
-from app.misc.check_email import check_email
+from app.misc.check_include import check_include
 
 @bp.route('/users', methods=['POST'])
 @cred
 def create_user(username=None, password=None):
+    try:
+        include = check_include(request.args.get('include'))
+    except Exception as e:
+        return e.args[0]
     j = request.json.get
     email = j('email')
     location = j('location')
@@ -30,6 +34,6 @@ def create_user(username=None, password=None):
     # user.location = location
     # db.session.commit()
     return {
-        'user': user.dict(),
+        'user': user.dict(include),
         'token': user.get_token()
     }, 201

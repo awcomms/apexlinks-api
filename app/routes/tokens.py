@@ -4,9 +4,9 @@ from flask import request
 from app.auth import cred
 from app.auth import auth
 from app import db
+from app.misc.check_include import check_include
 from app.models.user import User
 from app.routes import bp
-
 
 @bp.route('/tokens', methods=['GET'])
 @auth
@@ -19,6 +19,10 @@ def check_token(user=None):
 @bp.route('/tokens', methods=['POST'])
 @cred
 def create_token(username=None, password=None):
+    try:
+        include = check_include(request.args.get('include'))
+    except Exception as e:
+        return e.args[0]
     print('tr', username, password)
     headers = Headers()
     headers.add('Access-Control-Allow-Origin', request.headers.get('Origin'))
@@ -51,7 +55,7 @@ def create_token(username=None, password=None):
                 'passwordError': 'Empty'
             }, 401
     res = {
-        'user': user.dict(),
+        'user': user.dict(include),
         'token': user.get_token()
     }
     print('create token', res['token'])
