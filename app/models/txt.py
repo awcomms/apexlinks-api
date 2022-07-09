@@ -147,7 +147,8 @@ class Txt(db.Model):
         if not self.replied(txt):
             self.txts.append(txt)
             self.inherit(txt)
-            self.user.join(txt)
+            if self.user:
+                self.user.join(txt)
             db.session.commit()
 
     def unreply(self, txt):

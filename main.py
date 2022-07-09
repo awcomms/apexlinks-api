@@ -1,5 +1,6 @@
 from app import create_app, db
 from app.models import User, Item, Txt, item_items
+from app.models.txt import txt_replies
 from app.models.junctions import xtxts
 from app.models.learn.note import Note
 from app.models.learn.level import Level
@@ -18,6 +19,7 @@ def make_shell_context():
         'Item': Item,
         'Txt': Txt,
         'xtxts': xtxts,
+        'txt_replies': txt_replies,
         'Sub': Sub,
         'item_items': item_items,
         'Note': Note,

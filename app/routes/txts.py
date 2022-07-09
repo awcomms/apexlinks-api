@@ -90,7 +90,7 @@ def get_txts():
     if txt:
         txts = txt.replies
     else:
-        txts = Txt.query.filter(Txt.dm == False).filter(Txt.personal == False)
+        txts = Txt.query.filter(Txt.dm == False).filter(Txt.personal == False)#.join(txt_replies (txt_replies.c.txt == Txt.id)).filter(txt_replies.c.)
 
     joined = isinstance(args('joined'), str)
     if joined:
@@ -179,7 +179,7 @@ def post_txt(user=None):
                     sub.sub, json.dumps({'id': txt.id}), vapid_private_key=current_app.config['VAPID'], vapid_claims={"sub": "mailto:angelwingscomms@outlook.com"})
             except WebPushException as e:
                 print(e.args)
-    return t.dict(include=include), 200
+    return t.dict(include=include, user=user), 200
 
 @bp.route('/txts', methods=['PUT'])
 @auth
