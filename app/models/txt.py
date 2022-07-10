@@ -2,7 +2,7 @@ from app.misc.sort.tag_sort import tag_sort
 from app.misc import hasget
 from app import db
 from app.misc.now import now
-# from app.misc.to_tags import to_tags
+from app.misc.to_tags import to_tags
 from app.models import User
 from app.models.junctions import xtxts
 
@@ -63,8 +63,7 @@ class Txt(db.Model):
         value = hasget(data, 'value')
         if value:
             tags = hasget(data, 'tags', [])
-            search_tags = tags.append(value)
-            # search_tags = to_tags(value, tags)
+            search_tags = to_tags(value, tags)
             data['search_tags'] = search_tags
 
         db.session.add(self)
