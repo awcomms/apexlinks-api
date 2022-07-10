@@ -1,15 +1,15 @@
-from datetime import datetime, timezone
-
 from app.misc.sort.tag_sort import tag_sort
 from app.misc import hasget
 from app import db
-from app.misc.to_tags import to_tags
+from app.misc.now import now
+# from app.misc.to_tags import to_tags
 from app.models import User
 from app.models.junctions import xtxts
 
 txt_replies = db.Table("txt_replies",
     db.Column('txt', db.Integer, db.ForeignKey('txt.id')),
-    db.Column('reply', db.Integer, db.ForeignKey('txt.id')))
+    db.Column('reply', db.Integer, db.ForeignKey('txt.id')),
+    db.Column('time', db.DateTime, default=now()))
 
 class Txt(db.Model):
     tags = db.Column(db.JSON, default=[])
@@ -21,7 +21,7 @@ class Txt(db.Model):
     dm = db.Column(db.Boolean, default=False)
     self = db.Column(db.Boolean, default=False)
     personal = db.Column(db.Boolean, default=False)
-    timestamp = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    time = db.Column(db.DateTime, default=now())
     replies = db.relationship(
         'Txt',
         secondary=txt_replies,
@@ -32,6 +32,8 @@ class Txt(db.Model):
 
     @staticmethod
     def get(tags, limit=0):
+        if not tags:
+            tags = []
         def tag_score(items): return tag_sort(items, tags)
         _sort = tag_score
 
@@ -59,8 +61,9 @@ class Txt(db.Model):
     def __init__(self, data=None):
         value = hasget(data, 'value')
         if value:
-            tags = hasget(data, 'search_tags', [])
-            search_tags = to_tags(value, tags)
+            tags = hasget(data, 'tags', [])
+            search_tags = tags.append(value)
+            # search_tags = to_tags(value, tags)
             data['search_tags'] = search_tags
 
         db.session.add(self)
@@ -83,7 +86,11 @@ class Txt(db.Model):
                 if self.user:
                     data['user'] = self.user.dict(include=['username'])
             if 'time' in include:
-                data['time'] = str(self.timestamp)
+                txt_id = hasget(kwargs, 'txt')
+                if txt_id:
+                    data['time'] = db.engine.execute(txt_replies.select().where(txt_replies.c.txt == txt_id).where(txt_replies.c.reply == self.id)).first().time
+                else:
+                    data['time'] = str(self.time)
             if 'seen' in include:
                 user = hasget(kwargs, 'user')
                 if not user:
@@ -150,8 +157,12 @@ class Txt(db.Model):
             if self.user:
                 self.user.join(txt)
             db.session.commit()
+        else:
+            return True
 
     def unreply(self, txt):
         if self.replied(txt):
             self.txts.remove(txt)
             db.session.commit()
+        else:
+            return True

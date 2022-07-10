@@ -44,7 +44,7 @@ def tag_sort(items, tags, include_user=False):
 
     for item in items:
         score = item['score']
-        item_tags_length = len(item_tags)
+        item_tags_length = len(hasget(item, 'tags', [])) or 1
         average_score = score / item_tags_length
         difference = abs(item_tags_length - tags_length)
         score = score - (difference * average_score)

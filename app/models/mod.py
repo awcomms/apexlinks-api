@@ -1,9 +1,9 @@
 from app import db
-from datetime import datetime, timezone
+from app.misc.now import now
 
 class Mod(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    datetime = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    datetime = db.Column(db.DateTime, default=now())
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     site_page_id = db.Column(db.Integer, db.ForeignKey('site_page.id'))

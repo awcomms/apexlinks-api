@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from sqlalchemy.orm import backref
+from app.misc.now import now
 from app.models.mod import Mod
 from app.models.sitemap_index import SitemapIndex
 from app import db
@@ -23,7 +22,7 @@ class Item(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     hidden = db.Column(db.Boolean, default=False)
     # folder_id = db.Column(db.Integer, db.ForeignKey('folder.id'))
-    time = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    time = db.Column(db.DateTime, default=now())
     image = db.Column(db.Unicode)
     embed = db.Column(db.Unicode)
     choices = db.Column(db.JSON)

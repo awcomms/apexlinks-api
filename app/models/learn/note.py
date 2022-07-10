@@ -1,6 +1,6 @@
 from app import db
 from app.models.mod import Mod
-from datetime import datetime, timezone
+from app.misc.now import now
 
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -11,7 +11,7 @@ class Note(db.Model):
     mods = db.relationship('Mod', backref='note', lazy='dynamic')
     body = db.Column(db.Unicode)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    time = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    time = db.Column(db.DateTime, default=now())
 
     def __init__(self, data):
         for field in data:

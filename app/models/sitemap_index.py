@@ -6,7 +6,7 @@ from app.misc.datetime_period import datetime_period
 from sqlalchemy.ext.hybrid import hybrid_method
 from app import db
 from app.vars.q import api_host, sitemapindex_attribs, sitemap_entry_limit, sitemap_byte_limit
-from datetime import datetime, timezone
+from app.misc.now import now
 from app.models.mod import Mod
 
 
@@ -14,7 +14,7 @@ class SitemapIndex(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     mods = db.relationship('Mod', backref='sitemap_index', lazy='dynamic')
     sitemaps = db.relationship('Sitemap', backref='index', lazy='dynamic')
-    lastmod = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    lastmod = db.Column(db.DateTime, default=now())
     loc = db.Column(db.Unicode)
 
     # TODO edit lastmod on sitemap add or remove

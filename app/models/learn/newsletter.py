@@ -1,11 +1,11 @@
-from datetime import datetime, time, timezone
+from app.misc.now import now
 from app import db
 
 class Newsletter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.Unicode)
     body = db.Column(db.Unicode)
-    created = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created = db.Column(db.DateTime, now())
 
     def __init__(self, slug, body):
         self.slug = slug

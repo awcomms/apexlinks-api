@@ -1,7 +1,7 @@
 from app.misc.hasget import hasget
 
 
-def cdict(query, page='last', per_page=37, include=[], **kwargs):
+def cdict(query, page='last', per_page=37, include=[], limit=None, **kwargs):
     if 'tags' not in include:
         include.append('tags')
     if 'search_tags' not in include:
@@ -25,6 +25,7 @@ def cdict(query, page='last', per_page=37, include=[], **kwargs):
     
     page_items = items
     items_length = len(items)
+
     if items_length > per_page:
         sliced = items[None:None:per_page]
         pages = len(sliced)
@@ -50,8 +51,13 @@ def cdict(query, page='last', per_page=37, include=[], **kwargs):
     else:
         page = 1
 
+    res_items = page_items
+    
+    if limit:
+        res_items = page_items[0:limit]
+
     res = {
-        'items': page_items,
+        'items': res_items,
         'total': items_length,
         'page': page
     }

@@ -23,10 +23,20 @@ def unauthorized_to_view_error(txt): return {
 # def es():
 #     return ''
 
-
 @bp.route('/txts')
 def get_txts():
     args = request.args.get
+
+    user = User.check_token(request.headers.get('auth'))
+
+    limit = args('limit')
+    if limit:
+        try:
+            limit = int(limit)
+        except ValueError:
+            return {'error': 'let query arg `limit` be an integer'}
+        except:
+            return {'error': 'unknown error while parsing query arg `limit`. make sure query arg `limit` is a number'}
 
     txt = None
     id = args('id')
@@ -49,6 +59,8 @@ def get_txts():
                 if txt.user.id != auth_user.id:
                     return unauthorized_to_view_error(txt)
 
+    tag = isinstance(args('tag'), str)
+    
     tags = args('tags')
     if tags:
         tags_error_prefix = 'query arg `tags`'
@@ -85,12 +97,13 @@ def get_txts():
         if not txt:
             return {'error': '`to` query arg specified but no valid txt in query arg `id` specified'}
         txts = Txt.query.join(txt_replies, (txt_replies.c.txt == Txt.id)).filter(
-            txt_replies.c.reply == Txt.id)
+            txt_replies.c.reply == txt.id)
 
     if txt:
-        txts = txt.replies
+        txts = Txt.query.join(txt_replies, (txt_replies.c.reply == Txt.id)).filter(
+            txt_replies.c.txt == txt.id)
     else:
-        txts = Txt.query.filter(Txt.dm == False).filter(Txt.personal == False)#.join(txt_replies (txt_replies.c.txt == Txt.id)).filter(txt_replies.c.)
+        txts = Txt.query.filter(Txt.dm == False).filter(Txt.personal == False)
 
     joined = isinstance(args('joined'), str)
     if joined:
@@ -116,18 +129,21 @@ def get_txts():
     try:
         include = check_include(include, 'query arg')
     except Exception as e:
-        print('ic', include, e)
-        return e.args
+        return e.args[0]
 
-    kwargs = {'include': include}
-    if tags:
+    kwargs = {'include': include, 'user': user, 'limit': limit}
+    if txt: kwargs['txt'] = txt.id
+
+    if tags or tag:
         kwargs['run'] = Txt.get(tags)
     else:
         reverse = isinstance(args('reverse'), str)
+        if txt: table = txt_replies.c
+        else: table = Txt
         if reverse:
-            txts = txts.order_by(Txt.timestamp.desc())
+            txts = txts.order_by(table.time.desc())
         else:
-            txts = txts.order_by(Txt.timestamp.asc())
+            txts = txts.order_by(table.time.asc())
 
     print('c', txts.count())
     return cdict(txts, page, **kwargs)
@@ -142,7 +158,7 @@ def post_txt(user=None):
     try:
         include = check_include(include)
     except Exception as e:
-        return e.args
+        return e.args[0]
 
     dm = data('dm')
     if dm:
@@ -202,6 +218,12 @@ def edit_txt(user=None):
     if unreply_re_res:
         return unreply_re_res
 
+    include = request.args.get('include')
+    try:
+        include = check_include(include)
+    except Exception as e:
+        return e.args[0]
+
     tags = data('tags')
     if tags:
         check_tags_res = check_tags(tags, 'request body parameter `tags`')
@@ -231,7 +253,7 @@ def edit_txt(user=None):
     }
 
     txt.edit(data)
-    return txt.dict()
+    return txt.dict(include)
 
 
 @bp.route('/seen', methods=['PUT'])
@@ -350,5 +372,5 @@ def get_txt_by_id(id):
     try:
         include = check_include(include)
     except Exception as e:
-        return e.args
+        return e.args[0]
     return txt.dict(include=include, user=user)
