@@ -15,6 +15,7 @@ class Txt(db.Model):
     tags = db.Column(db.JSON, default=[])
     search_tags = db.Column(db.JSON, default=[])
     id = db.Column(db.Integer, primary_key=True)
+    anon = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     value = db.Column(db.Unicode, default='')
     text = db.Column(db.Unicode, default='')
@@ -78,13 +79,20 @@ class Txt(db.Model):
             'id': self.id,
         }
         if include:
-            attrs = ['tags', 'text', 'value', 'self', 'personal', 'search_tags']
+            attrs = ['tags', 'text', 'value', 'self', 'personal', 'search_tags', 'anon']
             for i in include:
                 if i in attrs and hasattr(self, i):
                     data[i] = getattr(self, i)
             if 'user' in include:
                 if self.user:
-                    data['user'] = self.user.dict(include=['username'])
+                    if not self.anon:
+                        data['user'] = self.user.dict(include=['username'])
+                    else:
+                        pass
+                        # return {'error': f'`user` specified in query arg `include` but specified txt {self.id} is set to `anon`, (replies to this txt are anonymous)'}, 400
+                else:
+                    pass
+                    # return {'error': f'`user` specified in query arg `include` but specified txt {self.id} has no user owner'}, 400
             if 'time' in include:
                 txt_id = hasget(kwargs, 'txt')
                 if txt_id:
@@ -94,7 +102,7 @@ class Txt(db.Model):
             if 'seen' in include:
                 user = hasget(kwargs, 'user')
                 if not user:
-                    return Exception(({'error': '`seen` specified in query arg `include` but no logged in user'}, 400))
+                    return {'error': '`seen` specified in query arg `include` but no logged in user'}, 400
                 uid = user.id
                 row = db.engine.execute(xtxts.select().where(xtxts.c.user_id == uid)
                                         .where(xtxts.c.txt_id == self.id)).first()

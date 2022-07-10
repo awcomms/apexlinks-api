@@ -237,6 +237,11 @@ def edit_txt(user=None):
         if not isinstance(self, bool):
             return {'error': 'let `self` body parameter be a boolean'}
 
+    anon = data('anon')
+    if anon:
+        if not isinstance(anon, bool):
+            return {'error': f'let query body parameter `anon` be a boolean'}
+
     personal = data('personal')
     if personal:
         if txt.dm:
@@ -248,6 +253,7 @@ def edit_txt(user=None):
         'value': data('value'),
         'tags': tags,
         'self': self,
+        'anon': anon,
         'personal': personal,
         'text': data('text')
     }
