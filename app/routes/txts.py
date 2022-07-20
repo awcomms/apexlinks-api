@@ -96,12 +96,15 @@ def get_txts():
     if to:
         if not txt:
             return {'error': '`to` query arg specified but no valid txt in query arg `id` specified'}
-        txts = Txt.query.join(txt_replies, (txt_replies.c.txt == Txt.id)).filter(
-            txt_replies.c.reply == txt.id)
+        
 
     if txt:
-        txts = Txt.query.join(txt_replies, (txt_replies.c.reply == Txt.id)).filter(
-            txt_replies.c.txt == txt.id)
+        if to:
+            txts = Txt.query.join(txt_replies, (txt_replies.c.txt == Txt.id)).filter(
+                txt_replies.c.reply == txt.id)
+        else:
+            txts = Txt.query.join(txt_replies, (txt_replies.c.reply == Txt.id)).filter(
+                txt_replies.c.txt == txt.id)
     else:
         txts = Txt.query.filter(Txt.dm == False).filter(Txt.personal == False)
 
@@ -187,8 +190,8 @@ def post_txt(user=None):
             return {'error', f'txt {id} is not set to accept replies from other users'}, 400
         t.reply(txt)
         db.engine.execute(xtxts.update().where(xtxts.c.txt_id == id).values(seen=False))
-        # subs = Sub.query.join(Txt).join(User).join(
-        #     xtxts, (xtxts.c.user_id == User.id and xtxts.c.txt_id)).filter(xtxts.c.txt_id == id).filter(Sub.user_id != user.id)
+        s = Sub.query.join(xtxts, xtxts.c.user_id ==
+                           Sub.user_id).filter(xtxts.c.txt_id == 468)
         for sub in Sub.query:
             try:
                 webpush(
@@ -248,6 +251,9 @@ def edit_txt(user=None):
             {'error': 'txt attribute `personal` may not be set for a dm txt'}, 400  # TODO
         if not isinstance(personal, bool):
             return {'error': 'let `personal` body parameter be a boolean'}
+
+    text = data('text')
+    print(f'{txt.id} text', text)
 
     data = {
         'value': data('value'),
