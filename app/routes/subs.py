@@ -11,7 +11,6 @@ def post_sub(user=None):
     sub = request.json.get('sub')
     existing_sub = Sub.query.filter(Sub.sub['endpoint'].as_string() == sub['endpoint']).first()
     if existing_sub:
-        print('existing')
         existing_sub.sub = sub
         return existing_sub.sub, 200
     s = Sub(user, sub)

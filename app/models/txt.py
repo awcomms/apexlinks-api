@@ -73,7 +73,7 @@ class Txt(db.Model):
         db.session.commit()
         
 
-    def dict(self, include=None, **kwargs):
+    def dict(self, include:list=None, **kwargs):
         data = {
             'id': self.id,
         }

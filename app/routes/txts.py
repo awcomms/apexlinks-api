@@ -10,7 +10,20 @@ from app.misc.cdict import cdict
 from app.models.user import User, xtxts
 from app.models.txt import Txt, txt_replies
 from app.models import Sub
-from pywebpush import webpush, WebPushException
+from pywebpush import webpush
+from threading import Thread
+
+def send_notifications(app, txt):
+    with app.app_context():
+        s = Sub.query.join(xtxts, xtxts.c.user_id ==
+                           Sub.user_id).filter(xtxts.c.txt_id == txt.id)
+        for sub in Sub.query:
+            try:
+                webpush(
+                    sub.sub, json.dumps({'id': txt.id}), vapid_private_key=current_app.config['VAPID'], vapid_claims={"sub": "mailto:angelwingscomms@outlook.com"})
+            except:
+                pass
+
 
 no_auth_private_error = {
     'error': f'private txt was requested for but invalid auth token in headers'}, 400
@@ -157,11 +170,11 @@ def get_txts():
 def post_txt(user=None):
     data = request.json.get
 
-    include = request.args.get('include')
-    try:
-        include = check_include(include)
-    except Exception as e:
-        return e.args[0]
+    # include = request.args.get('include')
+    # try:
+    #     include = check_include(include)
+    # except Exception as e:
+    #     return e.args[0]
 
     dm = data('dm')
     if dm:
@@ -181,23 +194,19 @@ def post_txt(user=None):
         create_data['tags'] = tags
     t = Txt(create_data)
 
+    include: list = ['user', 'value']
+
     id = data('txt')
     if id:
-        txt = Txt.query.get(id)
+        txt: Txt = Txt.query.get(id)
         if not txt:
             return {"error": f"txt {id} specified in request body parameter `txt` not found"}, 404
         if txt.self and txt.user.id != user.id:
             return {'error', f'txt {id} is not set to accept replies from other users'}, 400
+        include.append('joined')
         t.reply(txt)
         db.engine.execute(xtxts.update().where(xtxts.c.txt_id == id).values(seen=False))
-        s = Sub.query.join(xtxts, xtxts.c.user_id ==
-                           Sub.user_id).filter(xtxts.c.txt_id == 468)
-        for sub in Sub.query:
-            try:
-                webpush(
-                    sub.sub, json.dumps({'id': txt.id}), vapid_private_key=current_app.config['VAPID'], vapid_claims={"sub": "mailto:angelwingscomms@outlook.com"})
-            except WebPushException as e:
-                print(e.args)
+        Thread(target=send_notifications, args=(current_app._get_current_object(), txt))        
     return t.dict(include=include, user=user), 200
 
 @bp.route('/txts', methods=['PUT'])
