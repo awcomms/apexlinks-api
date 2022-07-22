@@ -41,3 +41,11 @@ def auth(f):
             return {'error': 'invalid token'}, 401
         return f(*args, **kwargs, user = user)
     return wrapper
+
+def maybe_auth(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = request.headers.get('auth')
+        user = User.check_token(token)['user']
+        return f(*args, **kwargs, user = user)
+    return wrapper

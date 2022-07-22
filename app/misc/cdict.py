@@ -7,6 +7,7 @@ def cdict(query, page='last', per_page=37, include=[], limit=None, **kwargs):
     if 'search_tags' not in include:
         include.append('search_tags')
     items = [item.dict(include=include, **kwargs) for item in query]
+    print(items)
     run = hasget(kwargs, 'run')
     if run:
         items = run(items)
@@ -61,6 +62,7 @@ def cdict(query, page='last', per_page=37, include=[], limit=None, **kwargs):
         'total': items_length,
         'page': page
     }
+    print(res_items)
     if pages:
         res['pages'] = pages
     if 'extra' in kwargs:

@@ -1,7 +1,7 @@
 import json
 from flask import current_app, request
 from app import db
-from app.auth import auth
+from app.auth import auth, maybe_auth
 from app.misc.check_include import check_include
 from app.misc.check_tags import check_tags
 from app.routes import bp
@@ -36,13 +36,63 @@ def unauthorized_to_view_error(txt): return {
 # def es():
 #     return ''
 
-@bp.route('/txts')
-def get_txts():
+@bp.route('/txts/to')
+@maybe_auth
+def get_txts_to(user=None):
     args = request.args.get
 
-    user = User.check_token(request.headers.get('auth'))
+    id = args('id')
+    if id:
+        try:
+            id = int(id)
+        except:
+            return {'error': 'let query arg `id` be an integer'}
+    else:
+        return {'error': 'query arg id not specified'}
+
+    txt = Txt.query.get(id)
+    if not txt:
+        return {'error': f'txt {id} not found'}, 404
+
+    page = args('page')
+    if page:
+        try:
+            page = int(page)
+        except:
+            return {'error': 'let query arg `page` be a number'}
+    else:
+        page='last'
+
+    kwargs = {'include': ['user', 'value'], 'page': page}
+    if user:
+        kwargs['include'].append('seen')
+        kwargs['user'] = user
+
+    query = Txt.query.join(txt_replies, txt_replies.c.txt == Txt.id).filter(txt_replies.c.reply == txt.id)
+    print(query.all())
+    return cdict(query, **kwargs)
+
+@bp.route('/txts')
+@maybe_auth
+def get_txts(user=None):
+    args = request.args.get
+
+    txt = None
 
     limit = args('limit')
+    id = args('id')
+    tags = args('tags')
+    per_page = args('per_page')
+    page = args('page')
+    to = isinstance(args('to'), str)
+    joined = isinstance(args('joined'), str)
+    dm = isinstance(args('dm'), str)
+    personal = isinstance(args('personal'), str)
+
+    if to:
+        if not txt:
+            return {'error': '`to` query arg specified but no valid txt in query arg `id` specified'}
+
     if limit:
         try:
             limit = int(limit)
@@ -51,8 +101,6 @@ def get_txts():
         except:
             return {'error': 'unknown error while parsing query arg `limit`. make sure query arg `limit` is a number'}
 
-    txt = None
-    id = args('id')
     if id:
         try:
             id = int(id)
@@ -74,7 +122,6 @@ def get_txts():
 
     tag = isinstance(args('tag'), str)
     
-    tags = args('tags')
     if tags:
         tags_error_prefix = 'query arg `tags`'
         try:
@@ -85,7 +132,6 @@ def get_txts():
         if tags_error:
             return {'error', tags_error}, 400
 
-    per_page = args('per_page')
     if per_page:
         try:
             per_page = int(per_page)
@@ -94,8 +140,6 @@ def get_txts():
     else:
         per_page = 37
 
-    page = args('page')
-    print('page', page)
     if page:
         try:
             page = int(page)
@@ -105,12 +149,6 @@ def get_txts():
     else:
         page = 'last'
 
-    to = isinstance(args('to'), str)
-    if to:
-        if not txt:
-            return {'error': '`to` query arg specified but no valid txt in query arg `id` specified'}
-        
-
     if txt:
         if to:
             txts = Txt.query.join(txt_replies, (txt_replies.c.txt == Txt.id)).filter(
@@ -119,27 +157,25 @@ def get_txts():
             txts = Txt.query.join(txt_replies, (txt_replies.c.reply == Txt.id)).filter(
                 txt_replies.c.txt == txt.id)
     else:
-        txts = Txt.query.filter(Txt.dm == False).filter(Txt.personal == False)
+        txts = Txt.query
 
-    joined = isinstance(args('joined'), str)
     if joined:
         token = request.headers.get('auth')
         if not token:
             return {'error': 'query arg `join` specified. but no auth token in header field `auth`'}, 401
 
-        authUser = User.check_token(token)['user']
-        if not authUser:
+        if not user:
             # TODO-verbose
             return {'error': 'query arg `join` specified. but invalid auth token in header `auth`'}, 401
 
-        txts = txts.join(xtxts).filter(xtxts.c.user_id == authUser.id)
+        txts = txts.join(xtxts).filter(xtxts.c.user_id == user.id)
 
-    user = args('user')
-    if user:
-        user = User.query.get(user)
-        if not user:
-            return {'error': f'user {user} specified in query arg `user` not found'}, 404
-        txts = txts.filter(Txt.user_id == user.id)
+    req_user = args('user')
+    if req_user:
+        req_user = User.query.get(req_user)
+        if not req_user:
+            return {'error': f'user {req_user} specified in query arg `user` not found'}, 404
+        txts = txts.filter(Txt.user_id == req_user.id)
 
     include = args('include')
     try:
@@ -281,6 +317,10 @@ def edit_txt(user=None):
 @auth
 def seen(user=None):
     id = request.args.get('id')
+    try:
+        id = int(id)
+    except:
+        return {'error': 'let query arg `id` be a number'}
     txt = Txt.query.get(id)
     if not txt:
         return {'error': f'specified txt {id} was not found'}, 404

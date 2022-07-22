@@ -101,14 +101,13 @@ class Txt(db.Model):
             if 'seen' in include:
                 user = hasget(kwargs, 'user')
                 if not user:
-                    return {'error': '`seen` specified in query arg `include` but no logged in user'}, 400
+                    raise '`seen` specified in query arg `include` but no logged in user'
                 uid = user.id
                 row = db.engine.execute(xtxts.select().where(xtxts.c.user_id == uid)
                                         .where(xtxts.c.txt_id == self.id)).first()
                 if row:
-                    seen = row['seen']
-                if seen is False:
-                    data['unseen'] = True
+                    if row['seen'] is False:
+                        data['unseen'] = True
             if 'users' in include:
                 data['users'] = [user.id for user in self.users]
             if 'joined' in include:
@@ -122,7 +121,7 @@ class Txt(db.Model):
             if 'ownerReplyCount' in include:
                 txt_id = hasget(kwargs, 'txt')
                 if not txt_id:
-                    return {'error': '`ownerReplyCount` specified in query arg but no txt specified'}, 400
+                    raise '`ownerReplyCount` specified in query arg but no txt specified'
                 if txt_id:
                     txt = Txt.query.get(txt_id)
                     if txt:
@@ -131,7 +130,7 @@ class Txt(db.Model):
                             owner_replies = self.replies.filter(Txt.user_id == owner_id).count()
                             data['ownerReplies'] = owner_replies
                         else:
-                            return {'error': '`ownerReplyCount` specified in query arg `include` but specified txt has no owner'}, 400
+                            raise '`ownerReplyCount` specified in query arg `include` but specified txt has no owner'
                     else:
                         print(f'txt {txt_id} in **kwargs in txt.dict() call not found') # TODO-log
             if 'txtsRepliedToCount' in include:
