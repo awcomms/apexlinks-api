@@ -1,4 +1,5 @@
 from time import time
+from typing import Any, Dict
 from app.misc.hasget import hasget
 from itsdangerous import TimestampSigner
 
@@ -195,7 +196,9 @@ class User(db.Model):
         return token
         
     @staticmethod
-    def check_token(token):
+    def check_token(token: str | None) -> Dict[str, Any]:
+        if not token:
+            return {'user': None, 'res': '!token'}
         # s = TimestampSigner(current_app.config['SECRET_KEY'])
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
@@ -217,18 +220,20 @@ class User(db.Model):
             return {'user': None, 'res': ''}
 
     def set_reset_password_token(self, expires_in=600):
-        return jwt.encode(
-            {'reset_password': self.id, 'exp': time() + expires_in},
-            current_app.config['SECRET_KEY'], algorithm='HS256')
+        # return jwt.encode(
+        #     {'reset_password': self.id, 'exp': time() + expires_in},
+        #     current_app.config['SECRET_KEY'], algorithm='HS256')
+        pass
 
     @staticmethod
     def check_reset_password_token(token):
-        try:
-            id = jwt.decode(token, current_app.config['SECRET_KEY'],
-                            algorithms=['HS256'])['reset_password']
-        except:
-            return
-        return User.query.get(id)
+        # try:
+        #     id = jwt.decode(token, current_app.config['SECRET_KEY'],
+        #                     algorithms=['HS256'])['reset_password']
+        # except:
+        #     return
+        # return User.query.get(id)
+        pass
 
     def __init__(self, username, password, email=None):
         self.tags = []

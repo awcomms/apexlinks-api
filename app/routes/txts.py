@@ -38,7 +38,7 @@ def unauthorized_to_view_error(txt): return {
 
 @bp.route('/txts/to')
 @maybe_auth
-def get_txts_to(user=None):
+def get_txts_to(user:User):
     args = request.args.get
 
     id = args('id')
@@ -74,10 +74,10 @@ def get_txts_to(user=None):
 
 @bp.route('/txts')
 @maybe_auth
-def get_txts(user=None):
+def get_txts(user:User) -> dict | tuple[dict, int]:
     args = request.args.get
 
-    txt = None
+    txt: Txt | None = None
 
     limit = args('limit')
     id = args('id')
@@ -88,6 +88,7 @@ def get_txts(user=None):
     joined = isinstance(args('joined'), str)
     dm = isinstance(args('dm'), str)
     personal = isinstance(args('personal'), str)
+    append = isinstance(args('append'), str)
 
     if to:
         if not txt:
@@ -97,9 +98,9 @@ def get_txts(user=None):
         try:
             limit = int(limit)
         except ValueError:
-            return {'error': 'let query arg `limit` be an integer'}
+            return {'error': 'let query arg `limit` be an integer'}, 400
         except:
-            return {'error': 'unknown error while parsing query arg `limit`. make sure query arg `limit` is a number'}
+            return {'error': 'unknown error while parsing query arg `limit`. make sure query arg `limit` is a number'}, 400
 
     if id:
         try:
@@ -110,7 +111,7 @@ def get_txts(user=None):
         if not txt:
             return {'error': f'txt {id} not found'}, 404
         if txt.dm or txt.personal:
-            auth_user = User.check_token(request.headers.get('auth'))['user']
+            auth_user: User | None = User.check_token(request.headers.get('auth'))['user']
             if not auth_user:
                 return no_auth_private_error
             if txt.dm:
@@ -120,8 +121,6 @@ def get_txts(user=None):
                 if txt.user.id != auth_user.id:
                     return unauthorized_to_view_error(txt)
 
-    tag = isinstance(args('tag'), str)
-    
     if tags:
         tags_error_prefix = 'query arg `tags`'
         try:
@@ -130,7 +129,7 @@ def get_txts(user=None):
             return {'error': f'{tags_error_prefix}does not seem tob be a stringified JSON object'}, 400
         tags_error = check_tags(tags, tags_error_prefix)
         if tags_error:
-            return {'error', tags_error}, 400
+            return {'error': tags_error}, 400
 
     if per_page:
         try:
@@ -183,10 +182,10 @@ def get_txts(user=None):
     except Exception as e:
         return e.args[0]
 
-    kwargs = {'include': include, 'user': user, 'limit': limit}
+    kwargs = {'include': include, 'user': user, 'limit': limit, 'append': append}
     if txt: kwargs['txt'] = txt.id
 
-    if tags or tag:
+    if tags:
         kwargs['run'] = Txt.get(tags)
     else:
         reverse = isinstance(args('reverse'), str)
@@ -203,7 +202,7 @@ def get_txts(user=None):
 
 @bp.route('/txts', methods=['POST'])
 @auth
-def post_txt(user=None):
+def post_txt(user: User|None=None):
     data = request.json.get
 
     # include = request.args.get('include')
@@ -237,7 +236,7 @@ def post_txt(user=None):
         txt: Txt = Txt.query.get(id)
         if not txt:
             return {"error": f"txt {id} specified in request body parameter `txt` not found"}, 404
-        if txt.self and txt.user.id != user.id:
+        if txt.self and (not user or txt.user.id != user.id):
             return {'error', f'txt {id} is not set to accept replies from other users'}, 400
         include.append('joined')
         t.reply(txt)
@@ -247,7 +246,7 @@ def post_txt(user=None):
 
 @bp.route('/txts', methods=['PUT'])
 @auth
-def edit_txt(user=None):
+def edit_txt(user:User):
 
     data = request.json.get
 
@@ -315,8 +314,10 @@ def edit_txt(user=None):
 
 @bp.route('/seen', methods=['PUT'])
 @auth
-def seen(user=None):
+def seen(user:User):
     id = request.args.get('id')
+    if not id:
+        return {'error': 'provide query arg `id`'}
     try:
         id = int(id)
     except:
@@ -331,7 +332,7 @@ def seen(user=None):
 
 @bp.route('/join/<int:id>', methods=['PUT'])
 @auth
-def join(id, user=None):
+def join(id, user:User):
     txt = Txt.query.get(id)
     if not txt:
         return {"error": f"txt {id} not found"}, 404
@@ -340,35 +341,16 @@ def join(id, user=None):
 
 @bp.route('/leave/<int:id>', methods=['PUT'])
 @auth
-def leave(id, user=None):
+def leave(id, user:User):
     txt = Txt.query.get(id)
     if not txt:
         return {"error": f"txt {id} not found"}, 404
     user.leave(txt)
     return {'joined': user.in_txt(txt)}
 
-@bp.route('/xtxts', methods=['GET'])
-@auth
-def get_xtxts(user=None):
-    query = Txt.query
-    args = request.args.get
-
-    try:
-        tags = json.loads(args('tags'))
-    except:
-        tags = []
-
-    try:
-        page = int(args('page'))
-    except:
-        page = 1
-
-    run = Txt.get(tags)
-    return cdict(query, page, run=run)
-
 @bp.route('/txts/dm', methods=['GET'])
 @auth
-def txts_dm(user=None):
+def txts_dm(user:User):
     user_id = request.args.get('user')
     if not user_id:
         return {'error': "user id field `user` not specified in query parameters"}, 400
@@ -399,7 +381,7 @@ def txts_dm(user=None):
 
 @bp.route('/txts/<int:id>', methods=['DELETE'])
 @auth
-def del_txt(id, user=None):
+def del_txt(id, user:User):
     txt = Txt.query.get(id)
     if not txt:
         return {'error': f'txt {id} not found'}, 404

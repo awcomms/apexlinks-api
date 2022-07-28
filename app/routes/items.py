@@ -156,7 +156,7 @@ def items():
 
 @bp.route('/items', methods=['POST'])
 @auth
-def add_item(user=None):
+def add_item(user:User):
     json = request.json.get
 
     item = edit(json, user, new=True)
@@ -165,7 +165,7 @@ def add_item(user=None):
 
 @bp.route('/items', methods=['PUT'])
 @auth
-def edit_item(user=None):
+def edit_item(user:User):
     json = request.json.get
     
     item = edit(json, user)
@@ -182,7 +182,7 @@ def item(id):
 
 @bp.route('/items/<int:id>', methods=['DELETE'])
 @auth
-def del_item(id, user=None):
+def del_item(id, user:User):
     item = Item.query.get(id)
 
     if item.user != user:

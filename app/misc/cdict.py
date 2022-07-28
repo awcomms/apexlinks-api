@@ -1,11 +1,10 @@
+from typing import Literal
 from app.misc.hasget import hasget
 
 
-def cdict(query, page='last', per_page=37, include=[], limit=None, **kwargs):
+def cdict(query, page:int|Literal['last']='last', per_page=37, include=[], limit=None, append=False, **kwargs):
     if 'tags' not in include:
         include.append('tags')
-    if 'search_tags' not in include:
-        include.append('search_tags')
     items = [item.dict(include=include, **kwargs) for item in query]
     print(items)
     run = hasget(kwargs, 'run')
@@ -17,6 +16,8 @@ def cdict(query, page='last', per_page=37, include=[], limit=None, **kwargs):
                     del i['tags']
         if hasget(i, 'search_tags'):
             del i['search_tags']
+        if hasget(i, 'score'):
+            del i['score']
 
     # slice items with step as `per_page`
     # get item at index `page-1`
@@ -35,20 +36,20 @@ def cdict(query, page='last', per_page=37, include=[], limit=None, **kwargs):
             page = pages
 
         if page > pages:
-            return {'error': f'specified page {page} more than available pages for query', 'pages': pages}
+            return {'error': f'specified page {page} more than pages made available by {per_page} items per page. number of available pages is {pages}'}
 
         first_in_page = sliced[page-1]
-        print('fip', first_in_page)
         awid = [i for i in items if first_in_page['id'] == i['id']]
-        print('awid', awid)
-        index_of_first_in_page = items.index(
-            awid[0])
-        print('ifip', index_of_first_in_page)
+        index_of_first_in_page = items.index(awid[0])
+
+        if append:
+            range_end = items_length
+        else:
+            range_end = per_page
 
         page_items = []
-        for i in range(index_of_first_in_page, index_of_first_in_page + per_page):
-            if i < items_length:
-                page_items.append(items[i])
+        for i in range(index_of_first_in_page, index_of_first_in_page + range_end):
+            page_items.append(items[i])
     else:
         page = 1
 

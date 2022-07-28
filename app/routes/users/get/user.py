@@ -7,7 +7,7 @@ from app.models.user import User
 
 @bp.route('/user')
 @auth
-def get_auth_user(user=None):
+def get_auth_user(user:User):
     if user:
         include = request.args.get('include')
         try:

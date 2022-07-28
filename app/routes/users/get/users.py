@@ -9,7 +9,7 @@ from app.models.user import User
 from app.misc.cdict import cdict
 
 @bp.route('/users', methods=['GET'])
-def users(user=None):
+def users(user:User):
     a = request.args.get
     extraFields = a('extraFields')
     limit = a('limit')

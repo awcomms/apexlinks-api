@@ -15,7 +15,7 @@ def activate_user():
 
 @bp.route('/users', methods=['PUT'])
 @auth
-def edit_user(user=None):
+def edit_user(user:User):
     _extra = {}
     request_json = request.json.get
     data_request_json = request.get_json()

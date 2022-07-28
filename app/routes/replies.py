@@ -12,7 +12,7 @@ from app.models.user import User
 
 @bp.route('/replies', methods=['GET'])
 @auth
-def replies(user=None):
+def replies(user:User):
     a = request.args.get
     user_id = a('user_id')
     req_user = None
@@ -58,7 +58,7 @@ def blog(id):
 
 @bp.route('/blogs/<int:id>', methods=['DELETE'])
 @auth
-def del_reply(id, user=None):
+def del_reply(id, user:User):
     reply = Reply.query.get(id)
     if reply.user != user:
         return {}, 401
@@ -69,7 +69,7 @@ def del_reply(id, user=None):
 
 @bp.route('/replies', methods=['POST'])
 @auth
-def add_reply(user=None):
+def add_reply(user:User):
     json = request.json.get
     body = json('body')
     title = json('title')
@@ -110,7 +110,7 @@ def add_reply(user=None):
 
 @bp.route('/replies', methods=['PUT'])
 @auth
-def edit_reply(user=None):
+def edit_reply(user:User):
     json = request.json.get
     id = json('id')
     blog_id = json('blog')

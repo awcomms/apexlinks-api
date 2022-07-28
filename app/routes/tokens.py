@@ -10,7 +10,7 @@ from app.routes import bp
 
 @bp.route('/tokens', methods=['GET'])
 @auth
-def check_token(user=None):
+def check_token(user:User):
     if user:
         if isinstance(user, str):
             return ({'error': user})
@@ -63,7 +63,7 @@ def create_token(username=None, password=None):
 
 @bp.route('/tokens', methods=['DELETE'])
 @auth
-def revoke_token(user=None):
+def revoke_token(user:User):
     user.token = None
     db.session.commit()
     return {}, 201

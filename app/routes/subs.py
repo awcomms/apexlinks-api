@@ -7,7 +7,7 @@ from app.models.user import User, xtxts
 
 @bp.route('/subs', methods=['POST'])
 @auth
-def post_sub(user=None):
+def post_sub(user:User):
     sub = request.json.get('sub')
     existing_sub = Sub.query.filter(Sub.sub['endpoint'].as_string() == sub['endpoint']).first()
     if existing_sub:

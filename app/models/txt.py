@@ -1,3 +1,4 @@
+from typing import Any, Dict
 from app.misc.sort.tag_sort import tag_sort
 from app.misc import hasget
 from app import db
@@ -5,13 +6,17 @@ from app.misc.now import now
 from app.misc.to_tags import to_tags
 from app.models import User
 from app.models.junctions import xtxts
+from app.models import User
 
 txt_replies = db.Table("txt_replies",
     db.Column('txt', db.Integer, db.ForeignKey('txt.id')),
     db.Column('reply', db.Integer, db.ForeignKey('txt.id')),
     db.Column('time', db.DateTime, default=now()))
 
-class Txt(db.Model):
+class TxtType():
+    user: User
+
+class Txt(db.Model, TxtType):
     tags = db.Column(db.JSON, default=[])
     search_tags = db.Column(db.JSON, default=[])
     id = db.Column(db.Integer, primary_key=True)
@@ -32,7 +37,7 @@ class Txt(db.Model):
         backref=db.backref('txts', lazy='dynamic'))
 
     @staticmethod
-    def get(tags, limit=0):
+    def get(tags, score_limit=0):
         if not tags:
             tags = []
         def tag_score(items): return tag_sort(items, tags)
@@ -40,13 +45,13 @@ class Txt(db.Model):
 
         def filter(items):
             for idx, item in enumerate(items):
-                if item['score'] < limit:
+                if item['score'] < score_limit:
                     items.pop(idx)
             return items
 
         def run(items):
             _items = _sort(items)
-            if limit:
+            if score_limit:
                 _items = filter(_items)
             return _items
 
@@ -73,15 +78,19 @@ class Txt(db.Model):
         db.session.commit()
         
 
-    def dict(self, include:list=None, **kwargs):
+    def dict(self, include:list|None=None, **kwargs) -> Dict[str, Any]:
         data = {
             'id': self.id,
         }
         if include:
-            attrs = ['tags', 'text', 'value', 'self', 'personal', 'search_tags', 'anon']
+            attrs = ['text', 'value', 'self', 'personal', 'search_tags', 'anon']
             for i in include:
                 if i in attrs and hasattr(self, i):
                     data[i] = getattr(self, i)
+            if 'tags' in include:
+                tags = self.tags or []
+                tags.append({'value': self.value})
+                data['tags'] = tags
             if 'user' in include:
                 if self.user:
                     if not self.anon:
@@ -101,7 +110,7 @@ class Txt(db.Model):
             if 'seen' in include:
                 user = hasget(kwargs, 'user')
                 if not user:
-                    raise '`seen` specified in query arg `include` but no logged in user'
+                    raise Exception('`seen` specified in query arg `include` but no logged in user')
                 uid = user.id
                 row = db.engine.execute(xtxts.select().where(xtxts.c.user_id == uid)
                                         .where(xtxts.c.txt_id == self.id)).first()
@@ -121,7 +130,7 @@ class Txt(db.Model):
             if 'ownerReplyCount' in include:
                 txt_id = hasget(kwargs, 'txt')
                 if not txt_id:
-                    raise '`ownerReplyCount` specified in query arg but no txt specified'
+                    raise Exception('`ownerReplyCount` specified in query arg but no txt specified')
                 if txt_id:
                     txt = Txt.query.get(txt_id)
                     if txt:
@@ -130,7 +139,7 @@ class Txt(db.Model):
                             owner_replies = self.replies.filter(Txt.user_id == owner_id).count()
                             data['ownerReplies'] = owner_replies
                         else:
-                            raise '`ownerReplyCount` specified in query arg `include` but specified txt has no owner'
+                            raise Exception('`ownerReplyCount` specified in query arg `include` but specified txt has no owner')
                     else:
                         print(f'txt {txt_id} in **kwargs in txt.dict() call not found') # TODO-log
             if 'txtsRepliedToCount' in include:
