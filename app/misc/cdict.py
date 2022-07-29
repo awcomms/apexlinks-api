@@ -48,8 +48,10 @@ def cdict(query, page:int|Literal['last']='last', per_page=37, include=[], limit
             range_end = per_page
 
         page_items = []
+        print(append, range_end)
         for i in range(index_of_first_in_page, index_of_first_in_page + range_end):
-            page_items.append(items[i])
+            if i < len(items):
+                page_items.append(items[i])
     else:
         page = 1
 
