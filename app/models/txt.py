@@ -85,9 +85,6 @@ class Txt(db.Model, TxtType):
                 if i in attrs and hasattr(self, i):
                     data[i] = getattr(self, i)
             if 'tags' in include:
-                # tags = self.tags or []
-                # tags.append({'value': self.value})
-                # data['tags'] = tags
                 data['tags'] = [{'value': self.value}]
             if 'user' in include:
                 if self.user:
