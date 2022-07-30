@@ -21,7 +21,6 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     hidden = db.Column(db.Boolean, default=False)
-    # folder_id = db.Column(db.Integer, db.ForeignKey('folder.id'))
     time = db.Column(db.DateTime, default=now())
     image = db.Column(db.Unicode)
     embed = db.Column(db.Unicode)

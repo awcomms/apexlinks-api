@@ -1,5 +1,5 @@
 def to_tags(value, tags):
-    search_tags = []
+    res = []
     words = value.split(' ')  # TODO trim double spaces
     phrases = []
     length = len(words)
@@ -10,5 +10,5 @@ def to_tags(value, tags):
             phrases.append(word)
     for phrase in phrases:
         if phrase not in [t['value'] for t in tags]:
-            search_tags.append({'value': phrase})
-    return search_tags
+            res.append({'value': phrase})
+    return res

@@ -18,7 +18,6 @@ class TxtType():
 
 class Txt(db.Model, TxtType):
     tags = db.Column(db.JSON, default=[])
-    search_tags = db.Column(db.JSON, default=[])
     id = db.Column(db.Integer, primary_key=True)
     anon = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -68,8 +67,6 @@ class Txt(db.Model, TxtType):
         value = hasget(data, 'value')
         if value:
             tags = hasget(data, 'tags', [])
-            search_tags = to_tags(value, tags)
-            data['search_tags'] = search_tags
 
         db.session.add(self)
         self.edit(data)
@@ -83,14 +80,15 @@ class Txt(db.Model, TxtType):
             'id': self.id,
         }
         if include:
-            attrs = ['text', 'value', 'self', 'personal', 'search_tags', 'anon']
+            attrs = ['text', 'value', 'self', 'personal', 'anon']
             for i in include:
                 if i in attrs and hasattr(self, i):
                     data[i] = getattr(self, i)
             if 'tags' in include:
-                tags = self.tags or []
-                tags.append({'value': self.value})
-                data['tags'] = tags
+                # tags = self.tags or []
+                # tags.append({'value': self.value})
+                # data['tags'] = tags
+                data['tags'] = [{'value': self.value}]
             if 'user' in include:
                 if self.user:
                     if not self.anon:

@@ -14,8 +14,6 @@ def cdict(query, page:int|Literal['last']='last', per_page=37, include=[], limit
         if not 'tags' in include:
             if hasget(i, 'tags'):
                     del i['tags']
-        if hasget(i, 'search_tags'):
-            del i['search_tags']
         if hasget(i, 'score'):
             del i['score']
 

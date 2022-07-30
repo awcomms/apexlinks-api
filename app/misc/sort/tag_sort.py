@@ -30,10 +30,6 @@ def tag_sort(items, tags, include_user=False):
             if not item_tags:
                 continue
             item_tags_values = [hasget(t, 'value', '') for t in item_tags]
-            item_search_tags = hasget(item, 'search_tags')
-            if item_search_tags:
-                item_search_tags_values = [hasget(t, 'value', '') for t in item_search_tags]
-                item_tags_values = item_tags_values + item_search_tags_values
             try:
                 score += process.extractOne(
                    tag_value, item_tags_values)[1]
