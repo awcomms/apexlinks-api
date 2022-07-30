@@ -196,7 +196,7 @@ class User(db.Model):
         return token
         
     @staticmethod
-    def check_token(token: str | None) -> Dict[str, Any]:
+    def check_token(token):
         if not token:
             return {'user': None, 'res': '!token'}
         # s = TimestampSigner(current_app.config['SECRET_KEY'])
