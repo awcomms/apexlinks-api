@@ -75,7 +75,7 @@ class Txt(db.Model, TxtType):
         db.session.commit()
         
 
-    def dict(self, include:list|None=None, **kwargs) -> Dict[str, Any]:
+    def dict(self, include, **kwargs):
         data = {
             'id': self.id,
         }
