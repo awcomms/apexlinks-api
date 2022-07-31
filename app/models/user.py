@@ -50,7 +50,6 @@ class User(db.Model):
     tags = db.Column(db.JSON)
     card = db.Column(db.JSON)
     settings = db.Column(db.JSON)
-    # folders = db.relationship('Folder', backref='user', lazy='dynamic')
     image = db.Column(db.Unicode)
     last_paid = db.Column(db.DateTime)
     online = db.Column(db.Boolean, default=False)
