@@ -2,7 +2,7 @@ from typing import Literal
 from app.misc.hasget import hasget
 
 
-def cdict(query, page:int|Literal['last']='last', per_page=37, include=[], limit=None, append=False, **kwargs):
+def cdict(query, page='last', per_page=37, include=[], limit=None, append=False, **kwargs):
     if 'tags' not in include:
         include.append('tags')
     items = [item.dict(include=include, **kwargs) for item in query]

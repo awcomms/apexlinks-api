@@ -2,7 +2,7 @@ from typing import List
 from app.misc.hasget import hasget
 from app.misc.types.tag import Tag
 
-def check_tags(tags: List[Tag], a: str) -> str | None:
+def check_tags(tags, a: str):
     tag: Tag
     for idx, tag in enumerate(tags):
         try:

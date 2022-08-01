@@ -74,7 +74,7 @@ def get_txts_to(user:User):
 
 @bp.route('/txts')
 @maybe_auth
-def get_txts(user:User) -> dict | tuple[dict, int]:
+def get_txts(user:User):
     args = request.args.get
 
     txt: Txt | None = None
@@ -202,7 +202,7 @@ def get_txts(user:User) -> dict | tuple[dict, int]:
 
 @bp.route('/txts', methods=['POST'])
 @auth
-def post_txt(user: User|None=None):
+def post_txt(user):
     data = request.json.get
 
     # include = request.args.get('include')
