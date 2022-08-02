@@ -5,7 +5,7 @@ class Newsletter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.Unicode)
     body = db.Column(db.Unicode)
-    created = db.Column(db.DateTime, now())
+    created = db.Column(db.DateTime, default=now())
 
     def __init__(self, slug, body):
         self.slug = slug
