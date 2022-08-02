@@ -12,3 +12,4 @@ flask_mail
 flask_cors
 gunicorn
 eventlet
+python-Levenshtein
