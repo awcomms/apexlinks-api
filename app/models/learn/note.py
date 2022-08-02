@@ -8,7 +8,6 @@ class Note(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'))
     term_id = db.Column(db.Integer, db.ForeignKey('term.id'))
     name = db.Column(db.Unicode)
-    mods = db.relationship('Mod', backref='note', lazy='dynamic')
     body = db.Column(db.Unicode)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     time = db.Column(db.DateTime, default=now())
